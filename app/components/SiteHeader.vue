@@ -24,8 +24,8 @@
           v-for="item in navigationItems"
           :key="item.key"
           type="button"
-          class="site-nav-link"
-          @click="closeMobileMenu"
+          :class="['site-nav-link', { 'site-nav-link-active': activeNavigationKey === item.key }]"
+          @click="handleNavigationClick(item.key)"
         >
           <span>{{ item.label }}</span>
         </button>
@@ -78,10 +78,9 @@
           </Transition>
         </div>
 
-        <!-- 登录注册只做页面展示按钮，暂不绑定业务功能。 -->
-        <button type="button" class="site-auth-button site-auth-login">
+        <NuxtLink :to="localePath('/login')" class="site-auth-button site-auth-login" @click="closeMobileMenu">
           {{ headerText.loginRegister }}
-        </button>
+        </NuxtLink>
 
         <!-- 手机端菜单按钮，只负责展开或收起导航面板。 -->
         <button
@@ -101,8 +100,8 @@
           v-for="item in navigationItems"
           :key="item.key"
           type="button"
-          class="site-mobile-link"
-          @click="closeMobileMenu"
+          :class="['site-mobile-link', { 'site-mobile-link-active': activeNavigationKey === item.key }]"
+          @click="handleNavigationClick(item.key)"
         >
           <span>{{ item.label }}</span>
         </button>
@@ -136,6 +135,7 @@ const localeMenuOpen = ref(false)
 const mobileMenuOpen = ref(false)
 const mobileMenuIcon = ref('lucide:menu')
 const isSmallHeader = ref(false)
+const activeNavigationKey = ref('clientDownload')
 
 // 打开或关闭手机端导航菜单。
 const toggleMobileMenu = () => {
@@ -148,6 +148,11 @@ const toggleMobileMenu = () => {
 const closeMobileMenu = () => {
   mobileMenuOpen.value = false
   mobileMenuIcon.value = 'lucide:menu'
+}
+
+const handleNavigationClick = (key) => {
+  activeNavigationKey.value = key
+  closeMobileMenu()
 }
 
 // 鼠标移入或键盘聚焦时打开语言下拉，并关闭手机端导航。
@@ -246,3 +251,412 @@ const switchLanguage = async (code) => {
   }
 }
 </script>
+
+<style>
+.page-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background-color: var(--theme-header-background);
+  box-shadow: 0 1px 3px var(--theme-shadow);
+}
+.page-header-inner {
+  min-height: var(--page-header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: relative;
+}
+.site-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+}
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--theme-header-text);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.site-brand:hover,
+.site-brand:focus,
+.site-brand.router-link-active,
+.site-brand.router-link-exact-active {
+  color: var(--theme-header-text);
+  background-color: transparent;
+}
+.site-brand-image {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+.site-brand-name {
+  color: var(--theme-header-text);
+  font-size: 18px;
+}
+.site-brand-accent {
+  color: var(--theme-brand-accent);
+}
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  flex: 1 1 auto;
+  justify-content: center;
+}
+.site-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: var(--theme-header-text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+.site-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 2px;
+  background: rgba(36, 209, 238, 1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.site-nav-link-active::after {
+  opacity: 1;
+}
+.site-nav-link:hover {
+  color: var(--theme-header-text);
+}
+.site-nav-link:focus,
+.site-nav-link:active,
+.site-nav-link.router-link-active,
+.site-nav-link.router-link-exact-active {
+  color: var(--theme-header-text);
+  background-color: transparent;
+}
+.site-nav-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+.site-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+.site-menu-button {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+  color: var(--theme-header-text);
+  background-color: var(--theme-surface);
+}
+.site-menu-button:hover,
+.site-menu-button:focus {
+  border-color: var(--theme-border);
+  background-color: transparent;
+}
+.site-menu-icon {
+  width: 20px;
+  height: 20px;
+}
+.site-select-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 118px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+  color: var(--theme-header-text);
+  background-color: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 30px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.site-auth-button {
+  min-width: 100px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
+  margin-left: 80px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.site-auth-login {
+  color: var(--theme-header-text);
+  background: var(--theme-login-background);
+}
+.site-auth-login:hover,
+.site-auth-login:focus {
+  color: var(--theme-header-text);
+}
+.site-select-button:hover,
+.site-select-button:focus {
+  border-color: var(--theme-border);
+  background-color: transparent;
+}
+.site-locale-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.site-locale-select::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 8px;
+}
+.site-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  min-width: 150px;
+  padding: 4px 0;
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+  background-color: rgba(17, 24, 39, 1);
+  box-shadow: 0 10px 24px var(--theme-shadow);
+}
+.site-select-option {
+  min-width: 150px;
+  color: var(--theme-text);
+  font-size: 14px;
+  line-height: 20px;
+  background-color: transparent;
+}
+.site-select-option-button {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: var(--theme-text);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.site-select-option-button:hover,
+.site-select-option-button:focus {
+  color: rgba(64, 217, 247, 1);
+  background-color: rgba(18, 44, 59, 1);
+}
+.site-select-fade-enter-active,
+.site-select-fade-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.site-select-fade-enter-from,
+.site-select-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.site-mobile-panel {
+  display: none;
+}
+.site-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  color: var(--theme-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+.site-mobile-link:hover {
+  color: var(--theme-header-text);
+  background-color: transparent;
+}
+.site-mobile-link-active {
+  color: var(--theme-header-text);
+}
+.site-mobile-link:focus,
+.site-mobile-link:active,
+.site-mobile-link.router-link-active,
+.site-mobile-link.router-link-exact-active {
+  color: var(--theme-header-text);
+  background-color: transparent;
+}
+.site-select-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.locale-flag-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: inline-block;
+}
+.locale-globe-icon {
+  display: none;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  color: var(--theme-header-text);
+}
+.locale-chevron-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--theme-text-muted);
+  transition: transform 0.2s ease;
+}
+.site-locale-select:hover .locale-chevron-icon,
+.site-locale-select:focus-within .locale-chevron-icon {
+  transform: rotate(180deg);
+}
+@media (max-width: 768px) {
+
+  .page-header-inner {
+    min-height: var(--page-header-height);
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .site-brand-row {
+    width: auto;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .site-actions {
+    width: auto;
+    min-width: 0;
+    gap: 6px;
+    justify-content: flex-end;
+    padding-bottom: 0;
+    flex-wrap: nowrap;
+    margin-left: auto;
+  }
+
+  .site-select-button {
+    min-width: 32px;
+    width: 32px;
+    gap: 0;
+    padding: 0;
+    border-color: transparent;
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  .site-select-button:hover,
+  .site-select-button:focus {
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  .site-select-button > span,
+  .locale-chevron-icon {
+    display: none;
+  }
+
+  .site-select-button > .locale-flag-icon {
+    display: inline-block;
+  }
+
+  .site-select-button > .locale-globe-icon {
+    display: none;
+  }
+
+  .site-auth-button {
+    min-width: 68px;
+    height: 30px;
+    padding: 5px 10px;
+    margin-left: 0;
+    font-size: 13px;
+  }
+
+  .site-menu-button {
+    display: inline-flex;
+    flex: 0 0 36px;
+  }
+
+  .site-mobile-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 16px;
+    z-index: 60;
+    display: grid;
+    width: max-content;
+    min-width: 148px;
+    max-width: calc(100vw - 32px);
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid var(--theme-border);
+    border-radius: 6px;
+    background-color: var(--theme-surface);
+    box-shadow: 0 10px 24px var(--theme-shadow);
+  }
+
+  .site-mobile-panel::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    right: 18px;
+    width: 12px;
+    height: 12px;
+    border-top: 1px solid var(--theme-border);
+    border-left: 1px solid var(--theme-border);
+    background-color: var(--theme-surface);
+    transform: rotate(45deg);
+  }
+
+  .site-mobile-link {
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 390px) {
+  .site-brand-name {
+    display: none;
+  }
+}
+</style>

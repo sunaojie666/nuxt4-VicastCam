@@ -8,6 +8,7 @@
       <HomeHeroSection />
       <HomeFeaturesSection />
       <HomeCommunityCarouselSection />
+      <HomeVirtualBackgroundSection />
       <HomePricingSection />
       <HomeFaqSection />
       <HomeLearningSection />
@@ -24,6 +25,7 @@ import SiteFooter from '../components/SiteFooter.vue'
 import HomeHeroSection from './components/HomeHeroSection.vue'
 import HomeFeaturesSection from './components/HomeFeaturesSection.vue'
 import HomeCommunityCarouselSection from './components/HomeCommunityCarouselSection.vue'
+import HomeVirtualBackgroundSection from './components/HomeVirtualBackgroundSection.vue'
 import HomePricingSection from './components/HomePricingSection.vue'
 import HomeFaqSection from './components/HomeFaqSection.vue'
 import HomeLearningSection from './components/HomeLearningSection.vue'
