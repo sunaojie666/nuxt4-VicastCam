@@ -1,0 +1,82 @@
+/* 主题变量文件：所有颜色只在这里维护，组件样式通过变量读取。 */
+:root {
+  /* 页面基础颜色。 */
+  --theme-page: rgba(3, 7, 18, 1);
+  --theme-header-background: var(--theme-page);
+  --theme-header-text: rgba(229, 229, 229, 1);
+  --theme-footer-background: rgba(3, 7, 18, 1);
+  --theme-footer-title: rgba(255, 255, 255, 1);
+  --theme-footer-text: rgba(149, 156, 168, 1);
+  --theme-footer-link-hover: rgba(229, 229, 229, 1);
+  --theme-footer-logo-background: rgba(255, 255, 255, 1);
+  --theme-surface: rgba(15, 23, 42, 1);
+  --theme-surface-soft: rgba(30, 41, 59, 1);
+  --theme-dropdown-hover: rgba(255, 255, 255, 0.06);
+  --theme-text: rgba(248, 250, 252, 1);
+  --theme-text-muted: rgba(148, 163, 184, 1);
+  --theme-border: rgba(51, 65, 85, 1);
+
+  /* 品牌主色。 */
+  --theme-primary: rgba(59, 130, 246, 1);
+  --theme-brand-accent: rgba(8, 179, 213, 1);
+  --theme-primary-hover: rgba(37, 99, 235, 1);
+  --theme-primary-soft: rgba(30, 64, 175, 0.28);
+  --theme-primary-text: rgba(191, 219, 254, 1);
+  --theme-primary-contrast: rgba(255, 255, 255, 1);
+  --theme-login-background: linear-gradient(124.24deg, rgba(8, 179, 213, 1) 0%, rgba(58, 131, 245, 1) 100%);
+
+  /* 阴影颜色。 */
+  --theme-shadow: rgba(0, 0, 0, 0.28);
+}
+
+/* 深色皮肤变量，当前默认站点背景保持为指定深色。 */
+:root[data-theme="dark"] {
+  --theme-page: rgba(3, 7, 18, 1);
+  --theme-header-background: var(--theme-page);
+  --theme-header-text: rgba(229, 229, 229, 1);
+  --theme-footer-background: rgba(3, 7, 18, 1);
+  --theme-footer-title: rgba(255, 255, 255, 1);
+  --theme-footer-text: rgba(149, 156, 168, 1);
+  --theme-footer-link-hover: rgba(229, 229, 229, 1);
+  --theme-footer-logo-background: rgba(255, 255, 255, 1);
+  --theme-surface: rgba(15, 23, 42, 1);
+  --theme-surface-soft: rgba(30, 41, 59, 1);
+  --theme-dropdown-hover: rgba(255, 255, 255, 0.06);
+  --theme-text: rgba(248, 250, 252, 1);
+  --theme-text-muted: rgba(148, 163, 184, 1);
+  --theme-border: rgba(51, 65, 85, 1);
+  --theme-primary: rgba(59, 130, 246, 1);
+  --theme-brand-accent: rgba(8, 179, 213, 1);
+  --theme-primary-hover: rgba(37, 99, 235, 1);
+  --theme-primary-soft: rgba(30, 64, 175, 0.28);
+  --theme-primary-text: rgba(191, 219, 254, 1);
+  --theme-primary-contrast: rgba(255, 255, 255, 1);
+  --theme-login-background: linear-gradient(124.24deg, rgba(8, 179, 213, 1) 0%, rgba(58, 131, 245, 1) 100%);
+  --theme-shadow: rgba(0, 0, 0, 0.28);
+}
+
+/* 绿色皮肤变量，只替换语义色，不改组件写法。 */
+:root[data-theme="green"] {
+  --theme-page: rgba(3, 7, 18, 1);
+  --theme-header-background: var(--theme-page);
+  --theme-header-text: rgba(229, 229, 229, 1);
+  --theme-footer-background: rgba(3, 7, 18, 1);
+  --theme-footer-title: rgba(255, 255, 255, 1);
+  --theme-footer-text: rgba(149, 156, 168, 1);
+  --theme-footer-link-hover: rgba(240, 253, 244, 1);
+  --theme-footer-logo-background: rgba(255, 255, 255, 1);
+  --theme-surface: rgba(6, 78, 59, 0.28);
+  --theme-surface-soft: rgba(6, 95, 70, 0.38);
+  --theme-dropdown-hover: rgba(255, 255, 255, 0.08);
+  --theme-text: rgba(240, 253, 244, 1);
+  --theme-text-muted: rgba(167, 243, 208, 0.82);
+  --theme-border: rgba(52, 211, 153, 0.3);
+  --theme-primary: rgba(16, 185, 129, 1);
+  --theme-brand-accent: rgba(8, 179, 213, 1);
+  --theme-primary-hover: rgba(5, 150, 105, 1);
+  --theme-primary-soft: rgba(6, 95, 70, 0.42);
+  --theme-primary-text: rgba(167, 243, 208, 1);
+  --theme-primary-contrast: rgba(3, 7, 18, 1);
+  --theme-login-background: linear-gradient(124.24deg, rgba(8, 179, 213, 1) 0%, rgba(58, 131, 245, 1) 100%);
+  --theme-shadow: rgba(0, 0, 0, 0.3);
+}

@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "title": "VicastCam",
+    "description": "一个干净的 Nuxt i18n 起步示例。"
+  },
+  "nav": {
+    "brand": "VicastCam",
+    "clientDownload": "客户端下载",
+    "features": "特色功能",
+    "pricing": "套餐价格",
+    "faq": "常见问题",
+    "sdk": "SDK",
+    "menuLabel": "菜单",
+    "loginRegister": "登录/注册"
+  },
+  "locale": {
+    "switchLabel": "语言"
+  },
+  "theme": {
+    "switchLabel": "皮肤",
+    "light": "浅色",
+    "dark": "深色",
+    "green": "绿色"
+  },
+  "footer": {
+    "brand": "VicastCam",
+    "brandMain": "Vicast",
+    "brandAccent": "Cam",
+    "logoText": "V",
+    "description": "实现手机与电脑联动、桌面高清虚拟直播、视频剪辑、素材切片和功能于一体，适配直播带货、课程分享等多场景的多功能创作工具。",
+    "social": {
+      "facebook": "Facebook",
+      "x": "X",
+      "github": "GitHub"
+    },
+    "columns": {
+      "product": {
+        "title": "产品",
+        "features": "功能",
+        "pricing": "定价",
+        "download": "下载",
+        "changelog": "更新日志"
+      },
+      "developer": {
+        "title": "开发者",
+        "sdk": "SDK",
+        "apiDocs": "API 文档"
+      },
+      "company": {
+        "title": "公司",
+        "about": "关于我们",
+        "privacy": "隐私政策",
+        "terms": "用户协议",
+        "salesPolicy": "销售政策"
+      },
+      "support": {
+        "title": "支持",
+        "docs": "使用文档",
+        "tutorials": "教程",
+        "faq": "常见问题",
+        "contact": "联系我们"
+      }
+    }
+  },
+  "about": {
+    "meta": {
+      "title": "关于",
+      "description": "了解这个 Nuxt 多语言站点。"
+    },
+    "title": "关于本站",
+    "description": "这个页面展示了一个简单的多语言关于模块，并沿用当前项目的 i18n 和 SEO 规范。",
+    "highlight": "项目会把页面文案放在语言文件中，复用统一响应式布局，并为每种语言生成 SEO 标签。"
+  }
+}
