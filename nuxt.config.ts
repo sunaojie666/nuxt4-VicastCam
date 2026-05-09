@@ -54,7 +54,7 @@ export default defineNuxtConfig({
         for (let index = routes.length - 1; index >= 0; index -= 1) {
           const route = routes[index]
 
-          if (route.file?.replaceAll('\\', '/').includes('/pages/components/')) {
+          if (route.file?.replaceAll('\\', '/').match(/\/pages\/(?:.*\/)?components\//)) {
             routes.splice(index, 1)
             continue
           }

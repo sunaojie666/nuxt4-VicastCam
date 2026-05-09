@@ -36,17 +36,3 @@ export const createSiteHeaderText = (translate) => {
     localeSwitchLabel: translate('locale.switchLabel'),
   }
 }
-
-// translate 是 i18n 的翻译函数，用来从当前语言 JSON 中读取关于页文案。
-export const createAboutPageText = (translate) => {
-  return {
-    title: translate('about.title'),
-    description: translate('about.description'),
-    highlight: translate('about.highlight'),
-  }
-}
-
-// 集中刷新关于页所有国际化数据，页面切换语言后调用这里即可。
-export const refreshAboutPageI18nData = ({ pageText, translate }) => {
-  pageText.value = createAboutPageText(translate)
-}

@@ -44,7 +44,7 @@ button, input, textarea {
   --page-max-width: 1154px;
   --page-padding-x: 0px;
   --page-padding-y: clamp(24px, 5vh, 64px);
-  --page-header-height: 60px;
+  --page-header-height: 80px;
   --page-footer-height: 397px;
   --page-footer-product-gap: 130px;
 }
@@ -82,13 +82,44 @@ button, input, textarea {
   background-color: var(--theme-page);
 }
 
+.theme-gradient-text {
+  color: transparent;
+  background: linear-gradient(112.91deg, rgba(36, 209, 238, 1) 0%, rgba(88, 171, 248, 1) 53.06%, rgba(103, 231, 249, 1) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.theme-more-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 100%;
+  color: transparent;
+  background: linear-gradient(112.91deg, rgba(36, 209, 238, 1) 0%, rgba(88, 171, 248, 1) 53.06%, rgba(103, 231, 249, 1) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-more-link img {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
 #home-download,
 #home-features,
 #home-faq,
 #home-features-anchor,
 #home-pricing-anchor,
-#home-faq-anchor,
-#home-sdk {
+#home-faq-anchor {
   scroll-margin-top: calc(var(--page-header-height) + 36px);
 }
 
@@ -124,34 +155,9 @@ button, input, textarea {
   }
 }
 
-.page-card {
-  width: 100%;
-  padding: clamp(20px, 3vw, 32px);
-  border-radius: 8px;
-  color: var(--theme-text);
-  background-color: var(--theme-surface);
-  box-shadow: 0 10px 24px var(--theme-shadow);
-}
-
-.theme-muted-text {
-  color: var(--theme-text-muted);
-}
-
-.theme-primary-button {
-  padding: 8px 16px;
-  border-radius: 4px;
-  color: var(--theme-primary-contrast);
-  background-color: var(--theme-primary);
-  transition: background-color 0.2s ease;
-}
-
-.theme-primary-button:hover {
-  background-color: var(--theme-primary-hover);
-}
-
 @media (max-width: 900px) {
   :root {
-    --page-header-height: 60px;
+    --page-header-height: 80px;
     --page-padding-x: 16px;
     --page-padding-y: 32px;
   }

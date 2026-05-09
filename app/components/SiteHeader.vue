@@ -15,7 +15,6 @@
             <span class="site-brand-accent">{{ headerText.brandAccent }}</span>
           </span>
         </NuxtLink>
-
       </div>
 
       <!-- 页面导航点击后滚动到首页对应区块。 -->
@@ -79,6 +78,10 @@
 
         <NuxtLink :to="localePath('/login')" class="site-auth-button site-auth-login" @click="closeMobileMenu">
           {{ headerText.loginRegister }}
+        </NuxtLink>
+
+        <NuxtLink :to="localePath('/profile')" class="site-profile-link" aria-label="个人中心" @click="closeMobileMenu">
+          <span>D</span>
         </NuxtLink>
 
         <!-- 手机端菜单按钮，只负责展开或收起导航面板。 -->
@@ -153,7 +156,6 @@ const navigationSectionMap = {
     targetId: 'home-faq-anchor',
     spyId: 'home-faq',
   },
-  sdk: null,
 }
 const navigationScrollOrder = ['clientDownload', 'features', 'pricing', 'faq']
 
@@ -358,6 +360,7 @@ onMounted(() => {
 
   syncHeaderMode()
   headerMediaQuery.addEventListener('change', syncHeaderMode)
+
   syncScrollSpy = (() => {
     let ticking = false
 
@@ -402,20 +405,32 @@ const switchLanguage = async (code) => {
 </script>
 
 <style>
+/* Header layout */
 .page-header {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
   z-index: 50;
-  width: auto;
+  width: 100%;
+  height: var(--page-header-height);
+  min-height: var(--page-header-height);
   max-width: 100vw;
   display: flex;
   justify-content: center;
-  background-color: var(--theme-header-background);
-  box-shadow: 0 1px 3px var(--theme-shadow);
+  border-radius: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: rgba(3, 7, 18, 0.82);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+  transition:
+    background-color 0.28s ease,
+    box-shadow 0.28s ease;
 }
+
 .page-header-inner {
+  height: var(--page-header-height);
   min-height: var(--page-header-height);
   display: flex;
   align-items: center;
@@ -424,12 +439,15 @@ const switchLanguage = async (code) => {
   min-width: 0;
   position: relative;
 }
+
+/* Brand */
 .site-brand-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex: 0 0 auto;
 }
+
 .site-brand {
   display: inline-flex;
   align-items: center;
@@ -440,26 +458,30 @@ const switchLanguage = async (code) => {
   line-height: 1.2;
   white-space: nowrap;
 }
+
 .site-brand:hover,
-.site-brand:focus,
-.site-brand.router-link-active,
-.site-brand.router-link-exact-active {
+.site-brand:focus {
   color: var(--theme-header-text);
   background-color: transparent;
 }
+
 .site-brand-image {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   object-fit: contain;
 }
+
 .site-brand-name {
   color: var(--theme-header-text);
   font-size: 18px;
 }
+
 .site-brand-accent {
   color: var(--theme-brand-accent);
 }
+
+/* Desktop navigation */
 .site-nav {
   display: flex;
   align-items: center;
@@ -468,6 +490,7 @@ const switchLanguage = async (code) => {
   justify-content: center;
   min-width: 0;
 }
+
 .site-nav-link {
   position: relative;
   min-width: 0;
@@ -483,11 +506,13 @@ const switchLanguage = async (code) => {
   white-space: nowrap;
   transition: color 0.2s ease;
 }
+
 .site-nav-link span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .site-nav-link::after {
   content: "";
   position: absolute;
@@ -499,57 +524,84 @@ const switchLanguage = async (code) => {
   opacity: 0;
   transition: opacity 0.2s ease;
 }
+
 .site-nav-link-active::after {
   opacity: 1;
 }
+
 .site-nav-link:hover {
   color: var(--theme-header-text);
 }
+
 .site-nav-link:focus,
 .site-nav-link:active {
   color: var(--theme-header-text);
   background-color: transparent;
 }
+
+/* Actions */
 .site-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   flex-wrap: nowrap;
   justify-content: flex-end;
   min-width: 0;
   flex: 0 0 auto;
 }
+
 .site-menu-button {
   display: none;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--theme-border);
-  border-radius: 4px;
+  border: 1px solid rgba(45, 48, 56, 1);
+  border-radius: 6px;
   color: var(--theme-header-text);
   background-color: var(--theme-surface);
 }
+
 .site-menu-button:hover,
 .site-menu-button:focus {
   border-color: var(--theme-border);
   background-color: transparent;
 }
+
 .site-menu-icon {
   width: 20px;
   height: 20px;
 }
+
+/* Locale menu */
+.site-locale-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 50px;
+}
+
+.site-locale-select::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 8px;
+}
+
 .site-select-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-width: 118px;
-  max-width: 168px;
+  gap: 4px;
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
   height: 30px;
-  padding: 0 10px;
-  border: 1px solid var(--theme-border);
-  border-radius: 4px;
+  padding: 0 6px;
+  border: 1px solid rgba(45, 48, 56, 1);
+  border-radius: 6px;
   color: var(--theme-header-text);
   background-color: transparent;
   font-size: 14px;
@@ -559,20 +611,28 @@ const switchLanguage = async (code) => {
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
+
 .site-select-button span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.site-select-button:hover,
+.site-select-button:focus {
+  border-color: rgba(45, 48, 56, 1);
+  background-color: transparent;
+}
+
 .site-auth-button {
   min-width: 100px;
   max-width: 150px;
-  height: 30px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 5px 12px;
-  margin-left: clamp(12px, 4.17vw, 80px);
+  margin-left: 73px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 500;
@@ -582,32 +642,33 @@ const switchLanguage = async (code) => {
   text-overflow: ellipsis;
   transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
+
 .site-auth-login {
   color: var(--theme-header-text);
   background: var(--theme-login-background);
 }
+
 .site-auth-login:hover,
 .site-auth-login:focus {
   color: var(--theme-header-text);
 }
-.site-select-button:hover,
-.site-select-button:focus {
-  border-color: var(--theme-border);
-  background-color: transparent;
-}
-.site-locale-select {
-  position: relative;
+
+.site-profile-link {
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  margin-left: 20px;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 1);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 1), rgba(59, 130, 246, 1));
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
 }
-.site-locale-select::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 8px;
-}
+
 .site-select-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -620,6 +681,7 @@ const switchLanguage = async (code) => {
   background-color: rgba(17, 24, 39, 1);
   box-shadow: 0 10px 24px var(--theme-shadow);
 }
+
 .site-select-option {
   min-width: 150px;
   color: var(--theme-text);
@@ -627,6 +689,7 @@ const switchLanguage = async (code) => {
   line-height: 20px;
   background-color: transparent;
 }
+
 .site-select-option-button {
   width: 100%;
   height: 36px;
@@ -642,29 +705,33 @@ const switchLanguage = async (code) => {
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-
 .site-select-option-button span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .site-select-option-button:hover,
 .site-select-option-button:focus {
   color: rgba(64, 217, 247, 1);
   background-color: rgba(18, 44, 59, 1);
 }
+
 .site-select-fade-enter-active,
 .site-select-fade-leave-active {
   transition: opacity 0.16s ease, transform 0.16s ease;
 }
+
 .site-select-fade-enter-from,
 .site-select-fade-leave-to {
   opacity: 0;
   transform: translateY(-4px);
 }
+
 .site-mobile-panel {
   display: none;
 }
+
 .site-mobile-link {
   display: flex;
   align-items: center;
@@ -676,41 +743,47 @@ const switchLanguage = async (code) => {
   font-size: 14px;
   font-weight: 500;
 }
-
 .site-mobile-link span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .site-mobile-link:hover {
   color: var(--theme-header-text);
   background-color: transparent;
 }
+
 .site-mobile-link-active {
   color: var(--theme-header-text);
 }
+
 .site-mobile-link:focus,
 .site-mobile-link:active {
   color: var(--theme-header-text);
   background-color: transparent;
 }
+
 .locale-flag-icon {
-  width: 22px;
-  height: 22px;
+  width: 19px;
+  height: 14px;
   flex: 0 0 auto;
   display: inline-block;
 }
+
 .locale-chevron-icon {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   color: var(--theme-text-muted);
   transition: transform 0.2s ease;
 }
+
 .site-locale-select:hover .locale-chevron-icon,
 .site-locale-select:focus-within .locale-chevron-icon {
   transform: rotate(180deg);
 }
 
+/* Tablet header compaction */
 @media (max-width: 1153px) and (min-width: 901px) {
 
   .page-header-inner {
@@ -739,10 +812,17 @@ const switchLanguage = async (code) => {
     padding-left: 10px;
     padding-right: 10px;
   }
+
+  .site-profile-link {
+    margin-left: 8px;
+  }
 }
+
+/* Mobile header */
 @media (max-width: 900px) {
 
   .page-header-inner {
+    height: var(--page-header-height);
     min-height: var(--page-header-height);
     align-items: center;
     flex-wrap: nowrap;
@@ -785,6 +865,7 @@ const switchLanguage = async (code) => {
 
   .site-locale-select {
     flex: 0 0 auto;
+    margin-left: 0;
   }
 
   .site-select-button {
@@ -824,15 +905,22 @@ const switchLanguage = async (code) => {
     min-width: 68px;
     max-width: 92px;
     flex: 0 1 auto;
-    height: 30px;
+    height: 36px;
     padding: 5px 10px;
     margin-left: 0;
     font-size: 13px;
   }
 
+  .site-profile-link {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    margin-left: 0;
+  }
+
   .site-menu-button {
     display: inline-flex;
-    flex: 0 0 36px;
+    flex: 0 0 40px;
   }
 
   .site-mobile-panel {
@@ -871,6 +959,7 @@ const switchLanguage = async (code) => {
     white-space: nowrap;
   }
 }
+
 @media (max-width: 390px) {
   .site-brand-name {
     display: none;
