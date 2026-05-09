@@ -41,6 +41,7 @@ export default defineNuxtConfig({
       // 全局默认 SEO 模板，具体页面标题仍然由 app/utils/seo.js 按当前语言生成。
       titleTemplate: `%s | ${siteName}`,
       meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         // 默认允许搜索引擎收录，并开启大图预览。
         { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
       ],

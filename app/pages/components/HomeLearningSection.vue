@@ -1,5 +1,5 @@
 <template>
-  <section class="home-learning-section" aria-labelledby="home-learning-title">
+  <section id="home-sdk" class="home-learning-section" aria-labelledby="home-learning-title">
     <div class="home-learning-inner">
       <span class="home-learning-eyebrow" data-reveal>教程中心</span>
 
@@ -15,15 +15,51 @@
 
       <div class="home-learning-grid">
         <article
-          v-for="course in learningCards"
+          v-for="(course, index) in learningCards"
           :key="course.title"
           class="home-learning-card"
           data-reveal="scale"
           :style="{ '--reveal-delay': `${course.delay}ms` }"
         >
           <img
+            v-if="index === 0"
             class="home-learning-image"
-            :src="course.image"
+            src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=740&q=80"
+            :alt="course.title"
+            loading="lazy"
+          >
+          <img
+            v-else-if="index === 1"
+            class="home-learning-image"
+            src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=740&q=80"
+            :alt="course.title"
+            loading="lazy"
+          >
+          <img
+            v-else-if="index === 2"
+            class="home-learning-image"
+            src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=740&q=80"
+            :alt="course.title"
+            loading="lazy"
+          >
+          <img
+            v-else-if="index === 3"
+            class="home-learning-image"
+            src="https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&w=740&q=80"
+            :alt="course.title"
+            loading="lazy"
+          >
+          <img
+            v-else-if="index === 4"
+            class="home-learning-image"
+            src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=740&q=80"
+            :alt="course.title"
+            loading="lazy"
+          >
+          <img
+            v-else
+            class="home-learning-image"
+            src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=740&q=80"
             :alt="course.title"
             loading="lazy"
           >
@@ -41,7 +77,7 @@
 
       <div class="home-learning-cta" data-reveal style="--reveal-delay: 220ms">
         <span class="home-learning-cta-eyebrow">
-          <img src="~/assets/images/star.png" alt="" aria-hidden="true">
+          <img src="/images/star.png" alt="" aria-hidden="true">
           AI赋能的直播工具
         </span>
 
@@ -49,7 +85,7 @@
           <span>一键更换虚拟背景</span>
           <span>
             直播更精彩
-            <img class="home-learning-cta-line" src="~/assets/images/path.png" alt="" aria-hidden="true">
+            <img class="home-learning-cta-line" src="/images/path.png" alt="" aria-hidden="true">
           </span>
         </h2>
 
@@ -60,12 +96,12 @@
 
         <div class="home-learning-cta-actions" aria-label="下载VicastCam">
           <a href="#" class="home-learning-cta-download">
-            <img src="~/assets/images/apple.png" alt="" aria-hidden="true">
+            <img src="/images/apple.png" alt="" aria-hidden="true">
             <span>在App Store<br><strong>下载</strong></span>
           </a>
 
           <a href="#" class="home-learning-cta-download">
-            <img src="~/assets/images/chromicon.png" alt="" aria-hidden="true">
+            <img src="/images/chromicon.png" alt="" aria-hidden="true">
             <span>在Google Play<br><strong>下载</strong></span>
           </a>
         </div>
@@ -80,42 +116,36 @@ const learningCards = [
     type: '安装',
     level: '新手教程',
     title: '如何下载与安装VicastCam',
-    image: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=740&q=80',
     delay: 0,
   },
   {
     type: '安装',
     level: '新手教程',
     title: '如何下载与安装VicastCam',
-    image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=740&q=80',
     delay: 90,
   },
   {
     type: '安装',
     level: '新手教程',
     title: '如何下载与安装VicastCam',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=740&q=80',
     delay: 180,
   },
   {
     type: '安装',
     level: '新手教程',
     title: '如何下载与安装VicastCam',
-    image: 'https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&w=740&q=80',
     delay: 0,
   },
   {
     type: '安装',
     level: '新手教程',
     title: '如何下载与安装VicastCam',
-    image: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=740&q=80',
     delay: 90,
   },
   {
     type: '安装',
     level: '新手教程',
     title: '如何下载与安装VicastCam',
-    image: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=740&q=80',
     delay: 180,
   },
 ]
@@ -143,6 +173,7 @@ const learningCards = [
 }
 
 .home-learning-eyebrow {
+  max-width: 100%;
   min-width: 84px;
   height: 28px;
   display: inline-flex;
@@ -156,15 +187,20 @@ const learningCards = [
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-learning-title {
+  max-width: 100%;
   margin-top: 22px;
   color: rgba(255, 255, 255, 1);
   font-size: 40px;
   font-weight: 800;
   line-height: 48px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-learning-title span {
@@ -176,6 +212,7 @@ const learningCards = [
 }
 
 .home-learning-subtitle {
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -185,12 +222,15 @@ const learningCards = [
   font-weight: 400;
   line-height: 22px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-learning-link {
+  max-width: 100%;
   color: rgba(20, 198, 239, 1);
   font-size: 13px;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .home-learning-grid {
@@ -225,9 +265,11 @@ const learningCards = [
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .home-learning-tag {
+  max-width: 120px;
   height: 18px;
   display: inline-flex;
   align-items: center;
@@ -237,6 +279,9 @@ const learningCards = [
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-learning-tag-muted {
@@ -255,6 +300,11 @@ const learningCards = [
   font-size: 14px;
   font-weight: 800;
   line-height: 20px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .home-learning-cta {
@@ -275,7 +325,7 @@ const learningCards = [
   z-index: 0;
   width: 1350px;
   height: 840px;
-  background: url("~/assets/images/Circle.png") center / contain no-repeat;
+  background: url("/images/Circle.png") center / contain no-repeat;
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -286,6 +336,7 @@ const learningCards = [
 }
 
 .home-learning-cta-eyebrow {
+  max-width: 100%;
   min-width: 242px;
   height: 28px;
   display: inline-flex;
@@ -300,6 +351,9 @@ const learningCards = [
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-learning-cta-eyebrow img {
@@ -310,11 +364,13 @@ const learningCards = [
 }
 
 .home-learning-cta-title {
+  max-width: 100%;
   margin-top: 22px;
   color: rgba(255, 255, 255, 1);
   font-size: 58px;
   font-weight: 900;
   line-height: 68px;
+  overflow-wrap: anywhere;
 }
 
 .home-learning-cta-title span {
@@ -340,6 +396,7 @@ const learningCards = [
 }
 
 .home-learning-cta-copy {
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -348,9 +405,11 @@ const learningCards = [
   font-size: 20px;
   font-weight: 400;
   line-height: 30px;
+  overflow-wrap: anywhere;
 }
 
 .home-learning-cta-actions {
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -372,6 +431,12 @@ const learningCards = [
   font-weight: 800;
   line-height: 20px;
   text-align: left;
+  overflow: hidden;
+}
+.home-learning-cta-download span {
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .home-learning-cta-download img {

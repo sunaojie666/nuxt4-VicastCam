@@ -6,7 +6,7 @@
         <NuxtLink :to="localePath('/')" class="site-brand">
           <img
             class="site-brand-image"
-            src="~/assets/images/website.png"
+            src="/images/website.png"
             alt=""
             aria-hidden="true"
           >
@@ -18,7 +18,7 @@
 
       </div>
 
-      <!-- 页面导航当前只做入口展示，不绑定锚点，避免页面未开发时触发滚动报错。 -->
+      <!-- 页面导航点击后滚动到首页对应区块。 -->
       <nav class="site-nav" :aria-label="headerText.navBrand">
         <button
           v-for="item in navigationItems"
@@ -49,7 +49,6 @@
             @blur="closeLocaleMenuLater"
           >
             <Icon class="locale-flag-icon" :name="activeLocale.flagIcon" aria-hidden="true" />
-            <Icon class="locale-globe-icon" name="lucide:globe-2" aria-hidden="true" />
             <span>{{ activeLocale.name }}</span>
             <Icon class="locale-chevron-icon" name="lucide:chevron-down" aria-hidden="true" />
           </button>
@@ -123,7 +122,7 @@ const localePath = useLocalePath()
 // switchLocalePath 用来生成当前页面对应语言的路由地址。
 const switchLocalePath = useSwitchLocalePath()
 
-// 当前路由用于在页面跳转后关闭手机端菜单。
+// 当前路由用于在页面跳转后关闭手机端菜单和处理区块滚动。
 const route = useRoute()
 
 // 顶部导航模板只读取普通 ref，避免在模板中直接写翻译逻辑。
@@ -136,6 +135,41 @@ const mobileMenuOpen = ref(false)
 const mobileMenuIcon = ref('lucide:menu')
 const isSmallHeader = ref(false)
 const activeNavigationKey = ref('clientDownload')
+
+const navigationSectionMap = {
+  clientDownload: {
+    targetId: 'home-download',
+    spyId: 'home-download',
+  },
+  features: {
+    targetId: 'home-features-anchor',
+    spyId: 'home-features',
+  },
+  pricing: {
+    targetId: 'home-pricing-anchor',
+    spyId: 'home-pricing',
+  },
+  faq: {
+    targetId: 'home-faq-anchor',
+    spyId: 'home-faq',
+  },
+  sdk: null,
+}
+const navigationScrollOrder = ['clientDownload', 'features', 'pricing', 'faq']
+
+const normalizePath = path => {
+  if (!path || path === '/') {
+    return '/'
+  }
+
+  return path.replace(/\/+$/, '')
+}
+
+const getHomePath = () => localePath('/')
+
+const isHomeRoute = () => {
+  return normalizePath(route.path) === normalizePath(getHomePath())
+}
 
 // 打开或关闭手机端导航菜单。
 const toggleMobileMenu = () => {
@@ -150,9 +184,72 @@ const closeMobileMenu = () => {
   mobileMenuIcon.value = 'lucide:menu'
 }
 
-const handleNavigationClick = (key) => {
-  activeNavigationKey.value = key
+const scrollToSection = (sectionId, behavior = 'smooth') => {
+  const sectionElement = document.getElementById(sectionId)
+
+  if (!sectionElement) {
+    return
+  }
+
+  const headerHeight = document.querySelector('.page-header')?.getBoundingClientRect().height || 0
+  const top = window.scrollY + sectionElement.getBoundingClientRect().top - headerHeight - 36
+
+  window.scrollTo({
+    top: Math.max(0, top),
+    behavior,
+  })
+}
+
+const syncActiveNavigationByScroll = () => {
+  if (!isHomeRoute()) {
+    return
+  }
+
+  const headerHeight = document.querySelector('.page-header')?.getBoundingClientRect().height || 0
+  const threshold = headerHeight + 120
+  let currentKey = 'clientDownload'
+
+  for (const key of navigationScrollOrder) {
+    const sectionId = navigationSectionMap[key]?.spyId
+    const sectionElement = document.getElementById(sectionId)
+
+    if (!sectionElement) {
+      continue
+    }
+
+    const sectionTop = sectionElement.getBoundingClientRect().top
+    if (sectionTop - threshold <= 0) {
+      currentKey = key
+    } else {
+      break
+    }
+  }
+
+  activeNavigationKey.value = currentKey
+}
+
+const handleNavigationClick = async (key) => {
   closeMobileMenu()
+
+  const sectionId = navigationSectionMap[key]?.targetId
+  if (!sectionId) {
+    return
+  }
+  activeNavigationKey.value = key
+
+  if (!isHomeRoute()) {
+    await navigateTo({ path: getHomePath() })
+    nextTick(() => {
+      window.setTimeout(() => {
+        scrollToSection(sectionId)
+        syncActiveNavigationByScroll()
+      }, 40)
+    })
+    return
+  }
+
+  scrollToSection(sectionId)
+  syncActiveNavigationByScroll()
 }
 
 // 鼠标移入或键盘聚焦时打开语言下拉，并关闭手机端导航。
@@ -218,27 +315,79 @@ watch(locale, () => {
   refreshHeaderData()
 })
 
-// 当前路由变化后关闭手机端菜单。
-watch(() => route.path, () => {
+// 当前路由变化后关闭手机端菜单，并根据当前位置同步高亮。
+watch(() => route.fullPath, () => {
   closeMobileMenu()
+  if (!isHomeRoute()) {
+    return
+  }
+
+  nextTick(() => {
+    window.setTimeout(() => {
+      syncActiveNavigationByScroll()
+    }, 40)
+  })
 })
 
-onMounted(() => {
-  const mediaQuery = window.matchMedia('(max-width: 768px)')
-  const syncHeaderMode = () => {
-    isSmallHeader.value = mediaQuery.matches
+let headerMediaQuery = null
+let syncHeaderMode = null
+let syncScrollSpy = null
 
-    if (!mediaQuery.matches) {
+onMounted(() => {
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual'
+  }
+
+  if (window.location.hash) {
+    window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`)
+  }
+
+  const navigationEntry = performance.getEntriesByType('navigation')[0]
+  if (navigationEntry && navigationEntry.type === 'reload') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }
+
+  headerMediaQuery = window.matchMedia('(max-width: 900px)')
+  syncHeaderMode = () => {
+    isSmallHeader.value = headerMediaQuery.matches
+
+    if (!headerMediaQuery.matches) {
       localeMenuOpen.value = false
     }
   }
 
   syncHeaderMode()
-  mediaQuery.addEventListener('change', syncHeaderMode)
+  headerMediaQuery.addEventListener('change', syncHeaderMode)
+  syncScrollSpy = (() => {
+    let ticking = false
 
-  onBeforeUnmount(() => {
-    mediaQuery.removeEventListener('change', syncHeaderMode)
-  })
+    return () => {
+      if (ticking) {
+        return
+      }
+
+      ticking = true
+      window.requestAnimationFrame(() => {
+        syncActiveNavigationByScroll()
+        ticking = false
+      })
+    }
+  })()
+  window.addEventListener('scroll', syncScrollSpy, { passive: true })
+  window.addEventListener('resize', syncScrollSpy)
+
+  syncActiveNavigationByScroll()
+})
+
+onBeforeUnmount(() => {
+  if (headerMediaQuery && syncHeaderMode) {
+    headerMediaQuery.removeEventListener('change', syncHeaderMode)
+  }
+
+  if (syncScrollSpy) {
+    window.removeEventListener('scroll', syncScrollSpy)
+    window.removeEventListener('resize', syncScrollSpy)
+  }
 })
 
 // 下拉框切换语言时，切换语言并跳转到当前页面对应的语言路由。
@@ -257,8 +406,10 @@ const switchLanguage = async (code) => {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
   z-index: 50;
-  width: 100%;
+  width: auto;
+  max-width: 100vw;
   display: flex;
   justify-content: center;
   background-color: var(--theme-header-background);
@@ -270,6 +421,7 @@ const switchLanguage = async (code) => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-width: 0;
   position: relative;
 }
 .site-brand-row {
@@ -311,12 +463,15 @@ const switchLanguage = async (code) => {
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: clamp(12px, 2vw, 25px);
   flex: 1 1 auto;
   justify-content: center;
+  min-width: 0;
 }
 .site-nav-link {
   position: relative;
+  min-width: 0;
+  max-width: 132px;
   display: inline-flex;
   align-items: center;
   border-radius: 4px;
@@ -327,6 +482,11 @@ const switchLanguage = async (code) => {
   line-height: 20px;
   white-space: nowrap;
   transition: color 0.2s ease;
+}
+.site-nav-link span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .site-nav-link::after {
   content: "";
@@ -346,23 +506,17 @@ const switchLanguage = async (code) => {
   color: var(--theme-header-text);
 }
 .site-nav-link:focus,
-.site-nav-link:active,
-.site-nav-link.router-link-active,
-.site-nav-link.router-link-exact-active {
+.site-nav-link:active {
   color: var(--theme-header-text);
   background-color: transparent;
-}
-.site-nav-icon {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 auto;
 }
 .site-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  min-width: 0;
   flex: 0 0 auto;
 }
 .site-menu-button {
@@ -391,6 +545,7 @@ const switchLanguage = async (code) => {
   justify-content: center;
   gap: 8px;
   min-width: 118px;
+  max-width: 168px;
   height: 30px;
   padding: 0 10px;
   border: 1px solid var(--theme-border);
@@ -404,19 +559,27 @@ const switchLanguage = async (code) => {
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
+.site-select-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .site-auth-button {
   min-width: 100px;
+  max-width: 150px;
   height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 5px 12px;
-  margin-left: 80px;
+  margin-left: clamp(12px, 4.17vw, 80px);
   border-radius: 999px;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 .site-auth-login {
@@ -470,6 +633,7 @@ const switchLanguage = async (code) => {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   padding: 8px 12px;
   color: var(--theme-text);
   font-size: 14px;
@@ -477,6 +641,12 @@ const switchLanguage = async (code) => {
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.site-select-option-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .site-select-option-button:hover,
 .site-select-option-button:focus {
@@ -499,11 +669,18 @@ const switchLanguage = async (code) => {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   padding: 10px 12px;
   border-radius: 4px;
   color: var(--theme-text);
   font-size: 14px;
   font-weight: 500;
+}
+
+.site-mobile-link span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .site-mobile-link:hover {
   color: var(--theme-header-text);
@@ -513,29 +690,15 @@ const switchLanguage = async (code) => {
   color: var(--theme-header-text);
 }
 .site-mobile-link:focus,
-.site-mobile-link:active,
-.site-mobile-link.router-link-active,
-.site-mobile-link.router-link-exact-active {
+.site-mobile-link:active {
   color: var(--theme-header-text);
   background-color: transparent;
-}
-.site-select-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
 }
 .locale-flag-icon {
   width: 22px;
   height: 22px;
   flex: 0 0 auto;
   display: inline-block;
-}
-.locale-globe-icon {
-  display: none;
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
-  color: var(--theme-header-text);
 }
 .locale-chevron-icon {
   width: 14px;
@@ -547,7 +710,37 @@ const switchLanguage = async (code) => {
 .site-locale-select:focus-within .locale-chevron-icon {
   transform: rotate(180deg);
 }
-@media (max-width: 768px) {
+
+@media (max-width: 1153px) and (min-width: 901px) {
+
+  .page-header-inner {
+    gap: 10px;
+  }
+
+  .site-nav {
+    gap: clamp(6px, 1vw, 12px);
+  }
+
+  .site-nav-link {
+    max-width: 96px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .site-nav-link::after {
+    left: 6px;
+    right: 6px;
+  }
+
+  .site-auth-button {
+    min-width: 82px;
+    max-width: 112px;
+    margin-left: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+@media (max-width: 900px) {
 
   .page-header-inner {
     min-height: var(--page-header-height);
@@ -560,6 +753,19 @@ const switchLanguage = async (code) => {
     width: auto;
     min-width: 0;
     gap: 8px;
+    flex: 1 1 auto;
+  }
+
+  .site-brand {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .site-brand-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .site-nav {
@@ -574,11 +780,18 @@ const switchLanguage = async (code) => {
     padding-bottom: 0;
     flex-wrap: nowrap;
     margin-left: auto;
+    flex: 0 0 auto;
+  }
+
+  .site-locale-select {
+    flex: 0 0 auto;
   }
 
   .site-select-button {
     min-width: 32px;
     width: 32px;
+    max-width: 32px;
+    flex: 0 0 32px;
     gap: 0;
     padding: 0;
     border-color: transparent;
@@ -601,12 +814,16 @@ const switchLanguage = async (code) => {
     display: inline-block;
   }
 
-  .site-select-button > .locale-globe-icon {
-    display: none;
+  .site-select-menu {
+    left: auto;
+    right: 0;
+    max-width: calc(100vw - 32px);
   }
 
   .site-auth-button {
     min-width: 68px;
+    max-width: 92px;
+    flex: 0 1 auto;
     height: 30px;
     padding: 5px 10px;
     margin-left: 0;
@@ -621,7 +838,7 @@ const switchLanguage = async (code) => {
   .site-mobile-panel {
     position: absolute;
     top: calc(100% + 8px);
-    right: 16px;
+    right: var(--page-padding-x);
     z-index: 60;
     display: grid;
     width: max-content;

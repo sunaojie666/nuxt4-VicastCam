@@ -1,7 +1,7 @@
 <template>
-  <section class="home-faq-section" aria-labelledby="home-faq-title">
+  <section id="home-faq" class="home-faq-section" aria-labelledby="home-faq-title">
     <div class="home-faq-inner">
-      <span class="home-faq-eyebrow" data-reveal>常见问题</span>
+      <span id="home-faq-anchor" class="home-faq-eyebrow" data-reveal>常见问题</span>
 
       <h2 id="home-faq-title" class="home-faq-title" data-reveal style="--reveal-delay: 80ms">
         <span>有疑问吗?</span>
@@ -15,21 +15,31 @@
 
       <div class="home-faq-list">
         <article
-          v-for="item in faqItems"
-          :key="item.question"
-          :class="['home-faq-item', { 'home-faq-item-open': item.open }]"
-          data-reveal
-          :style="{ '--reveal-delay': `${item.delay}ms` }"
+          v-for="(item, index) in faqItems"
+          :key="`${item.question}-${index}`"
+          :class="['home-faq-item', { 'home-faq-item-open': activeFaqIndex === index }]"
         >
-          <button class="home-faq-question" type="button">
+          <button
+            class="home-faq-question"
+            type="button"
+            :aria-expanded="activeFaqIndex === index"
+            :aria-controls="`home-faq-answer-${index}`"
+            @click="toggleFaqItem(index)"
+          >
             <span>{{ item.question }}</span>
             <span class="home-faq-toggle" aria-hidden="true">
-              <Icon v-if="item.open" name="lucide:minus" />
+              <Icon v-if="activeFaqIndex === index" name="lucide:minus" />
               <Icon v-else name="lucide:plus" />
             </span>
           </button>
 
-          <p v-if="item.open" class="home-faq-answer">{{ item.answer }}</p>
+          <div
+            :id="`home-faq-answer-${index}`"
+            class="home-faq-answer-wrap"
+            :aria-hidden="activeFaqIndex !== index"
+          >
+            <p class="home-faq-answer">{{ item.answer }}</p>
+          </div>
         </article>
       </div>
     </div>
@@ -39,38 +49,34 @@
 <script setup>
 const questionText = '我可以用VicastCam在哪些平台进行直播?'
 
+const activeFaqIndex = ref(0)
+
 const faqItems = [
   {
     question: questionText,
     answer: 'VicastCam支持多个平台进行直播，包括 TikTok、YouTube Live、Twitch、InstagramLive、FacebookLive、Kick等等。只要你有直播权限，都可以进行直播。',
-    open: true,
-    delay: 0,
   },
   {
     question: questionText,
     answer: '',
-    open: false,
-    delay: 70,
   },
   {
     question: questionText,
     answer: '',
-    open: false,
-    delay: 140,
   },
   {
     question: questionText,
     answer: '',
-    open: false,
-    delay: 210,
   },
   {
     question: questionText,
     answer: '',
-    open: false,
-    delay: 280,
   },
 ]
+
+const toggleFaqItem = (index) => {
+  activeFaqIndex.value = activeFaqIndex.value === index ? -1 : index
+}
 </script>
 
 <style>
@@ -95,6 +101,7 @@ const faqItems = [
 }
 
 .home-faq-eyebrow {
+  max-width: 100%;
   min-width: 84px;
   height: 28px;
   display: inline-flex;
@@ -108,15 +115,20 @@ const faqItems = [
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-faq-title {
+  max-width: 100%;
   margin-top: 22px;
   color: rgba(255, 255, 255, 1);
   font-size: 40px;
   font-weight: 800;
   line-height: 48px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-faq-title span {
@@ -128,6 +140,7 @@ const faqItems = [
 }
 
 .home-faq-subtitle {
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -137,6 +150,7 @@ const faqItems = [
   font-weight: 400;
   line-height: 22px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-faq-contact {
@@ -155,6 +169,7 @@ const faqItems = [
   border: 1px solid transparent;
   border-radius: 15px;
   background-color: rgba(3, 7, 18, 1);
+  transition: border-color 0.22s ease, background-color 0.22s ease;
 }
 
 .home-faq-item-open {
@@ -175,7 +190,14 @@ const faqItems = [
   font-weight: 800;
   line-height: 20px;
   text-align: left;
-  cursor: pointer;
+}
+.home-faq-question > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .home-faq-toggle {
@@ -188,11 +210,13 @@ const faqItems = [
   border-radius: 50%;
   color: rgba(148, 163, 184, 1);
   background-color: rgba(30, 41, 59, 0.74);
+  transition: color 0.22s ease, background-color 0.22s ease, transform 0.22s ease;
 }
 
 .home-faq-item-open .home-faq-toggle {
   color: rgba(255, 255, 255, 1);
   background-color: rgba(8, 179, 213, 0.62);
+  transform: rotate(180deg);
 }
 
 .home-faq-toggle svg {
@@ -200,13 +224,29 @@ const faqItems = [
   height: 14px;
 }
 
-.home-faq-answer {
+.home-faq-answer-wrap {
   max-width: 650px;
-  padding: 0 22px 26px;
+  display: grid;
+  grid-template-rows: 0fr;
+  padding: 0 22px;
+  opacity: 0;
+  transition: grid-template-rows 0.26s ease, padding-bottom 0.26s ease, opacity 0.2s ease;
+}
+
+.home-faq-answer {
+  min-height: 0;
+  overflow: hidden;
   color: rgba(148, 163, 184, 1);
   font-size: 12px;
   font-weight: 400;
   line-height: 22px;
+  overflow-wrap: anywhere;
+}
+
+.home-faq-item-open .home-faq-answer-wrap {
+  grid-template-rows: 1fr;
+  padding-bottom: 26px;
+  opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -238,8 +278,13 @@ const faqItems = [
     font-size: 13px;
   }
 
-  .home-faq-answer {
-    padding: 0 16px 22px;
+  .home-faq-answer-wrap {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .home-faq-item-open .home-faq-answer-wrap {
+    padding-bottom: 22px;
   }
 }
 </style>

@@ -6,7 +6,7 @@
         <div class="site-footer-logo-row">
           <img
             class="site-footer-logo"
-            src="~/assets/images/website.png"
+            src="/images/website.png"
             alt=""
             aria-hidden="true"
           >
@@ -96,15 +96,18 @@ watch(locale, () => {
   gap: 0;
   padding-top: 64px;
   overflow: hidden;
+  min-width: 0;
 }
 .site-footer-brand {
   width: 285px;
   flex: 0 0 285px;
+  min-width: 0;
 }
 .site-footer-logo-row {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 .site-footer-logo {
   width: 30px;
@@ -113,10 +116,14 @@ watch(locale, () => {
   object-fit: contain;
 }
 .site-footer-brand-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--theme-footer-title);
   font-size: 18px;
   font-weight: 800;
   line-height: 24px;
+  white-space: nowrap;
 }
 .site-footer-brand-accent {
   color: var(--theme-brand-accent);
@@ -127,6 +134,7 @@ watch(locale, () => {
   font-size: 12px;
   font-weight: 400;
   line-height: 22px;
+  overflow-wrap: anywhere;
 }
 .site-footer-socials {
   display: flex;
@@ -159,26 +167,40 @@ watch(locale, () => {
   grid-template-columns: repeat(4, minmax(80px, 1fr));
   column-gap: clamp(36px, 5vw, 84px);
   margin-left: 130px;
+  min-width: 0;
 }
 .site-footer-column {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-width: 0;
 }
 .site-footer-column-title {
+  max-width: 100%;
   margin-bottom: 18px;
   color: var(--theme-footer-title);
   font-size: 14px;
   font-weight: 700;
   line-height: 20px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 .site-footer-link {
+  max-width: 100%;
   min-height: 24px;
   color: var(--theme-footer-text);
   font-size: 12px;
   font-weight: 400;
   line-height: 20px;
   text-align: left;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   cursor: pointer;
   transition: color 0.2s ease;
 }

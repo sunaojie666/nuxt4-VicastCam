@@ -1,7 +1,7 @@
 <template>
-  <section class="home-pricing-section" aria-labelledby="home-pricing-title">
+  <section id="home-pricing" class="home-pricing-section" aria-labelledby="home-pricing-title">
     <div class="home-pricing-inner">
-      <span class="home-pricing-eyebrow" data-reveal>套餐价格</span>
+      <span id="home-pricing-anchor" class="home-pricing-eyebrow" data-reveal>套餐价格</span>
 
       <h2 id="home-pricing-title" class="home-pricing-title" data-reveal style="--reveal-delay: 80ms">
         <span>请选择你想要的</span>
@@ -106,6 +106,7 @@ const pricingPlans = [
 }
 
 .home-pricing-eyebrow {
+  max-width: 100%;
   min-width: 95px;
   height: 28px;
   display: inline-flex;
@@ -119,6 +120,9 @@ const pricingPlans = [
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-pricing-title {
@@ -129,6 +133,7 @@ const pricingPlans = [
   font-weight: 800;
   line-height: 48px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-pricing-title span {
@@ -140,12 +145,14 @@ const pricingPlans = [
 }
 
 .home-pricing-subtitle {
+  max-width: 100%;
   margin-top: 20px;
   color: rgba(149, 156, 168, 1);
   font-size: 16px;
   font-weight: 400;
   line-height: 22px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-pricing-grid {
@@ -163,6 +170,7 @@ const pricingPlans = [
   height: 514px;
   display: flex;
   flex-direction: column;
+  overflow: visible;
   padding: 34px 32px 33px;
   border: 1px solid rgba(30, 41, 59, 1);
   border-radius: 8px;
@@ -180,11 +188,13 @@ const pricingPlans = [
   position: absolute;
   top: -15px;
   left: 50%;
-  height: 28px;
   min-width: 124px;
+  max-width: calc(100% - 48px);
+  height: 27px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0 14px;
   transform: translateX(-50%);
   border-radius: 999px;
   color: rgba(255, 255, 255, 1);
@@ -193,6 +203,9 @@ const pricingPlans = [
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-pricing-card-title {
@@ -200,6 +213,11 @@ const pricingPlans = [
   font-size: 18px;
   font-weight: 800;
   line-height: 26px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .home-pricing-card-description {
@@ -208,6 +226,11 @@ const pricingPlans = [
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .home-pricing-price {
@@ -241,10 +264,19 @@ const pricingPlans = [
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
   color: rgba(203, 213, 225, 1);
   font-size: 12px;
   font-weight: 400;
   line-height: 18px;
+}
+.home-pricing-feature span {
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .home-pricing-check {
@@ -268,6 +300,10 @@ const pricingPlans = [
   font-size: 13px;
   font-weight: 800;
   line-height: 1;
+  padding: 0 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
@@ -304,9 +340,10 @@ const pricingPlans = [
 @media (max-width: 768px) {
 
   .home-pricing-section {
-    margin-top: -226px;
-    padding-top: 108px;
+    margin-top: 0;
+    padding-top: 80px;
     padding-bottom: 56px;
+    background-color: var(--theme-page);
   }
 
   .home-pricing-title {
@@ -322,23 +359,32 @@ const pricingPlans = [
   }
 
   .home-pricing-grid {
-    width: min(100%, 420px);
+    width: min(calc(100% - var(--page-padding-x) * 2), 320px);
     grid-template-columns: 1fr;
     justify-items: center;
     gap: 18px;
-    margin-top: 48px;
+    margin-top: 54px;
   }
 
   .home-pricing-card {
-    width: min(100%, 370px);
-    height: 514px;
-    padding: 28px 24px 24px;
+    width: 100%;
+    height: 468px;
+    padding: 26px 22px 22px;
   }
 
   .home-pricing-price {
-    margin-top: 32px;
-    font-size: 34px;
-    line-height: 40px;
+    margin-top: 28px;
+    font-size: 32px;
+    line-height: 38px;
+  }
+
+  .home-pricing-features {
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .home-pricing-button {
+    height: 42px;
   }
 }
 </style>

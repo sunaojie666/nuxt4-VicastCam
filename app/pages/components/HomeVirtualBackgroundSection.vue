@@ -27,14 +27,24 @@
           />
         </div>
 
-        <div class="home-virtual-reflection" aria-hidden="true" />
+        <div class="home-virtual-reflection" aria-hidden="true">
+          <video
+            class="home-virtual-reflection-video"
+            :src="virtualVideoSrc"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="metadata"
+          />
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-const virtualVideoSrc = '/videos/home-hero.mp4'
+const virtualVideoSrc = 'https://cdn.douyinggongchang.com/upload/sys/media/d0/6114f628f3df1f3facbc4f87127fd5.mp4'
 </script>
 
 <style>
@@ -60,6 +70,7 @@ const virtualVideoSrc = '/videos/home-hero.mp4'
 }
 
 .home-virtual-eyebrow {
+  max-width: 100%;
   min-width: 66px;
   height: 28px;
   display: inline-flex;
@@ -73,15 +84,20 @@ const virtualVideoSrc = '/videos/home-hero.mp4'
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-virtual-title {
+  max-width: 100%;
   margin-top: 18px;
   color: rgba(255, 255, 255, 1);
   font-size: 40px;
   font-weight: 900;
   line-height: 48px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-virtual-title span {
@@ -93,6 +109,7 @@ const virtualVideoSrc = '/videos/home-hero.mp4'
 }
 
 .home-virtual-subtitle {
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -102,6 +119,7 @@ const virtualVideoSrc = '/videos/home-hero.mp4'
   font-weight: 400;
   line-height: 24px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-virtual-media {
@@ -116,7 +134,7 @@ const virtualVideoSrc = '/videos/home-hero.mp4'
   overflow: hidden;
   width: 100%;
   aspect-ratio: 887 / 582;
-  background: url("~/assets/images/Layer.png") center / 100% 100% no-repeat;
+  background: url("/images/Layer.png") center / 100% 100% no-repeat;
 }
 
 .home-virtual-video {
@@ -133,10 +151,22 @@ const virtualVideoSrc = '/videos/home-hero.mp4'
 .home-virtual-reflection {
   position: relative;
   z-index: 1;
+  overflow: hidden;
   width: 100%;
   aspect-ratio: 887 / 385;
   margin: 0 auto;
-  background: url("~/assets/images/layer2.png") center top / 100% 100% no-repeat;
+  background: url("/images/layer2.png") center top / 100% 100% no-repeat;
+}
+
+.home-virtual-reflection-video {
+  position: absolute;
+  left: 2.8%;
+  top: 4.2%;
+  width: 94.4%;
+  height: 91.6%;
+  object-fit: cover;
+  transform: rotate(180deg);
+  opacity: 0.42;
 }
 
 @media (max-width: 768px) {

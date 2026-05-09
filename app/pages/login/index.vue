@@ -3,7 +3,7 @@
     <div class="auth-layout">
       <section class="auth-brand-panel" aria-labelledby="auth-brand-title">
         <NuxtLink :to="localePath('/')" class="auth-logo">
-          <img src="~/assets/images/website.png" alt="" aria-hidden="true">
+          <img src="/images/website.png" alt="" aria-hidden="true">
           <span>Vicast<span>Cam</span></span>
         </NuxtLink>
 
@@ -19,9 +19,11 @@
         </div>
 
         <div class="auth-feature-list" aria-label="VicastCam特色">
-          <div v-for="feature in features" :key="feature.title" class="auth-feature">
+          <div v-for="(feature, index) in features" :key="feature.title" class="auth-feature">
             <span>
-              <img :src="feature.icon" alt="" aria-hidden="true">
+              <img v-if="index === 0" src="/images/loginIcon1.png" alt="" aria-hidden="true">
+              <img v-else-if="index === 1" src="/images/loginIcon2.png" alt="" aria-hidden="true">
+              <img v-else src="/images/loginIcon3.png" alt="" aria-hidden="true">
             </span>
             <strong>{{ feature.title }}</strong>
             <small>{{ feature.description }}</small>
@@ -98,9 +100,6 @@
 
 <script setup>
 const localePath = useLocalePath()
-const loginIcon1 = new URL('~/assets/images/loginIcon1.png', import.meta.url).href
-const loginIcon2 = new URL('~/assets/images/loginIcon2.png', import.meta.url).href
-const loginIcon3 = new URL('~/assets/images/loginIcon3.png', import.meta.url).href
 const authMode = ref('login')
 const agreementAccepted = ref(true)
 
@@ -110,9 +109,9 @@ const tabs = [
 ]
 
 const features = [
-  { title: '智能抠图', description: '精准识别', icon: loginIcon1 },
-  { title: '海量模板', description: '随心切换', icon: loginIcon2 },
-  { title: '虚拟相机', description: '专业直播', icon: loginIcon3 },
+  { title: '智能抠图', description: '精准识别' },
+  { title: '海量模板', description: '随心切换' },
+  { title: '虚拟相机', description: '专业直播' },
 ]
 
 const activeTitle = computed(() => authMode.value === 'login' ? '登录' : '注册')
@@ -140,7 +139,7 @@ useSeoMeta({
   color: rgba(255, 255, 255, 1);
   background:
     linear-gradient(90deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.12) 45%, rgba(3, 7, 18, 0.28) 100%),
-    url("~/assets/images/loginbg.png") center / cover no-repeat,
+    url("/images/loginbg.png") center / cover no-repeat,
     rgba(3, 7, 18, 1);
 }
 
@@ -160,6 +159,7 @@ useSeoMeta({
   align-items: start;
   gap: clamp(24px, 2.5vw, 48px);
   margin: 0 auto;
+  min-width: 0;
 }
 
 .auth-brand-panel,
@@ -169,12 +169,14 @@ useSeoMeta({
 }
 
 .auth-logo {
+  max-width: 100%;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   color: rgba(255, 255, 255, 1);
   font-size: 24px;
   font-weight: 900;
+  min-width: 0;
 }
 
 .auth-logo img {
@@ -187,6 +189,13 @@ useSeoMeta({
   color: rgba(20, 198, 239, 1);
 }
 
+.auth-logo > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .auth-brand-copy {
   margin-top: 34px;
 }
@@ -195,6 +204,7 @@ useSeoMeta({
   font-size: 48px;
   font-weight: 900;
   line-height: 62px;
+  overflow-wrap: anywhere;
 }
 
 .auth-brand-copy h1 span {
@@ -225,16 +235,19 @@ useSeoMeta({
   color: rgba(226, 232, 240, 1);
   font-size: 20px;
   line-height: 30px;
+  overflow-wrap: anywhere;
 }
 
 .auth-feature-list {
   display: flex;
   gap: clamp(28px, 3.02vw, 58px);
   margin-top: 190px;
+  min-width: 0;
 }
 
 .auth-feature {
   width: 68px;
+  min-width: 0;
   display: grid;
   justify-items: center;
   color: rgba(203, 213, 225, 1);
@@ -261,19 +274,25 @@ useSeoMeta({
 }
 
 .auth-feature strong {
+  max-width: 100%;
   margin-top: 16px;
   color: rgba(255, 255, 255, 1);
   font-size: 10px;
   font-weight: 700;
   line-height: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .auth-feature small {
+  max-width: 100%;
   margin-top: 14px;
   color: rgba(148, 163, 184, 1);
   font-size: 9px;
   line-height: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -302,8 +321,13 @@ useSeoMeta({
 }
 
 .auth-tab {
-  width: 256px;
+  width: 100%;
+  min-width: 0;
   height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
   opacity: 1;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -311,6 +335,9 @@ useSeoMeta({
   color: rgba(148, 163, 184, 1);
   font-size: 24px;
   font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -328,6 +355,7 @@ useSeoMeta({
   display: grid;
   gap: 16px;
   margin-top: 58px;
+  min-width: 0;
 }
 
 .auth-form-register {
@@ -354,8 +382,15 @@ useSeoMeta({
 .auth-field {
   display: grid;
   gap: 10px;
+  min-width: 0;
   color: rgba(148, 163, 184, 1);
   font-size: 24px;
+}
+
+.auth-field > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .auth-input-wrap {
@@ -363,6 +398,7 @@ useSeoMeta({
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
   padding: 0 12px;
   border: 1px solid rgba(51, 65, 85, 1);
   border-radius: 5px;
@@ -388,9 +424,13 @@ useSeoMeta({
 }
 
 .auth-code-button {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-width: 150px;
   color: rgba(20, 198, 239, 1);
   font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -398,6 +438,7 @@ useSeoMeta({
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   color: rgba(148, 163, 184, 1);
   font-size: 18px;
   line-height: 26px;
@@ -406,7 +447,13 @@ useSeoMeta({
 .auth-agreement input {
   width: 12px;
   height: 12px;
+  flex: 0 0 auto;
   accent-color: rgba(20, 198, 239, 1);
+}
+
+.auth-agreement span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .auth-agreement a,
@@ -417,11 +464,15 @@ useSeoMeta({
 .auth-submit-button {
   height: 60px;
   margin-top: 24px;
+  padding: 0 18px;
   border-radius: 5px;
   color: rgba(255, 255, 255, 1);
   background: linear-gradient(90deg, rgba(14, 181, 213, 1), rgba(14, 145, 233, 1));
   font-size: 24px;
   font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
   transition: filter 0.2s ease, transform 0.2s ease;
 }
@@ -437,6 +488,7 @@ useSeoMeta({
   font-size: 20px;
   line-height: 28px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .auth-switch-copy button {

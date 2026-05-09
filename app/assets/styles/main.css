@@ -7,6 +7,7 @@
 html {
   /* 页面内部锚点跳转时使用平滑滚动。 */
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
@@ -14,7 +15,7 @@ body {
   line-height: 1.5;
   color: var(--theme-text);
   background-color: var(--theme-page);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 img {
@@ -54,6 +55,7 @@ button, input, textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-x: clip;
   padding-top: var(--page-header-height);
   background-color: var(--theme-page);
 }
@@ -74,9 +76,20 @@ button, input, textarea {
 .page-home-main {
   width: 100%;
   min-height: 0;
+  overflow-x: clip;
   padding-top: 0;
   padding-bottom: 0;
   background-color: var(--theme-page);
+}
+
+#home-download,
+#home-features,
+#home-faq,
+#home-features-anchor,
+#home-pricing-anchor,
+#home-faq-anchor,
+#home-sdk {
+  scroll-margin-top: calc(var(--page-header-height) + 36px);
 }
 
 .reveal-ready [data-reveal] {
@@ -136,7 +149,7 @@ button, input, textarea {
   background-color: var(--theme-primary-hover);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   :root {
     --page-header-height: 60px;
     --page-padding-x: 16px;

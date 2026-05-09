@@ -27,7 +27,41 @@
             :key="`${loopIndex}-${creator.name}-${index}`"
             :class="['home-community-card', { 'home-community-card-active': index === 2 }]"
           >
-            <img class="home-community-image" :src="creator.image" :alt="creator.name" loading="lazy">
+            <img
+              v-if="index === 0"
+              class="home-community-image"
+              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=740&q=80"
+              :alt="creator.name"
+              loading="lazy"
+            >
+            <img
+              v-else-if="index === 1"
+              class="home-community-image"
+              src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?auto=format&fit=crop&w=740&q=80"
+              :alt="creator.name"
+              loading="lazy"
+            >
+            <img
+              v-else-if="index === 2"
+              class="home-community-image"
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=740&q=80"
+              :alt="creator.name"
+              loading="lazy"
+            >
+            <img
+              v-else-if="index === 3"
+              class="home-community-image"
+              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=740&q=80"
+              :alt="creator.name"
+              loading="lazy"
+            >
+            <img
+              v-else
+              class="home-community-image"
+              src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=740&q=80"
+              :alt="creator.name"
+              loading="lazy"
+            >
 
             <span class="home-community-live">
               <span></span>
@@ -70,35 +104,30 @@ const creators = [
     handle: 'marcusi',
     location: 'Dubai, UAE',
     fans: '12万',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=740&q=80',
   },
   {
     name: 'Marcus Johnson',
     handle: 'marcusi',
     location: 'Dubai, UAE',
     fans: '12万',
-    image: 'https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?auto=format&fit=crop&w=740&q=80',
   },
   {
     name: 'Marcus Johnson',
     handle: 'marcusi',
     location: 'Dubai, UAE',
     fans: '12万',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=740&q=80',
   },
   {
     name: 'Marcus Johnson',
     handle: 'marcusi',
     location: 'Dubai, UAE',
     fans: '12万',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=740&q=80',
   },
   {
     name: 'Marcus Johnson',
     handle: 'marcusi',
     location: 'Dubai, UAE',
     fans: '12万',
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=740&q=80',
   },
 ]
 
@@ -189,6 +218,7 @@ onMounted(() => {
 }
 
 .home-community-eyebrow {
+  max-width: 100%;
   min-width: 90px;
   height: 28px;
   display: inline-flex;
@@ -202,15 +232,20 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-community-title {
+  max-width: 100%;
   margin-top: 21px;
   color: rgba(255, 255, 255, 1);
   font-size: 40px;
   font-weight: 800;
   line-height: 52px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-community-title span {
@@ -222,6 +257,7 @@ onMounted(() => {
 }
 
 .home-community-subtitle {
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -231,10 +267,13 @@ onMounted(() => {
   font-weight: 400;
   line-height: 24px;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .home-community-carousel {
   width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
   margin-top: 76px;
 }
 
@@ -325,6 +364,10 @@ onMounted(() => {
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
+  max-width: calc(100% - 44px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-community-live span {
@@ -346,11 +389,20 @@ onMounted(() => {
   background-color: rgba(3, 7, 18, 1);
 }
 
+.home-community-card-body > div {
+  min-width: 0;
+}
+
 .home-community-card-name {
   color: rgba(255, 255, 255, 1);
   font-size: 15px;
   font-weight: 800;
   line-height: 20px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .home-community-handle {
@@ -359,17 +411,26 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 400;
   line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-community-location {
   display: flex;
   align-items: center;
   gap: 7px;
+  min-width: 0;
   margin-top: 10px;
   color: rgba(148, 163, 184, 1);
   font-size: 12px;
   font-weight: 400;
   line-height: 18px;
+}
+.home-community-location {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-community-location svg {
@@ -382,9 +443,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  min-width: 0;
   color: rgba(148, 163, 184, 1);
   font-size: 12px;
   line-height: 18px;
+}
+.home-community-fans span {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-community-fans strong {
@@ -431,6 +499,10 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 400;
   line-height: 18px;
+  max-width: 90%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 @media (max-width: 768px) {
@@ -467,31 +539,44 @@ onMounted(() => {
   }
 
   .home-community-card {
-    width: min(82vw, 370px);
-    height: 452px;
+    width: min(70vw, 292px);
+    height: 382px;
   }
 
   .home-community-image {
-    height: 338px;
+    height: 286px;
   }
 
   .home-community-card::after {
-    bottom: 114px;
+    bottom: 96px;
   }
 
   .home-community-card-body {
-    height: 114px;
-    padding: 22px 18px 18px;
+    height: 96px;
+    padding: 16px 14px 14px;
   }
 
   .home-community-stats {
-    width: min(100%, 420px);
+    width: min(calc(100% - var(--page-padding-x) * 2), 420px);
+    height: auto;
+    min-height: 0;
     grid-template-columns: repeat(2, 1fr);
     margin-top: 48px;
   }
 
   .home-community-stat {
     min-height: 96px;
+    padding: 18px 10px;
+  }
+
+  .home-community-stat strong {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .home-community-stat span {
+    font-size: 13px;
+    line-height: 18px;
   }
 
   .home-community-stat:nth-child(2n) {

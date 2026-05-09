@@ -1,5 +1,5 @@
 <template>
-  <section class="home-hero-section" aria-labelledby="home-hero-title">
+  <section id="home-download" class="home-hero-section" aria-labelledby="home-hero-title">
     <video
       class="home-hero-video"
       :src="heroVideoSrc"
@@ -15,7 +15,7 @@
 
     <div class="home-hero-inner">
       <span class="home-hero-eyebrow">
-        <img src="~/assets/images/star.png" alt="" aria-hidden="true">
+        <img src="/images/star.png" alt="" aria-hidden="true">
         AI赋能的直播工具
       </span>
 
@@ -23,7 +23,7 @@
         <span>一键更换虚拟背景</span>
         <span>
           直播更精彩
-          <img class="home-hero-title-line" src="~/assets/images/path.png" alt="" aria-hidden="true">
+          <img class="home-hero-title-line" src="/images/path.png" alt="" aria-hidden="true">
         </span>
       </h1>
 
@@ -34,17 +34,17 @@
 
       <div class="home-hero-actions" aria-label="下载VicastCam">
         <a href="#" class="home-hero-download home-hero-download-light">
-          <img src="~/assets/images/apple.png" alt="" aria-hidden="true">
+          <img src="/images/apple.png" alt="" aria-hidden="true">
           <span>在App Store<br><strong>下载</strong></span>
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-light">
-          <img src="~/assets/images/chromicon.png" alt="" aria-hidden="true">
+          <img src="/images/chromicon.png" alt="" aria-hidden="true">
           <span>在Google Play<br><strong>下载</strong></span>
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-primary">
-          <img src="~/assets/images/win.png" alt="" aria-hidden="true">
+          <img src="/images/win.png" alt="" aria-hidden="true">
           <span>下载客户端</span>
         </a>
       </div>
@@ -62,14 +62,14 @@
 
         <div class="home-hero-metric">
           <span class="home-hero-score-icons" aria-hidden="true">
-            <img v-for="star in 5" :key="star" src="~/assets/images/score.png" alt="">
+            <img v-for="star in 5" :key="star" src="/images/score.png" alt="">
           </span>
           <strong>4.9</strong>
           <span>App Store评分</span>
         </div>
 
         <div class="home-hero-metric">
-          <img class="home-hero-download-icon" src="~/assets/images/download.png" alt="" aria-hidden="true">
+          <img class="home-hero-download-icon" src="/images/download.png" alt="" aria-hidden="true">
           <strong>10万+</strong>
           <span>全球下载次数</span>
         </div>
@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-const heroVideoSrc = '/videos/home-hero.mp4'
+const heroVideoSrc = 'https://cdn.douyinggongchang.com/upload/sys/media/d0/6114f628f3df1f3facbc4f87127fd5.mp4'
 </script>
 
 <style>
@@ -148,6 +148,7 @@ const heroVideoSrc = '/videos/home-hero.mp4'
   text-align: center;
 }
 .home-hero-eyebrow {
+  max-width: 100%;
   min-width: 242px;
   height: 28px;
   display: inline-flex;
@@ -163,6 +164,9 @@ const heroVideoSrc = '/videos/home-hero.mp4'
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   animation: home-hero-enter 0.7s ease both;
 }
 .home-hero-eyebrow img {
@@ -172,11 +176,13 @@ const heroVideoSrc = '/videos/home-hero.mp4'
   object-fit: contain;
 }
 .home-hero-title {
+  max-width: 100%;
   margin-top: 22px;
   font-size: 58px;
   font-weight: 900;
   line-height: 68px;
   text-align: center;
+  overflow-wrap: anywhere;
   animation: home-hero-enter 0.75s ease 0.08s both;
 }
 .home-hero-title span {
@@ -199,6 +205,7 @@ const heroVideoSrc = '/videos/home-hero.mp4'
   transform: translateX(-50%);
 }
 .home-hero-subtitle {
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -207,9 +214,11 @@ const heroVideoSrc = '/videos/home-hero.mp4'
   font-size: 20px;
   font-weight: 400;
   line-height: 30px;
+  overflow-wrap: anywhere;
   animation: home-hero-enter 0.75s ease 0.16s both;
 }
 .home-hero-actions {
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,6 +238,12 @@ const heroVideoSrc = '/videos/home-hero.mp4'
   font-weight: 800;
   line-height: 20px;
   text-align: left;
+  overflow: hidden;
+}
+.home-hero-download span {
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .home-hero-download img {
   width: 20px;
@@ -249,6 +264,7 @@ const heroVideoSrc = '/videos/home-hero.mp4'
   box-shadow: 0 0 18px rgba(14, 165, 233, 0.36);
 }
 .home-hero-metrics {
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -343,7 +359,13 @@ const heroVideoSrc = '/videos/home-hero.mp4'
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  min-width: 0;
   white-space: nowrap;
+}
+.home-hero-metric > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .home-hero-metric strong {
   color: rgba(255, 255, 255, 1);
