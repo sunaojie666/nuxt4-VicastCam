@@ -25,10 +25,9 @@
             <p class="home-pricing-card-description">{{ plan.description }}</p>
           </div>
 
-          <p class="home-pricing-price">
-            <span class="home-pricing-currency">$</span>{{ plan.price }}
-            <span class="home-pricing-period">/月</span>
-          </p>
+          <div class="home-pricing-price">
+            <img :src="plan.priceImage" :alt="`${plan.name} 价格`">
+          </div>
 
           <ul class="home-pricing-features">
             <li
@@ -36,7 +35,7 @@
               :key="feature"
               class="home-pricing-feature"
             >
-              <Icon class="home-pricing-check" name="lucide:check" aria-hidden="true" />
+              <img class="home-pricing-check" src="/images/tick.png" alt="" aria-hidden="true">
               <span>{{ feature }}</span>
             </li>
           </ul>
@@ -55,7 +54,7 @@ const pricingPlans = [
   {
     name: '月卡',
     description: '适合想体验软件功能的用户',
-    price: '9.99',
+    priceImage: '/images/9.99.png',
     featured: false,
     delay: 0,
     features: Array.from({ length: 5 }, () => pricingFeatureText),
@@ -63,7 +62,7 @@ const pricingPlans = [
   {
     name: '年卡',
     description: '适合想体验软件功能的用户',
-    price: '69.99',
+    priceImage: '/images/69.99.png',
     featured: true,
     delay: 120,
     features: Array.from({ length: 5 }, () => pricingFeatureText),
@@ -71,7 +70,7 @@ const pricingPlans = [
   {
     name: '终身卡',
     description: '适合想体验软件功能的用户',
-    price: '9.99',
+    priceImage: '/images/99.99.png',
     featured: false,
     delay: 240,
     features: Array.from({ length: 5 }, () => pricingFeatureText),
@@ -231,23 +230,15 @@ const pricingPlans = [
 
 .home-pricing-price {
   margin-top: 43px;
-  color: rgba(255, 255, 255, 1);
-  font-size: 36px;
-  font-weight: 800;
-  line-height: 44px;
-  letter-spacing: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
-.home-pricing-currency {
-  margin-right: 2px;
-}
-
-.home-pricing-period {
-  margin-left: 5px;
-  color: rgba(148, 163, 184, 1);
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 20px;
+.home-pricing-price img {
+  width: auto;
+  max-height: 44px;
+  object-fit: contain;
 }
 
 .home-pricing-features {
@@ -279,7 +270,7 @@ const pricingPlans = [
   width: 13px;
   height: 13px;
   flex: 0 0 auto;
-  color: rgba(34, 197, 94, 1);
+  object-fit: contain;
 }
 
 .home-pricing-button {

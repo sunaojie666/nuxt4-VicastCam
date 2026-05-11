@@ -1,12 +1,12 @@
 <template>
   <!-- 顶部导航区域，左侧显示站点名称，中间显示页面导航，右侧显示功能按钮。 -->
-  <header class="page-header">
-    <div class="page-container page-header-inner">
+  <header :class="['page-header', { 'page-header-scrolled': headerScrolled }]">
+    <div class="page-header-inner">
       <div class="site-brand-row">
         <NuxtLink :to="localePath('/')" class="site-brand">
           <img
             class="site-brand-image"
-            src="/images/website.png"
+            src="/images/logo.png"
             alt=""
             aria-hidden="true"
           >
@@ -31,51 +31,6 @@
       </nav>
 
       <div class="site-actions">
-        <!-- 自定义语言下拉，保持 hover 展开和当前视觉样式，不再依赖组件库。 -->
-        <div
-          class="site-locale-select"
-          @mouseenter="openLocaleMenu"
-          @mouseleave="closeLocaleMenu"
-        >
-          <button
-            class="site-select-button"
-            type="button"
-            :aria-label="headerText.localeSwitchLabel"
-            :aria-expanded="localeMenuOpen"
-            aria-haspopup="listbox"
-            @click="handleLocaleButtonClick"
-            @focus="openLocaleMenu"
-            @blur="closeLocaleMenuLater"
-          >
-            <Icon class="locale-flag-icon" :name="activeLocale.flagIcon" aria-hidden="true" />
-            <span>{{ activeLocale.name }}</span>
-            <Icon class="locale-chevron-icon" name="lucide:chevron-down" aria-hidden="true" />
-          </button>
-
-          <Transition name="site-select-fade">
-            <ul v-if="localeMenuOpen" class="site-select-menu" role="listbox">
-              <li
-                v-for="item in availableLocales"
-                :key="item.code"
-                class="site-select-option"
-                role="option"
-                :aria-selected="item.code === locale"
-              >
-                <button
-                  type="button"
-                  class="site-select-option-button"
-                  @mousedown.prevent
-                  @click="switchLanguage(item.code)"
-                  @blur="closeLocaleMenuLater"
-                >
-                  <Icon class="locale-flag-icon" :name="item.flagIcon" aria-hidden="true" />
-                  <span>{{ item.name }}</span>
-                </button>
-              </li>
-            </ul>
-          </Transition>
-        </div>
-
         <NuxtLink :to="localePath('/login')" class="site-auth-button site-auth-login" @click="closeMobileMenu">
           {{ headerText.loginRegister }}
         </NuxtLink>
@@ -138,6 +93,7 @@ const mobileMenuOpen = ref(false)
 const mobileMenuIcon = ref('lucide:menu')
 const isSmallHeader = ref(false)
 const activeNavigationKey = ref('clientDownload')
+const headerScrolled = ref(false)
 
 const navigationSectionMap = {
   clientDownload: {
@@ -228,6 +184,10 @@ const syncActiveNavigationByScroll = () => {
   }
 
   activeNavigationKey.value = currentKey
+}
+
+const syncHeaderScrolledState = () => {
+  headerScrolled.value = window.scrollY > 20
 }
 
 const handleNavigationClick = async (key) => {
@@ -372,6 +332,7 @@ onMounted(() => {
       ticking = true
       window.requestAnimationFrame(() => {
         syncActiveNavigationByScroll()
+        syncHeaderScrolledState()
         ticking = false
       })
     }
@@ -380,6 +341,7 @@ onMounted(() => {
   window.addEventListener('resize', syncScrollSpy)
 
   syncActiveNavigationByScroll()
+  syncHeaderScrolledState()
 })
 
 onBeforeUnmount(() => {
@@ -409,7 +371,7 @@ const switchLanguage = async (code) => {
 .page-header {
   position: fixed;
   top: 0;
-  left: 50%;
+  left: 0;
   z-index: 50;
   width: 100%;
   height: var(--page-header-height);
@@ -423,13 +385,55 @@ const switchLanguage = async (code) => {
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  transform: translateX(-50%);
+  transform: none;
+  backface-visibility: hidden;
+  will-change: background-color, box-shadow;
   transition:
     background-color 0.28s ease,
-    box-shadow 0.28s ease;
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+}
+
+.page-header-scrolled {
+  border-bottom-color: rgba(98, 124, 176, 0.26);
+  background-color: rgba(6, 12, 24, 0.94);
+  box-shadow: 0 18px 36px rgba(1, 6, 16, 0.52);
+  animation: page-header-slide-down 0.26s ease;
+}
+
+.page-header-inner,
+.site-brand-image,
+.site-brand-name,
+.site-nav-link,
+.site-auth-button,
+.site-profile-link {
+  transition: transform 0.26s ease, opacity 0.26s ease;
+}
+
+.page-header-scrolled .page-header-inner {
+  transform: translateY(-1px);
+}
+
+.page-header-scrolled .site-brand-image {
+  transform: scale(0.95);
+}
+
+@keyframes page-header-slide-down {
+  from {
+    transform: translateY(-8px);
+    opacity: 0.92;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .page-header-inner {
+  width: min(100%, 1440px);
+  max-width: 1440px;
+  margin: 0 auto;
   height: var(--page-header-height);
   min-height: var(--page-header-height);
   display: flex;
@@ -632,7 +636,7 @@ const switchLanguage = async (code) => {
   align-items: center;
   justify-content: center;
   padding: 5px 12px;
-  margin-left: 73px;
+  margin-left: 24px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 500;

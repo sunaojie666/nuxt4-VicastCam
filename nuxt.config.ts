@@ -4,7 +4,7 @@ import { locales } from './i18n/locales.config'
 const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NUXT_SITE_URL || 'https://example.com'
 
 // 站点名称用于 sitemap 展示、默认标题模板和生产环境识别。
-const siteName = process.env.NUXT_SITE_NAME || 'My International Site'
+const siteName = process.env.NUXT_SITE_NAME || 'VicastCam'
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -39,11 +39,16 @@ export default defineNuxtConfig({
   app: {
     head: {
       // 全局默认 SEO 模板，具体页面标题仍然由 app/utils/seo.js 按当前语言生成。
-      titleTemplate: `%s | ${siteName}`,
+      title: siteName,
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         // 默认允许搜索引擎收录，并开启大图预览。
         { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
+      ],
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/images/logo.png' },
+        { rel: 'shortcut icon', type: 'image/png', href: '/images/logo.png' },
+        { rel: 'apple-touch-icon', href: '/images/logo.png' },
       ],
     },
   },

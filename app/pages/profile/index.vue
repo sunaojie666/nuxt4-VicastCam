@@ -50,13 +50,15 @@ import SiteHeader from '../../components/SiteHeader.vue'
 import ProfileAccountPanel from './components/ProfileAccountPanel.vue'
 import ProfileEarningsPanel from './components/ProfileEarningsPanel.vue'
 import ProfileMembershipPanel from './components/ProfileMembershipPanel.vue'
+import ProfilePurchaseHistoryPanel from './components/ProfilePurchaseHistoryPanel.vue'
+import ProfileRedeemPanel from './components/ProfileRedeemPanel.vue'
 import ProfileTeamPanel from './components/ProfileTeamPanel.vue'
-
-const activeTab = ref('account')
 
 const menuItems = [
   { key: 'account', label: '账号信息', icon: 'lucide:user-round' },
   { key: 'membership', label: '会员中心', icon: 'lucide:crown' },
+  { key: 'redeem', label: '兑换入口', icon: 'lucide:ticket' },
+  { key: 'purchaseHistory', label: '购买记录', icon: 'lucide:clipboard-list' },
   { key: 'team', label: '我的团队', icon: 'lucide:users-round' },
   { key: 'earnings', label: '我的收益', icon: 'lucide:coins' },
 ]
@@ -64,11 +66,24 @@ const menuItems = [
 const profileTabComponents = {
   account: ProfileAccountPanel,
   membership: ProfileMembershipPanel,
+  redeem: ProfileRedeemPanel,
+  purchaseHistory: ProfilePurchaseHistoryPanel,
   team: ProfileTeamPanel,
   earnings: ProfileEarningsPanel,
 }
 
+const validProfileTabs = new Set(Object.keys(profileTabComponents))
+const profileTabCookie = useCookie('profile-active-tab', { sameSite: 'lax' })
+const activeTab = ref(validProfileTabs.has(profileTabCookie.value) ? profileTabCookie.value : 'membership')
+
 const activePanelComponent = computed(() => profileTabComponents[activeTab.value] || ProfileAccountPanel)
+
+watch(activeTab, (tab) => {
+  if (!validProfileTabs.has(tab)) {
+    return
+  }
+  profileTabCookie.value = tab
+})
 
 useSeoMeta({
   title: '个人中心',
@@ -210,7 +225,7 @@ useSeoMeta({
 
 .profile-menu {
   width: 266px;
-  height: 228px;
+  height: auto;
   display: grid;
   gap: 6px;
   padding: 8px;
@@ -275,7 +290,7 @@ useSeoMeta({
 
 :deep(.profile-panel) {
   width: 869px;
-  height: 378px;
+  min-height: 378px;
   min-width: 0;
   padding: 29px 28px;
 }
@@ -368,6 +383,7 @@ useSeoMeta({
 }
 
 :deep(.profile-invite-panel) {
+  min-height: 236px;
   height: 236px;
   padding-bottom: 28px;
 }

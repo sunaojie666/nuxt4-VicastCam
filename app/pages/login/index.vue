@@ -4,7 +4,7 @@
       <AuthBrandPanel />
 
       <NuxtLink :to="localePath('/')" class="auth-mobile-logo" aria-label="VicastCam首页">
-        <img src="/images/website.png" alt="" aria-hidden="true">
+        <img src="/images/logo.png" alt="" aria-hidden="true">
         <span>Vicast<span>Cam</span></span>
       </NuxtLink>
 

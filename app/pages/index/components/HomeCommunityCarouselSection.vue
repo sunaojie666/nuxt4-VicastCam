@@ -107,18 +107,25 @@
 
       <div class="home-community-platforms-marquee" aria-label="支持的直播平台">
         <div
-          v-for="(row, rowIndex) in platformImages"
+          v-for="(row, rowIndex) in platformRows"
           :key="`platform-row-${rowIndex}`"
-          :class="['home-community-platforms-track', { 'home-community-platforms-track-reverse': rowIndex === 1 }]"
+          :class="['home-community-platforms-track', { 'home-community-platforms-track-reverse': rowIndex % 2 === 1 }]"
         >
-          <img
-            v-for="loopIndex in 6"
+          <div
+            v-for="loopIndex in 2"
             :key="`platform-loop-${rowIndex}-${loopIndex}`"
-            class="home-community-platforms-image"
-            :src="row.src"
-            :alt="row.alt"
+            class="home-community-platforms-loop"
             :aria-hidden="loopIndex > 1"
           >
+            <article
+              v-for="platform in row.items"
+              :key="`${rowIndex}-${loopIndex}-${platform.name}`"
+              class="home-community-platform-card"
+            >
+              <img class="home-community-platform-icon" :src="platform.icon" :alt="platform.name">
+              <span>{{ platform.name }}</span>
+            </article>
+          </div>
         </div>
       </div>
     </div>
@@ -169,16 +176,66 @@ const stats = reactive([
   { target: 99.9, displayValue: 0, suffix: '%', label: '稳定性', decimals: 1 },
 ])
 
-const platformImages = [
-  {
-    src: '/images/live/top.png',
-    alt: '支持的直播平台第一行',
-  },
-  {
-    src: '/images/live/bottom.png',
-    alt: '支持的直播平台第二行',
-  },
+const platformCatalog = [
+  { name: '抖音', icon: '/images/live/platform-douyin.png' },
+  { name: '快手', icon: '/images/live/platform-kuaishou.png' },
+  { name: '虎牙直播', icon: '/images/live/platform-huya.png' },
+  { name: '斗鱼', icon: '/images/live/platform-douyu.png' },
+  { name: '哔哩哔哩直播', icon: '/images/live/platform-bilibili.png' },
+  { name: '淘宝直播', icon: '/images/live/platform-taobao-live.png' },
+  { name: '京东直播', icon: '/images/live/platform-jd-live.png' },
+  { name: '小红书直播', icon: '/images/live/platform-xiaohongshu-live.png' },
+  { name: '微信视频号', icon: '/images/live/platform-wechat-channels.png' },
+  { name: '微博直播', icon: '/images/live/platform-weibo-live.png' },
+  { name: 'YY直播', icon: '/images/live/platform-yy-live.png' },
+  { name: '花椒直播', icon: '/images/live/platform-huajiao.png' },
+  { name: '六间房', icon: '/images/live/platform-liujianfang.png' },
+  { name: '映客直播', icon: '/images/live/platform-inke.png' },
+  { name: '酷狗直播', icon: '/images/live/platform-kugou-live.png' },
+  { name: '酷我聚星', icon: '/images/live/platform-kuwo-juxing.png' },
+  { name: '网易CC直播', icon: '/images/live/platform-wangyi-cc.png' },
+  { name: 'MOMO直播', icon: '/images/live/platform-momo-live.png' },
+  { name: 'AcFun直播', icon: '/images/live/platform-acfun-live.png' },
+  { name: 'Twitch', icon: '/images/live/platform-twitch.png' },
+  { name: 'YouTube Live', icon: '/images/live/platform-youtube-live.png' },
+  { name: 'Facebook Live', icon: '/images/live/platform-facebook-live.png' },
+  { name: 'Instagram Live', icon: '/images/live/platform-instagram-live.png' },
+  { name: 'TikTok Live', icon: '/images/live/platform-tiktok-live.png' },
+  { name: 'X', icon: '/images/live/platform-x-live.png' },
+  { name: 'Kick', icon: '/images/live/platform-kick.png' },
+  { name: 'Trovo', icon: '/images/live/platform-trovo.png' },
+  { name: 'BIGO LIVE', icon: '/images/live/platform-bigo-live.png' },
+  { name: 'Nimo TV', icon: '/images/live/platform-nimo-tv.png' },
+  { name: 'AfreecaTV', icon: '/images/live/platform-afreecatv.png' },
+  { name: 'CHZZK', icon: '/images/live/platform-chzzk.png' },
+  { name: 'Rumble', icon: '/images/live/platform-rumble-live.png' },
+  { name: 'DLive', icon: '/images/live/platform-dlive.png' },
+  { name: 'Steam Broadcast', icon: '/images/live/platform-steam-broadcast.png' },
+  { name: 'LinkedIn Live', icon: '/images/live/platform-linkedin-live.png' },
+  { name: 'Vimeo Live', icon: '/images/live/platform-vimeo-live.png' },
+  { name: 'Dacast', icon: '/images/live/platform-dacast.png' },
+  { name: 'Brightcove', icon: '/images/live/platform-brightcove.png' },
+  { name: '17LIVE', icon: '/images/live/platform-17live.png' },
+  { name: 'OPENREC.tv', icon: '/images/live/platform-openrec.png' },
+  { name: 'SOOP', icon: '/images/live/platform-soop.png' },
+  { name: 'Arena', icon: '/images/live/platform-arena.png' },
+  { name: 'Whatnot', icon: '/images/live/platform-whatnot.png' },
+  { name: 'Shopify Live', icon: '/images/live/platform-shopify-live.png' },
+  { name: 'Amazon Live', icon: '/images/live/platform-amazon-live.png' },
+  { name: 'LiveSpace', icon: '/images/live/platform-livespace.png' },
+  { name: 'Restream', icon: '/images/live/platform-restream-live.png' },
+  { name: 'StreamYard', icon: '/images/live/platform-streamyard.png' },
+  { name: 'Bambuser', icon: '/images/live/platform-bambuser.png' },
+  { name: 'BigMarker', icon: '/images/live/platform-bigmarker.png' },
 ]
+
+const platformRows = computed(() => {
+  const rows = [[], [], []]
+  platformCatalog.forEach((platform, index) => {
+    rows[index % 3].push(platform)
+  })
+  return rows.map(items => ({ items }))
+})
 
 const easeOutCubic = progress => 1 - Math.pow(1 - progress, 3)
 
@@ -593,37 +650,83 @@ onMounted(() => {
 .home-community-platforms-marquee {
   width: 100%;
   max-width: 100vw;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: 28px;
   overflow: hidden;
   margin-top: 74px;
+  padding: 6px 0;
 }
 
 .home-community-platforms-track {
-  --home-platform-gap: 50px;
+  --home-platform-gap: 40px;
   display: flex;
   gap: 0;
   width: max-content;
-  animation: home-community-platform-marquee 28s linear infinite;
+  animation: home-community-platform-marquee 72s linear infinite;
   will-change: transform;
+}
+
+.home-community-platforms-loop {
+  display: flex;
+  gap: var(--home-platform-gap);
+  flex: 0 0 auto;
+  padding-right: var(--home-platform-gap);
 }
 
 .home-community-platforms-track-reverse {
   animation-name: home-community-platform-marquee-reverse;
-  animation-duration: 30s;
+  animation-duration: 80s;
 }
 
 .home-community-platforms-marquee:hover .home-community-platforms-track {
   animation-play-state: paused;
 }
 
-.home-community-platforms-image {
-  width: auto;
+.home-community-platform-card {
+  width: 171px;
   height: 74px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0 16px;
+  border: 1px solid rgba(46, 59, 86, 1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
   flex: 0 0 auto;
-  margin-right: var(--home-platform-gap);
-  max-width: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.home-community-platform-card:hover,
+.home-community-platform-card:focus-within {
+  z-index: 2;
+  border-color: rgba(50, 191, 241, 0.9);
+  background: rgba(34, 211, 238, 0.12);
+  box-shadow: 0 10px 22px rgba(18, 122, 185, 0.24);
+  transform: translateY(-1px);
+}
+
+.home-community-platform-icon {
+  width: 44px;
+  height: 44px;
   object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.home-community-platform-card span {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(152, 162, 181, 1);
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
+  white-space: nowrap;
 }
 
 @keyframes home-community-platform-marquee {
@@ -632,13 +735,13 @@ onMounted(() => {
   }
 
   to {
-    transform: translate3d(-16.666666%, 0, 0);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 @keyframes home-community-platform-marquee-reverse {
   from {
-    transform: translate3d(-16.666666%, 0, 0);
+    transform: translate3d(-50%, 0, 0);
   }
 
   to {
@@ -750,16 +853,29 @@ onMounted(() => {
   }
 
   .home-community-platforms-track {
-    --home-platform-gap: 18px;
-    animation-duration: 22s;
+    --home-platform-gap: 16px;
+    animation-duration: 60s;
   }
 
   .home-community-platforms-track-reverse {
-    animation-duration: 24s;
+    animation-duration: 68s;
   }
 
-  .home-community-platforms-image {
-    height: 48px;
+  .home-community-platform-card {
+    width: 136px;
+    height: 58px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .home-community-platform-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .home-community-platform-card span {
+    font-size: 15px;
+    line-height: 20px;
   }
 }
 </style>

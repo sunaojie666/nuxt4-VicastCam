@@ -1,7 +1,7 @@
 <template>
   <section class="auth-brand-panel" aria-labelledby="auth-brand-title">
     <NuxtLink :to="localePath('/')" class="auth-logo">
-      <img src="/images/website.png" alt="" aria-hidden="true">
+      <img src="/images/logo.png" alt="" aria-hidden="true">
       <span>Vicast<span>Cam</span></span>
     </NuxtLink>
 

@@ -6,7 +6,7 @@
         <div class="site-footer-logo-row">
           <img
             class="site-footer-logo"
-            src="/images/website.png"
+            src="/images/logo.png"
             alt=""
             aria-hidden="true"
           >
@@ -14,6 +14,50 @@
             <span>{{ footerText.brandMain }}</span>
             <span class="site-footer-brand-accent">{{ footerText.brandAccent }}</span>
           </span>
+
+          <div
+            class="site-footer-locale-wrap"
+            @mouseenter="openLocaleMenu"
+            @mouseleave="closeLocaleMenu"
+          >
+            <button
+              class="site-footer-select-button"
+              type="button"
+              :aria-label="localeSwitchLabel"
+              :aria-expanded="localeMenuOpen"
+              aria-haspopup="listbox"
+              @click="handleLocaleButtonClick"
+              @focus="openLocaleMenu"
+              @blur="closeLocaleMenuLater"
+            >
+              <Icon class="site-footer-locale-flag-icon" :name="activeLocale.flagIcon" aria-hidden="true" />
+              <span>{{ activeLocale.name }}</span>
+              <Icon class="site-footer-locale-chevron-icon" name="lucide:chevron-down" aria-hidden="true" />
+            </button>
+
+            <Transition name="site-footer-select-fade">
+              <ul v-if="localeMenuOpen" class="site-footer-select-menu" role="listbox">
+                <li
+                  v-for="item in availableLocales"
+                  :key="item.code"
+                  class="site-footer-select-option"
+                  role="option"
+                  :aria-selected="item.code === locale"
+                >
+                  <button
+                    type="button"
+                    class="site-footer-select-option-button"
+                    @mousedown.prevent
+                    @click="switchLanguage(item.code)"
+                    @blur="closeLocaleMenuLater"
+                  >
+                    <Icon class="site-footer-locale-flag-icon" :name="item.flagIcon" aria-hidden="true" />
+                    <span>{{ item.name }}</span>
+                  </button>
+                </li>
+              </ul>
+            </Transition>
+          </div>
         </div>
 
         <p class="site-footer-description">
@@ -56,20 +100,28 @@
 </template>
 
 <script setup>
-import { createI18nPageContext } from '../utils/i18n-page'
+import { createAvailableLocales, createI18nPageContext } from '../utils/i18n-page'
 import { createSiteFooterColumns, createSiteFooterText } from '../utils/footer-navigation'
 
 // 从统一 i18n 工具中获取当前语言和翻译函数。
-const { locale, translate } = createI18nPageContext()
+const { locale, locales, setLocale, translate } = createI18nPageContext()
+const switchLocalePath = useSwitchLocalePath()
 
 // 底部模板只读取普通 ref，避免模板里直接写翻译 key。
 const footerText = ref({})
 const footerColumns = ref([])
+const availableLocales = ref([])
+const localeSwitchLabel = ref('语言')
+const activeLocale = ref({})
+const localeMenuOpen = ref(false)
 
 // 当前语言变化时刷新底部所有文案。
 const refreshFooterData = () => {
   footerText.value = createSiteFooterText(translate)
   footerColumns.value = createSiteFooterColumns(translate)
+  availableLocales.value = createAvailableLocales(locales)
+  localeSwitchLabel.value = translate('locale.switchLabel')
+  activeLocale.value = availableLocales.value.find(item => item.code === locale.value) || availableLocales.value[0] || {}
 }
 
 refreshFooterData()
@@ -78,6 +130,33 @@ refreshFooterData()
 watch(locale, () => {
   refreshFooterData()
 })
+
+const openLocaleMenu = () => {
+  localeMenuOpen.value = true
+}
+
+const closeLocaleMenu = () => {
+  localeMenuOpen.value = false
+}
+
+const handleLocaleButtonClick = () => {
+  localeMenuOpen.value = !localeMenuOpen.value
+}
+
+const closeLocaleMenuLater = () => {
+  window.setTimeout(() => {
+    localeMenuOpen.value = false
+  }, 120)
+}
+
+const switchLanguage = async (code) => {
+  localeMenuOpen.value = false
+  if (!code || code === locale.value) {
+    return
+  }
+  await setLocale(code)
+  await navigateTo(switchLocalePath(code))
+}
 </script>
 
 <style>
@@ -107,6 +186,7 @@ watch(locale, () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   min-width: 0;
 }
 .site-footer-logo {
@@ -127,6 +207,135 @@ watch(locale, () => {
 }
 .site-footer-brand-accent {
   color: var(--theme-brand-accent);
+}
+
+.site-footer-locale-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.site-footer-locale-wrap::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 8px;
+}
+
+.site-footer-select-button {
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 1px solid rgba(45, 48, 56, 1);
+  border-radius: 6px;
+  color: rgba(226, 234, 245, 1);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 30px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.site-footer-select-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-footer-select-button:hover,
+.site-footer-select-button:focus {
+  border-color: rgba(45, 48, 56, 1);
+  background-color: transparent;
+}
+
+.site-footer-locale-flag-icon {
+  width: 19px;
+  height: 14px;
+  flex: 0 0 auto;
+  display: inline-block;
+}
+
+.site-footer-locale-chevron-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--theme-footer-text);
+  transition: transform 0.2s ease;
+}
+
+.site-footer-locale-wrap:hover .site-footer-locale-chevron-icon,
+.site-footer-locale-wrap:focus-within .site-footer-locale-chevron-icon {
+  transform: rotate(180deg);
+}
+
+.site-footer-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  min-width: 150px;
+  padding: 4px 0;
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+  background-color: rgba(17, 24, 39, 1);
+  box-shadow: 0 10px 24px var(--theme-shadow);
+}
+
+.site-footer-select-option {
+  min-width: 150px;
+  color: var(--theme-text);
+  font-size: 14px;
+  line-height: 20px;
+  background-color: transparent;
+}
+
+.site-footer-select-option-button {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 12px;
+  color: var(--theme-text);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.site-footer-select-option-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-footer-select-option-button:hover,
+.site-footer-select-option-button:focus {
+  color: rgba(64, 217, 247, 1);
+  background-color: rgba(18, 44, 59, 1);
+}
+
+.site-footer-select-fade-enter-active,
+.site-footer-select-fade-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.site-footer-select-fade-enter-from,
+.site-footer-select-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 .site-footer-description {
   margin-top: 24px;
@@ -224,6 +433,10 @@ watch(locale, () => {
   .site-footer-brand {
     width: 100%;
     flex-basis: auto;
+  }
+
+  .site-footer-locale-wrap {
+    margin-left: 0;
   }
 
   .site-footer-columns {

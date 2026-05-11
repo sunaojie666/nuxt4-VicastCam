@@ -8,6 +8,9 @@ html {
   /* 页面内部锚点跳转时使用平滑滚动。 */
   scroll-behavior: smooth;
   overflow-x: clip;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  background-color: var(--theme-page);
 }
 
 body {
