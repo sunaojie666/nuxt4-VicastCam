@@ -43,15 +43,17 @@
         </article>
       </div>
 
-      <a href="#" class="home-faq-more theme-more-link">
+      <NuxtLink :to="localePath('/faq')" class="home-faq-more theme-more-link">
         <span>查看更多</span>
         <img src="/images/Right.png" alt="" aria-hidden="true">
-      </a>
+      </NuxtLink>
     </div>
   </section>
 </template>
 
 <script setup>
+const localePath = useLocalePath()
+
 const questionText = '我可以用VicastCam在哪些平台进行直播?'
 
 const activeFaqIndex = ref(0)

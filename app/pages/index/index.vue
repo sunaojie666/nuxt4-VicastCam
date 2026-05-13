@@ -1,7 +1,7 @@
 <template>
   <!-- 首页最外层容器，包含公共导航、价格区块和底部导航。 -->
   <div class="page-shell">
-    <!-- 公共顶部导航，包含页面导航、语言切换、登录和注册按钮。 -->
+    <!-- 公共顶部导航，包含页面导航、登录和注册按钮。 -->
     <SiteHeader />
 
     <main class="page-main page-home-main">
@@ -52,14 +52,19 @@ import HomeVirtualBackgroundSection from './components/HomeVirtualBackgroundSect
 import HomePricingSection from './components/HomePricingSection.vue'
 import HomeFaqSection from './components/HomeFaqSection.vue'
 import HomeLearningSection from './components/HomeLearningSection.vue'
-import { createI18nPageContext } from '../../utils/i18n-page'
-import { setupI18nSeo } from '../../utils/seo'
 
-// 首页 SEO 继续复用当前多语言能力。
-const { translate } = createI18nPageContext()
+// i18n 只负责 canonical、hreflang 和 html lang；页面 SEO 文案后续从 Strapi 读取。
+const localeHead = useLocaleHead({
+  seo: {
+    canonicalQueries: [],
+  },
+})
 
-// 注册当前页面的 SEO，并自动生成 i18n 需要的 canonical 和 hreflang 标签。
-setupI18nSeo({ translate })
+useHead(() => ({
+  meta: localeHead.value.meta,
+  link: localeHead.value.link,
+  htmlAttrs: localeHead.value.htmlAttrs,
+}))
 
 const showBackToTop = ref(false)
 

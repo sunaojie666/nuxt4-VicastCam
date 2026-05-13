@@ -10,6 +10,14 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
 
+  runtimeConfig: {
+    // VicastCam 业务接口只在 Nuxt 服务端使用，前端通过 server/api 代理访问。
+    vicastApiUrl: process.env.NUXT_VICAST_API_URL || 'https://api.vicastcam.com',
+    public: {
+      strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://localhost:1337',
+    },
+  },
+
   // 开发服务默认暴露到局域网，启动时直接显示 Network 地址。
   devServer: {
     host: '0.0.0.0',
@@ -53,6 +61,12 @@ export default defineNuxtConfig({
     },
   },
 
+  routeRules: {
+    // 日语已下线，旧链接统一回到默认中文首页。
+    '/ja': { redirect: '/' },
+    '/ja/**': { redirect: '/' },
+  },
+
   hooks: {
     'pages:extend'(pages) {
       const removePageComponents = (routes: typeof pages) => {
@@ -79,16 +93,14 @@ export default defineNuxtConfig({
     baseUrl: siteUrl,
     // 语言清单从独立文件导入，方便未来扩展到多个国家。
     locales,
-    // 默认语言是英文，默认语言路由不加前缀。
-    defaultLocale: 'en',
-    // 默认语言走 /，其他语言走 /语言代码，例如 /zh-CN。
+    // 默认语言是简体中文，默认语言路由不加前缀。
+    defaultLocale: 'zh-CN',
+    // 默认语言走 /，其他语言走 /语言代码，例如 /en。
     strategy: 'prefix_except_default',
-    // 语言 JSON 文件目录：i18n/locales。
-    langDir: 'locales',
     // 首次访问根路径时，根据浏览器语言和 cookie 处理跳转。
     detectBrowserLanguage: {
       useCookie: true,
-      cookieKey: 'i18n_redirected',
+      cookieKey: 'i18n_redirected_locale',
       redirectOn: 'root',
     },
   },

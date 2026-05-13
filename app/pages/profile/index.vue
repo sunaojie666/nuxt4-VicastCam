@@ -7,14 +7,26 @@
         <aside class="profile-sidebar" aria-label="个人中心导航">
           <section class="profile-user-card">
             <div class="profile-avatar-wrap">
-              <img class="profile-avatar" src="/images/profile/headPortrait.png" alt="Marcus Johnson">
-              <button type="button" class="profile-avatar-edit" aria-label="编辑头像">
+              <img class="profile-avatar" :src="profileAvatar" :alt="profileName">
+              <button
+                type="button"
+                :class="['profile-avatar-edit', { 'profile-avatar-edit-selected': avatarFile }]"
+                aria-label="编辑头像"
+                @click="openAvatarPicker"
+              >
                 <Icon name="lucide:edit-3" aria-hidden="true" />
               </button>
+              <input
+                ref="avatarInput"
+                class="profile-avatar-input"
+                type="file"
+                accept="image/*"
+                @change="handleAvatarChange"
+              >
             </div>
-            <h1>Marcus Johnson</h1>
-            <p>alex@example.com</p>
-            <span class="profile-vip-badge">VIP</span>
+            <h1>{{ profileName }}</h1>
+            <p>{{ profileEmail }}</p>
+            <span v-if="profileVipText" class="profile-vip-badge">{{ profileVipText }}</span>
           </section>
 
           <nav class="profile-menu">
@@ -35,7 +47,12 @@
         </aside>
 
         <Transition name="profile-panel-transition" mode="out-in">
-          <component :is="activePanelComponent" :key="activeTab" />
+          <component
+            :is="activePanelComponent"
+            :key="activeTab"
+            v-bind="activePanelProps"
+            @profile-saved="handleProfileSaved"
+          />
         </Transition>
       </div>
     </main>
@@ -53,6 +70,10 @@ import ProfileMembershipPanel from './components/ProfileMembershipPanel.vue'
 import ProfilePurchaseHistoryPanel from './components/ProfilePurchaseHistoryPanel.vue'
 import ProfileRedeemPanel from './components/ProfileRedeemPanel.vue'
 import ProfileTeamPanel from './components/ProfileTeamPanel.vue'
+
+definePageMeta({
+  middleware: 'auth',
+})
 
 const menuItems = [
   { key: 'account', label: '账号信息', icon: 'lucide:user-round' },
@@ -74,15 +95,77 @@ const profileTabComponents = {
 
 const validProfileTabs = new Set(Object.keys(profileTabComponents))
 const profileTabCookie = useCookie('profile-active-tab', { sameSite: 'lax' })
-const activeTab = ref(validProfileTabs.has(profileTabCookie.value) ? profileTabCookie.value : 'membership')
+const activeTab = ref(validProfileTabs.has(profileTabCookie.value) ? profileTabCookie.value : 'account')
+const { authUser } = useAuth()
+const avatarInput = ref(null)
+const avatarFile = ref(null)
+const avatarPreview = ref('')
 
 const activePanelComponent = computed(() => profileTabComponents[activeTab.value] || ProfileAccountPanel)
+const activePanelProps = computed(() => {
+  if (activeTab.value !== 'account') {
+    return {}
+  }
+
+  return {
+    avatarFile: avatarFile.value,
+  }
+})
+const profileName = computed(() => {
+  return authUser.value?.nickname || authUser.value?.email || '个人中心'
+})
+const profileEmail = computed(() => {
+  return authUser.value?.email || ''
+})
+const profileAvatar = computed(() => {
+  return avatarPreview.value || authUser.value?.avatar || '/images/profile/headPortrait.png'
+})
+const profileVipText = computed(() => {
+  return authUser.value?.vip_type || ''
+})
 
 watch(activeTab, (tab) => {
   if (!validProfileTabs.has(tab)) {
     return
   }
   profileTabCookie.value = tab
+})
+
+const clearAvatarPreview = () => {
+  if (!process.client || !avatarPreview.value) {
+    return
+  }
+
+  window.URL.revokeObjectURL(avatarPreview.value)
+  avatarPreview.value = ''
+}
+
+const openAvatarPicker = () => {
+  avatarInput.value?.click()
+}
+
+const handleAvatarChange = (event) => {
+  const file = event.target?.files?.[0] || null
+
+  if (event.target) {
+    event.target.value = ''
+  }
+
+  if (!file) {
+    return
+  }
+
+  clearAvatarPreview()
+  avatarFile.value = file
+  avatarPreview.value = window.URL.createObjectURL(file)
+}
+
+const handleProfileSaved = () => {
+  avatarFile.value = null
+}
+
+onBeforeUnmount(() => {
+  clearAvatarPreview()
 })
 
 useSeoMeta({
@@ -179,6 +262,15 @@ useSeoMeta({
   color: var(--profile-muted);
   background: rgba(31, 41, 55, 1);
   cursor: pointer;
+}
+
+.profile-avatar-edit-selected {
+  color: rgba(34, 211, 238, 1);
+  border-color: rgba(34, 211, 238, 0.65);
+}
+
+.profile-avatar-input {
+  display: none;
 }
 
 .profile-avatar-edit svg {
@@ -497,8 +589,8 @@ useSeoMeta({
 
   .profile-user-card,
   .profile-menu,
-  .profile-panel,
-  .profile-invite-panel {
+  :deep(.profile-panel),
+  :deep(.profile-invite-panel) {
     height: auto;
   }
 

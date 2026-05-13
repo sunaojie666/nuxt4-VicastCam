@@ -7,21 +7,19 @@
 
     <div class="auth-brand-copy">
       <h1 id="auth-brand-title">
-        <span>一键更换虚拟背景</span>
-        <span class="theme-gradient-text">直播更精彩</span>
+        <span>{{ loginCopy.title1 }}</span>
+        <span class="theme-gradient-text">{{ loginCopy.title2 }}</span>
       </h1>
       <p>
-        <span>先进的抠图技术，创造真实自然的虚拟场景</span>
-        <span>让每一次直播都专业出彩</span>
+        <span>{{ loginCopy.description1 }}</span>
+        <span>{{ loginCopy.description2 }}</span>
       </p>
     </div>
 
-    <div class="auth-feature-list" aria-label="VicastCam特色">
-      <div v-for="(feature, index) in features" :key="feature.title" class="auth-feature">
+    <div v-if="visibleFeatures.length" class="auth-feature-list" aria-label="VicastCam特色">
+      <div v-for="feature in visibleFeatures" :key="feature.key" class="auth-feature">
         <span>
-          <img v-if="index === 0" src="/images/loginIcon1.png" alt="" aria-hidden="true">
-          <img v-else-if="index === 1" src="/images/loginIcon2.png" alt="" aria-hidden="true">
-          <img v-else src="/images/loginIcon3.png" alt="" aria-hidden="true">
+          <img :src="feature.icon" alt="" aria-hidden="true">
         </span>
         <strong>{{ feature.title }}</strong>
         <small>{{ feature.description }}</small>
@@ -33,11 +31,54 @@
 <script setup>
 const localePath = useLocalePath()
 
-const features = [
-  { title: '智能抠图', description: '精准识别' },
-  { title: '海量模板', description: '随心切换' },
-  { title: '虚拟相机', description: '专业直播' },
-]
+const props = defineProps({
+  loginData: {
+    type: Object,
+    default: () => ({}),
+  },
+})
+
+const loginCopy = reactive({
+  title1: '',
+  title2: '',
+  description1: '',
+  description2: '',
+})
+
+const features = reactive([
+  { key: 'feature-1', icon: '/images/loginIcon1.png', title: '', description: '' },
+  { key: 'feature-2', icon: '/images/loginIcon2.png', title: '', description: '' },
+  { key: 'feature-3', icon: '/images/loginIcon3.png', title: '', description: '' },
+])
+
+const visibleFeatures = computed(() => {
+  return features.filter(feature => feature.title || feature.description)
+})
+
+const syncLoginFeature = (index, loginData = {}) => {
+  const feature = features[index]
+  const fieldIndex = index + 1
+
+  feature.title = loginData[`featureTitle${fieldIndex}`] || ''
+  feature.description = loginData[`featureSubTitle${fieldIndex}`] || ''
+}
+
+const syncLoginCopy = (loginData = {}) => {
+  loginCopy.title1 = loginData.loginTitle1 || ''
+  loginCopy.title2 = loginData.loginTitle2 || ''
+  loginCopy.description1 = loginData.loginDes1 || loginData.loginDes || ''
+  loginCopy.description2 = loginData.loginDes2 || ''
+  syncLoginFeature(0, loginData)
+  syncLoginFeature(1, loginData)
+  syncLoginFeature(2, loginData)
+}
+
+watch(() => props.loginData, (loginData) => {
+  syncLoginCopy(loginData || {})
+}, {
+  immediate: true,
+  deep: true,
+})
 </script>
 
 <style scoped>
@@ -69,8 +110,6 @@ const features = [
 
 .auth-logo > span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -117,14 +156,15 @@ const features = [
 
 .auth-feature-list {
   display: flex;
+  flex-wrap: wrap;
   gap: clamp(28px, 3.02vw, 58px);
   margin-top: 190px;
   min-width: 0;
 }
 
 .auth-feature {
-  width: 68px;
-  min-width: 0;
+  width: max-content;
+  min-width: 68px;
   display: grid;
   justify-items: center;
   color: rgba(203, 213, 225, 1);
@@ -154,22 +194,20 @@ const features = [
   max-width: 100%;
   margin-top: 16px;
   color: rgba(255, 255, 255, 1);
-  font-size: 10px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 22px;
+  overflow-wrap: normal;
   white-space: nowrap;
 }
 
 .auth-feature small {
   max-width: 100%;
-  margin-top: 14px;
+  margin-top: 0;
   color: rgba(148, 163, 184, 1);
-  font-size: 9px;
-  line-height: 13px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 14px;
+  line-height: 20px;
+  overflow-wrap: normal;
   white-space: nowrap;
 }
 

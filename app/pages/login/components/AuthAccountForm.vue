@@ -1,9 +1,14 @@
 <template>
-  <form :class="['auth-form', `auth-form-${authMode}`]" @submit.prevent>
+  <form class="auth-form" @submit.prevent="handleLoginSubmit">
     <label class="auth-field">
       <span class="auth-input-wrap">
         <Icon name="lucide:mail" aria-hidden="true" />
-        <input type="text" autocomplete="username" placeholder="请输入您的账号">
+        <input
+          v-model.trim="emailAddress"
+          type="email"
+          autocomplete="username"
+          :placeholder="loginBox.emailInputPlaceholder"
+        >
       </span>
     </label>
 
@@ -11,95 +16,219 @@
       <span class="auth-input-wrap">
         <Icon name="lucide:lock-keyhole" aria-hidden="true" />
         <input
-          :type="secondInputType"
-          :inputmode="secondInputMode"
-          :autocomplete="secondInputAutocomplete"
-          :placeholder="secondInputPlaceholder"
+          v-model="loginCredential"
+          :type="isPasswordLogin ? 'password' : 'text'"
+          :inputmode="isPasswordLogin ? undefined : 'numeric'"
+          :autocomplete="isPasswordLogin ? 'current-password' : 'one-time-code'"
+          :placeholder="credentialPlaceholder"
         >
-        <button v-if="showCodeButton" type="button" class="auth-code-button">获取验证码</button>
+        <button
+          v-if="!isPasswordLogin"
+          type="button"
+          class="auth-code-button"
+          :disabled="isSendingCode || codeCountdown > 0"
+          @click="handleSendEmailCode"
+        >
+          {{ codeButtonText }}
+        </button>
         <Icon v-else class="auth-input-trailing-icon" name="lucide:eye-off" aria-hidden="true" />
       </span>
     </label>
 
-    <label v-if="authMode === 'register'" class="auth-field">
-      <span class="auth-input-wrap">
-        <Icon name="lucide:lock-keyhole" aria-hidden="true" />
-        <input type="password" autocomplete="new-password" placeholder="请输入密码">
-        <Icon class="auth-input-trailing-icon" name="lucide:eye-off" aria-hidden="true" />
-      </span>
-    </label>
-
-    <label v-if="authMode === 'register'" class="auth-field">
-      <span class="auth-input-wrap">
-        <Icon name="lucide:lock-keyhole" aria-hidden="true" />
-        <input type="text" autocomplete="off" placeholder="请输入邀请码">
-      </span>
-    </label>
-
-    <button v-if="authMode === 'login'" type="button" class="auth-password-button" @click="$emit('toggle-login-method')">
+    <button type="button" class="auth-password-button" @click="$emit('toggle-login-method')">
       {{ loginMethodToggleText }}
     </button>
 
-    <button type="submit" class="auth-submit-button">
-      {{ submitText }}
+    <button type="submit" class="auth-submit-button" :disabled="isLoggingIn">
+      {{ submitButtonText }}
     </button>
-
-    <p class="auth-switch-copy">
-      {{ switchPrompt }}
-      <button type="button" @click="$emit('toggle-mode')">{{ switchAction }}</button>
-    </p>
 
     <label class="auth-agreement">
       <input v-model="agreementModel" type="checkbox">
       <span>
-        我已阅读并同意
-        <a href="#">《隐私政策》</a>
-        和
-        <a href="#">《用户协议》</a>
+        {{ agreementPrefix }}
+        <a v-if="loginBox.userProtocolText" href="#">《{{ loginBox.userProtocolText }}》</a>
+        <template v-if="loginBox.userProtocolText && loginBox.privacyPolicyText">和</template>
+        <a v-if="loginBox.privacyPolicyText" href="#">《{{ loginBox.privacyPolicyText }}》</a>
       </span>
     </label>
   </form>
 </template>
 
 <script setup>
+import { sendEmailCode } from '../../../api/request/auth'
+
 const props = defineProps({
-  authMode: {
-    type: String,
-    required: true,
-  },
-  agreementAccepted: {
-    type: Boolean,
-    required: true,
-  },
   loginMethod: {
     type: String,
     default: 'code',
   },
+  loginBox: {
+    type: Object,
+    default: () => ({}),
+  },
+  toastBox: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
-const emit = defineEmits(['toggle-mode', 'toggle-login-method', 'update:agreementAccepted'])
-
-const agreementModel = computed({
-  get: () => props.agreementAccepted,
-  set: value => emit('update:agreementAccepted', value),
+const agreementModel = defineModel('agreementAccepted', {
+  type: Boolean,
+  required: true,
 })
+const { showSuccessToast, showErrorToast } = useSiteToast()
+const { loginWithEmailCode } = useAuth()
+const localePath = useLocalePath()
 
-const submitText = computed(() => props.authMode === 'login' ? '立即登录' : '立即注册')
-const switchPrompt = computed(() => props.authMode === 'login' ? '没有账号？' : '已有账号？')
-const switchAction = computed(() => props.authMode === 'login' ? '立即注册' : '去登录')
-const isPasswordLogin = computed(() => props.authMode === 'login' && props.loginMethod === 'password')
-const showCodeButton = computed(() => props.authMode === 'login' && !isPasswordLogin.value)
-const secondInputType = computed(() => isPasswordLogin.value ? 'password' : 'text')
-const secondInputMode = computed(() => isPasswordLogin.value ? undefined : 'numeric')
-const secondInputAutocomplete = computed(() => {
-  if (props.authMode === 'register') {
-    return 'one-time-code'
+const emailAddress = ref('')
+const loginCredential = ref('')
+const isSendingCode = ref(false)
+const isLoggingIn = ref(false)
+const codeCountdown = ref(0)
+let codeCountdownTimer = null
+
+const loginBox = computed(() => props.loginBox || {})
+const toastBox = computed(() => props.toastBox || {})
+const isPasswordLogin = computed(() => props.loginMethod === 'password')
+const credentialPlaceholder = computed(() => {
+  return isPasswordLogin.value ? loginBox.value.pwdInputPlaceholder : loginBox.value.verifyCodePlaceholder
+})
+const loginMethodToggleText = computed(() => {
+  return isPasswordLogin.value ? loginBox.value.codeLoginTab : loginBox.value.pwdLoginTab
+})
+const codeButtonText = computed(() => {
+  if (isSendingCode.value) {
+    return loginBox.value.getVerifyCodeText ? `${loginBox.value.getVerifyCodeText}...` : ''
   }
 
-  return isPasswordLogin.value ? 'current-password' : 'one-time-code'
+  if (codeCountdown.value > 0) {
+    return `${codeCountdown.value}s`
+  }
+
+  return loginBox.value.getVerifyCodeText || ''
 })
-const secondInputPlaceholder = computed(() => isPasswordLogin.value ? '请输入密码' : '请输入验证码')
-const loginMethodToggleText = computed(() => isPasswordLogin.value ? '验证码登录' : '密码登录')
+const submitButtonText = computed(() => {
+  if (isLoggingIn.value) {
+    return loginBox.value.loginBtnText ? `${loginBox.value.loginBtnText}...` : ''
+  }
+
+  return loginBox.value.loginBtnText || ''
+})
+const agreementPrefix = computed(() => {
+  return String(loginBox.value.agreeProtocolText || '')
+    .replace(loginBox.value.userProtocolText || '', '')
+    .replace(loginBox.value.privacyPolicyText || '', '')
+    .replace('和', '')
+    .trim()
+})
+
+const isValidEmail = (email) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+const validateEmail = () => {
+  const email = emailAddress.value.trim()
+
+  if (!email) {
+    showErrorToast(toastBox.value.emailRequired || '')
+    return ''
+  }
+
+  if (!isValidEmail(email)) {
+    showErrorToast(toastBox.value.emailRequired || '')
+    return ''
+  }
+
+  return email
+}
+
+// 邮箱验证码发送成功后开启倒计时，避免用户连续点击重复发送。
+const startCodeCountdown = () => {
+  codeCountdown.value = 60
+
+  if (codeCountdownTimer) {
+    window.clearInterval(codeCountdownTimer)
+  }
+
+  codeCountdownTimer = window.setInterval(() => {
+    codeCountdown.value -= 1
+
+    if (codeCountdown.value <= 0) {
+      window.clearInterval(codeCountdownTimer)
+      codeCountdownTimer = null
+      codeCountdown.value = 0
+    }
+  }, 1000)
+}
+
+// 调用 Nuxt 代理接口发送邮箱验证码，接口代码保持 Promise 写法。
+const handleSendEmailCode = () => {
+  const email = validateEmail()
+
+  if (!email) {
+    return
+  }
+
+  isSendingCode.value = true
+
+  sendEmailCode(email).then(
+    () => {
+      isSendingCode.value = false
+      showSuccessToast(toastBox.value.sendCodeSuccess || '')
+      startCodeCountdown()
+    },
+    () => {
+      isSendingCode.value = false
+      showErrorToast(toastBox.value.sendCodeFail || '')
+    }
+  )
+}
+
+// 邮箱验证码登录接口要求 email 和 captcha，以 multipart/form-data 转发到后端。
+const handleLoginSubmit = () => {
+  const email = validateEmail()
+  const captcha = loginCredential.value.trim()
+
+  if (!email) {
+    return
+  }
+
+  if (isPasswordLogin.value) {
+    showErrorToast(toastBox.value.passwordLoginNotReady || '')
+    return
+  }
+
+  if (!captcha) {
+    showErrorToast(toastBox.value.verifyCodeRequired || '')
+    return
+  }
+
+  if (!agreementModel.value) {
+    showErrorToast(toastBox.value.agreeProtocolRequired || '')
+    return
+  }
+
+  isLoggingIn.value = true
+
+  loginWithEmailCode({ email, captcha }).then(
+    () => {
+      isLoggingIn.value = false
+      showSuccessToast(toastBox.value.loginSuccess || '')
+      navigateTo(localePath('/'))
+    },
+    () => {
+      isLoggingIn.value = false
+      showErrorToast(toastBox.value.loginFail || '')
+    }
+  )
+}
+
+onBeforeUnmount(() => {
+  if (codeCountdownTimer) {
+    window.clearInterval(codeCountdownTimer)
+  }
+})
 </script>
 
 <style scoped>
@@ -109,23 +238,6 @@ const loginMethodToggleText = computed(() => isPasswordLogin.value ? '验证码�
   gap: 16px;
   margin-top: 40px;
   min-width: 0;
-}
-
-.auth-form-register {
-  gap: 16px;
-  margin-top: 35px;
-}
-
-.auth-form-register .auth-submit-button {
-  margin-top: 6px;
-}
-
-.auth-form-register .auth-switch-copy {
-  margin-top: 6px;
-}
-
-.auth-form-register .auth-agreement {
-  margin-top: 0;
 }
 
 .auth-field {
@@ -178,6 +290,11 @@ const loginMethodToggleText = computed(() => isPasswordLogin.value ? '验证码�
   cursor: pointer;
 }
 
+.auth-code-button:disabled {
+  color: rgba(148, 163, 184, 0.82);
+  cursor: not-allowed;
+}
+
 .auth-password-button {
   width: fit-content;
   max-width: 100%;
@@ -215,8 +332,7 @@ const loginMethodToggleText = computed(() => isPasswordLogin.value ? '验证码�
   overflow-wrap: anywhere;
 }
 
-.auth-agreement a,
-.auth-switch-copy button {
+.auth-agreement a {
   color: rgba(20, 198, 239, 1);
 }
 
@@ -242,27 +358,17 @@ const loginMethodToggleText = computed(() => isPasswordLogin.value ? '验证码�
   transform: translateY(-1px);
 }
 
-.auth-switch-copy {
-  margin-top: 103px;
-  color: rgba(148, 163, 184, 1);
-  font-size: 16px;
-  line-height: 22px;
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-
-.auth-switch-copy button {
-  cursor: pointer;
+.auth-submit-button:disabled,
+.auth-submit-button:disabled:hover,
+.auth-submit-button:disabled:focus {
+  cursor: not-allowed;
+  filter: grayscale(0.2) brightness(0.82);
+  transform: none;
 }
 
 @media (max-width: 520px) {
   .auth-form {
     margin-top: 30px;
-  }
-
-  .auth-switch-copy,
-  .auth-form-register .auth-switch-copy {
-    margin-top: 40px;
   }
 }
 </style>

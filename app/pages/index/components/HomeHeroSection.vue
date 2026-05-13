@@ -1,6 +1,8 @@
 <template>
   <section id="home-download" class="home-hero-section" aria-labelledby="home-hero-title">
     <video
+      v-if="heroVideoSrc"
+      :key="heroVideoSrc"
       class="home-hero-video"
       :src="heroVideoSrc"
       autoplay
@@ -16,36 +18,36 @@
     <div class="home-hero-inner">
       <span class="home-hero-eyebrow">
         <img src="/images/star.png" alt="" aria-hidden="true">
-        AI赋能的直播工具
+        {{ topBadge }}
       </span>
 
       <h1 id="home-hero-title" class="home-hero-title">
-        <span>一键更换虚拟背景</span>
+        <span>{{ heroTitle }}</span>
         <span class="theme-gradient-text">
-          直播更精彩
+          {{ heroSubtitle }}
           <img class="home-hero-title-line" src="/images/path.png" alt="" aria-hidden="true">
         </span>
       </h1>
 
       <p class="home-hero-subtitle">
-        <span>VicastCam使用先进的抠图技术，在直播期间随时替换您的背景。</span>
-        <span>打造丰富多彩的直播效果，处处展现专业形象。</span>
+        <span>{{ heroDescription1 }}</span>
+        <span>{{ heroDescription2 }}</span>
       </p>
 
       <div class="home-hero-actions" aria-label="下载VicastCam">
         <a href="#" class="home-hero-download home-hero-download-light">
           <img src="/images/apple.png" alt="" aria-hidden="true">
-          <span>在App Store<br><strong>下载</strong></span>
+          <span>{{ appStoreUrl }}</span>
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-light">
           <img src="/images/chromicon.png" alt="" aria-hidden="true">
-          <span>在Google Play<br><strong>下载</strong></span>
+          <span>{{ googlePlayUrl }}</span>
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-primary">
           <img src="/images/win.png" alt="" aria-hidden="true">
-          <span>下载客户端</span>
+          <span>{{ desktopClientUrl }}</span>
         </a>
       </div>
 
@@ -57,7 +59,7 @@
             <span></span>
           </span>
           <strong>50万+</strong>
-          <span>全球使用人数</span>
+          <span>{{ userCountLabel }}</span>
         </div>
 
         <div class="home-hero-metric">
@@ -65,13 +67,13 @@
             <img v-for="star in 5" :key="star" src="/images/score.png" alt="">
           </span>
           <strong>4.9</strong>
-          <span>App Store评分</span>
+          <span>{{ ratingLabel }}</span>
         </div>
 
         <div class="home-hero-metric">
           <img class="home-hero-download-icon" src="/images/download.png" alt="" aria-hidden="true">
           <strong>10万+</strong>
-          <span>全球下载次数</span>
+          <span>{{ downloadCountLabel }}</span>
         </div>
       </div>
 
@@ -93,7 +95,56 @@
 </template>
 
 <script setup>
-const heroVideoSrc = '/videos/foreign-hero.mp4'
+import { getHomes } from '../../../api/request/strapi'
+
+const config = useRuntimeConfig()
+const { locale } = useI18n()
+const heroVideoSrc = ref('')
+const topBadge = ref('')
+const heroTitle = ref('')
+const heroSubtitle = ref('')
+const heroDescription1 = ref('')
+const heroDescription2 = ref('')
+const userCountLabel = ref('')
+const ratingLabel = ref('')
+const downloadCountLabel = ref('')
+const appStoreUrl = ref('')
+const googlePlayUrl = ref('')
+const desktopClientUrl = ref('')
+
+// Strapi 本地上传文件返回 /uploads/...，前端播放时需要补上 Strapi 服务地址。
+const createStrapiAssetUrl = (url) => {
+  return url.startsWith('http') ? url : `${config.public.strapiUrl.replace(/\/+$/, '')}${url}`
+}
+
+// 客户端通过封装好的 axios 请求 Strapi 首页背景视频。
+const loadHomeHero = () => {
+  getHomes(locale.value).then((homeContent) => {
+    const homeData = homeContent?.data?.[0] || {}
+    const videoUrl = homeData.bgVideo?.[0]?.url
+
+    topBadge.value = homeData.topBadge || ''
+    heroTitle.value = homeData.heroTitle || ''
+    heroSubtitle.value = homeData.heroSubtitle || ''
+    heroDescription1.value = homeData.heroDescription1 || ''
+    heroDescription2.value = homeData.heroDescription2 || ''
+    userCountLabel.value = homeData.userCountLabel || ''
+    ratingLabel.value = homeData.ratingLabel || ''
+    downloadCountLabel.value = homeData.downloadCountLabel || ''
+    appStoreUrl.value = homeData.appStoreUrl || ''
+    googlePlayUrl.value = homeData.googlePlayUrl || ''
+    desktopClientUrl.value = homeData.desktopClientUrl || ''
+    heroVideoSrc.value = videoUrl ? createStrapiAssetUrl(videoUrl) : ''
+  })
+}
+
+onMounted(() => {
+  loadHomeHero()
+})
+
+watch(locale, () => {
+  loadHomeHero()
+})
 </script>
 
 <style>
@@ -218,28 +269,35 @@ const heroVideoSrc = '/videos/foreign-hero.mp4'
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 26px;
   margin-top: 37px;
   animation: home-hero-enter 0.75s ease 0.24s both;
 }
 .home-hero-download {
-  width: 172px;
+  width: auto;
+  min-width: 172px;
+  max-width: min(100%, 260px);
   height: 64px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 18px;
+  padding: 0 18px;
   border-radius: 15px;
   font-size: 14px;
   font-weight: 800;
   line-height: 20px;
-  text-align: left;
+  text-align: center;
   overflow: hidden;
 }
 .home-hero-download span {
   min-width: 0;
   overflow: hidden;
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 .home-hero-download img {
   width: 20px;
@@ -452,18 +510,17 @@ const heroVideoSrc = '/videos/foreign-hero.mp4'
 
   .home-hero-actions {
     width: min(100%, 360px);
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 14px;
     margin-top: 32px;
   }
 
   .home-hero-download {
-    width: 100%;
-  }
-
-  .home-hero-download-primary {
-    grid-column: 1 / -1;
+    width: auto;
+    min-width: 172px;
+    max-width: min(100%, 260px);
   }
 
   .home-hero-metrics {

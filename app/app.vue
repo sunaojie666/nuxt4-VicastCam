@@ -1,6 +1,7 @@
 <template>
   <!-- NuxtPage 用来渲染 app/pages 目录下匹配到的页面。 -->
   <NuxtPage />
+  <SiteToast />
 </template>
 
 <script setup>

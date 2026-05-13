@@ -1,7 +1,7 @@
 <template>
   <main class="auth-page">
     <div class="auth-layout">
-      <AuthBrandPanel />
+      <AuthBrandPanel :login-data="loginContent" />
 
       <NuxtLink :to="localePath('/')" class="auth-mobile-logo" aria-label="VicastCam首页">
         <img src="/images/logo.png" alt="" aria-hidden="true">
@@ -21,12 +21,12 @@
         <AuthAccountForm
           v-if="loginView === 'account'"
           v-model:agreement-accepted="agreementAccepted"
-          :auth-mode="authMode"
+          :login-box="loginBoxCopy"
           :login-method="loginMethod"
-          @toggle-mode="toggleMode"
+          :toast-box="toastBoxCopy"
           @toggle-login-method="toggleLoginMethod"
         />
-        <AuthScanPanel v-else @register="showRegister" />
+        <AuthScanPanel v-else :login-box="loginBoxCopy" :toast-box="toastBoxCopy" />
       </section>
     </div>
   </main>
@@ -36,28 +36,62 @@
 import AuthAccountForm from './components/AuthAccountForm.vue'
 import AuthBrandPanel from './components/AuthBrandPanel.vue'
 import AuthScanPanel from './components/AuthScanPanel.vue'
+import { getLogin } from '../../api/request/strapi'
 
 const localePath = useLocalePath()
-const authMode = ref('login')
+const { locale } = useI18n()
 const loginView = ref('account')
 const loginMethod = ref('code')
 const agreementAccepted = ref(true)
+const loginContent = ref({})
+const { setToastText } = useSiteToast()
+const loginBoxCopy = reactive({
+  loginPageTitle: '',
+  codeLoginTab: '',
+  pwdLoginTab: '',
+  qrLoginTab: '',
+  emailInputPlaceholder: '',
+  pwdInputPlaceholder: '',
+  verifyCodePlaceholder: '',
+  getVerifyCodeText: '',
+  loginBtnText: '',
+  qrLoginTip: '',
+  qrWaitingTip: '',
+  agreeProtocolText: '',
+  userProtocolText: '',
+  privacyPolicyText: '',
+})
+const toastBoxCopy = reactive({
+  closeToastLabel: '',
+  sendCodeSuccess: '',
+  sendCodeFail: '',
+  passwordLoginNotReady: '',
+  loginSuccess: '',
+  loginFail: '',
+  emailRequired: '',
+  verifyCodeRequired: '',
+  agreeProtocolRequired: '',
+  qrcodeExpired: '',
+  qrcodeIncomplete: '',
+  qrcodeFetchFail: '',
+  scanStatusFail: '',
+  profileSaved: '',
+  profileSaveFail: '',
+  inviteLinkCopied: '',
+})
 
 const authCardTitle = computed(() => {
   if (loginView.value === 'scan') {
-    return '扫码登录'
+    return loginBoxCopy.qrLoginTab
   }
 
-  return authMode.value === 'login' ? '账号登录' : '注册账号'
+  return loginBoxCopy.loginPageTitle
 })
 const headingIcon = computed(() => loginView.value === 'scan' ? '/images/scanCode.png' : '/images/Email.png')
 const cornerIcon = computed(() => loginView.value === 'scan' ? '/images/Lock.png' : '/images/QR.png')
-const cornerLabel = computed(() => loginView.value === 'scan' ? '切换账号登录' : '切换扫码登录')
-
-const toggleMode = () => {
-  authMode.value = authMode.value === 'login' ? 'register' : 'login'
-  loginMethod.value = 'code'
-}
+const cornerLabel = computed(() => {
+  return loginView.value === 'scan' ? loginBoxCopy.loginPageTitle : loginBoxCopy.qrLoginTab
+})
 
 const toggleLoginMethod = () => {
   loginMethod.value = loginMethod.value === 'code' ? 'password' : 'code'
@@ -65,20 +99,98 @@ const toggleLoginMethod = () => {
 
 const toggleLoginView = () => {
   loginView.value = loginView.value === 'account' ? 'scan' : 'account'
-  if (loginView.value === 'scan') {
-    authMode.value = 'login'
-  }
 }
 
-const showRegister = () => {
-  authMode.value = 'register'
-  loginView.value = 'account'
-  loginMethod.value = 'code'
+const getLoginContentData = (response) => {
+  return response?.data?.[0] || response?.data || {}
 }
+
+const getLoginBoxData = (loginData = {}) => {
+  if (Array.isArray(loginData.loginBox)) {
+    return loginData.loginBox[0] || {}
+  }
+
+  return loginData.loginBox || {}
+}
+
+const getToastBoxData = (loginData = {}) => {
+  if (Array.isArray(loginData.toastBox)) {
+    return loginData.toastBox[0] || {}
+  }
+
+  return loginData.toastBox || {}
+}
+
+const syncLoginBoxCopy = (loginData = {}) => {
+  const loginBox = getLoginBoxData(loginData)
+
+  loginBoxCopy.loginPageTitle = loginBox.loginPageTitle || ''
+  loginBoxCopy.codeLoginTab = loginBox.codeLoginTab || ''
+  loginBoxCopy.pwdLoginTab = loginBox.pwdLoginTab || ''
+  loginBoxCopy.qrLoginTab = loginBox.qrLoginTab || ''
+  loginBoxCopy.emailInputPlaceholder = loginBox.emailInputPlaceholder || ''
+  loginBoxCopy.pwdInputPlaceholder = loginBox.pwdInputPlaceholder || loginBox.passwordInputPlaceholder || ''
+  loginBoxCopy.verifyCodePlaceholder = loginBox.verifyCodePlaceholder || ''
+  loginBoxCopy.getVerifyCodeText = loginBox.getVerifyCodeText || ''
+  loginBoxCopy.loginBtnText = loginBox.loginBtnText || ''
+  loginBoxCopy.qrLoginTip = loginBox.qrLoginTip || ''
+  loginBoxCopy.qrWaitingTip = loginBox.qrWaitingTip || ''
+  loginBoxCopy.agreeProtocolText = loginBox.agreeProtocolText || ''
+  loginBoxCopy.userProtocolText = loginBox.userProtocolText || ''
+  loginBoxCopy.privacyPolicyText = loginBox.privacyPolicyText || ''
+}
+
+const syncToastBoxCopy = (loginData = {}) => {
+  const toastBox = getToastBoxData(loginData)
+
+  toastBoxCopy.closeToastLabel = toastBox.closeToastLabel || ''
+  toastBoxCopy.sendCodeSuccess = toastBox.sendCodeSuccess || ''
+  toastBoxCopy.sendCodeFail = toastBox.sendCodeFail || ''
+  toastBoxCopy.passwordLoginNotReady = toastBox.passwordLoginNotReady || ''
+  toastBoxCopy.loginSuccess = toastBox.loginSuccess || ''
+  toastBoxCopy.loginFail = toastBox.loginFail || ''
+  toastBoxCopy.emailRequired = toastBox.emailRequired || ''
+  toastBoxCopy.verifyCodeRequired = toastBox.verifyCodeRequired || ''
+  toastBoxCopy.agreeProtocolRequired = toastBox.agreeProtocolRequired || ''
+  toastBoxCopy.qrcodeExpired = toastBox.qrcodeExpired || ''
+  toastBoxCopy.qrcodeIncomplete = toastBox.qrcodeIncomplete || ''
+  toastBoxCopy.qrcodeFetchFail = toastBox.qrcodeFetchFail || ''
+  toastBoxCopy.scanStatusFail = toastBox.scanStatusFail || ''
+  toastBoxCopy.profileSaved = toastBox.profileSaved || ''
+  toastBoxCopy.profileSaveFail = toastBox.profileSaveFail || ''
+  toastBoxCopy.inviteLinkCopied = toastBox.inviteLinkCopied || ''
+  setToastText(toastBoxCopy)
+}
+
+const syncLoginContent = (loginData = {}) => {
+  loginContent.value = loginData
+  syncLoginBoxCopy(loginData)
+  syncToastBoxCopy(loginData)
+}
+
+// 登录页所有语言文案统一从 Strapi 读取，左侧文案和右侧登录框共用这一份数据。
+const loadLoginContent = () => {
+  getLogin(locale.value).then(
+    response => {
+      syncLoginContent(getLoginContentData(response))
+    },
+    () => {
+      syncLoginContent()
+    }
+  )
+}
+
+onMounted(() => {
+  loadLoginContent()
+})
+
+watch(locale, () => {
+  loadLoginContent()
+})
 
 useSeoMeta({
-  title: '登录注册',
-  description: '登录或注册 VicastCam 账号。',
+  title: '登录',
+  description: '登录 VicastCam 账号。',
 })
 </script>
 

@@ -75,10 +75,10 @@
         </article>
       </div>
 
-      <a href="#" class="home-learning-more theme-more-link">
+      <NuxtLink :to="localePath('/tutorial')" class="home-learning-more theme-more-link">
         <span>查看更多</span>
         <img src="/images/Right.png" alt="" aria-hidden="true">
-      </a>
+      </NuxtLink>
 
       <div class="home-learning-cta" data-reveal style="--reveal-delay: 220ms">
         <span class="home-learning-cta-eyebrow">
@@ -116,6 +116,8 @@
 </template>
 
 <script setup>
+const localePath = useLocalePath()
+
 const learningCards = [
   {
     type: '安装',

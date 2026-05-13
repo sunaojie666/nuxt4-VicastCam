@@ -1,20 +1,42 @@
-// 底部导航配置统一维护，后续新增栏目只需要在这里追加。
+// 底部导航配置统一维护，未接 Strapi 的文案不跟随语言自动切换。
 export const siteFooterColumnConfig = [
   {
     key: 'product',
-    links: ['features', 'pricing', 'download', 'changelog'],
+    title: '产品',
+    links: [
+      { key: 'features', label: '功能特色' },
+      { key: 'pricing', label: '价格' },
+      { key: 'download', label: '下载' },
+      { key: 'changelog', label: '更新日志' },
+    ],
   },
   {
     key: 'developer',
-    links: ['sdk', 'apiDocs'],
+    title: '开发者',
+    links: [
+      { key: 'sdk', label: 'SDK' },
+      { key: 'apiDocs', label: 'API 文档' },
+    ],
   },
   {
     key: 'company',
-    links: ['about', 'privacy', 'terms', 'salesPolicy'],
+    title: '公司',
+    links: [
+      { key: 'about', label: '关于我们' },
+      { key: 'privacy', label: '隐私政策' },
+      { key: 'terms', label: '服务条款' },
+      { key: 'salesPolicy', label: '销售政策' },
+    ],
   },
   {
     key: 'support',
-    links: ['docs', 'tutorials', 'faq', 'contact'],
+    title: '支持',
+    links: [
+      { key: 'docs', label: '文档' },
+      { key: 'tutorials', label: '教程' },
+      { key: 'faq', label: '常见问题' },
+      { key: 'contact', label: '联系我们' },
+    ],
   },
 ]
 
@@ -25,35 +47,35 @@ export const siteFooterSocialConfig = [
   { key: 'github', icon: 'lucide:github' },
 ]
 
-// 根据当前语言生成底部导航列。
-export const createSiteFooterColumns = (translate) => {
+// 生成底部导航列，后续接 Strapi 时再替换这里的数据来源。
+export const createSiteFooterColumns = () => {
   return siteFooterColumnConfig.map(column => {
     return {
       key: column.key,
-      title: translate(`footer.columns.${column.key}.title`),
+      title: column.title,
       links: column.links.map(link => {
         return {
-          key: link,
-          label: translate(`footer.columns.${column.key}.${link}`),
+          key: link.key,
+          label: link.label,
         }
       }),
     }
   })
 }
 
-// 根据当前语言生成底部品牌文案和社交入口。
-export const createSiteFooterText = (translate) => {
+// 生成底部品牌文案和社交入口，未接 Strapi 前固定显示一套文案。
+export const createSiteFooterText = () => {
   return {
-    brand: translate('footer.brand'),
-    brandMain: translate('footer.brandMain'),
-    brandAccent: translate('footer.brandAccent'),
-    logoText: translate('footer.logoText'),
-    description: translate('footer.description'),
+    brand: 'VicastCam',
+    brandMain: 'Vicast',
+    brandAccent: 'Cam',
+    logoText: 'VicastCam',
+    description: 'VicastCam 为创作者提供虚拟背景、直播增强和跨平台工具。',
     socials: siteFooterSocialConfig.map(item => {
       return {
         key: item.key,
         icon: item.icon,
-        label: translate(`footer.social.${item.key}`),
+        label: item.key,
       }
     }),
   }

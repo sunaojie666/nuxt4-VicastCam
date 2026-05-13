@@ -31,12 +31,70 @@
       </nav>
 
       <div class="site-actions">
-        <NuxtLink :to="localePath('/login')" class="site-auth-button site-auth-login" @click="closeMobileMenu">
+        <div
+          class="site-locale-select"
+          @mouseenter="openLocaleMenu"
+          @mouseleave="closeLocaleMenu"
+        >
+          <button
+            class="site-select-button"
+            type="button"
+            :aria-label="headerText.localeSwitchLabel"
+            :aria-expanded="localeMenuOpen"
+            aria-haspopup="listbox"
+            @click="handleLocaleButtonClick"
+            @focus="openLocaleMenu"
+          >
+            <Icon class="locale-flag-icon" :name="activeLocale.flagIcon" aria-hidden="true" />
+            <span>{{ activeLocale.name }}</span>
+            <Icon class="locale-chevron-icon" name="lucide:chevron-down" aria-hidden="true" />
+          </button>
+
+          <Transition name="site-select-fade">
+            <ul v-if="localeMenuOpen" class="site-select-menu" role="listbox">
+              <li
+                v-for="item in availableLocales"
+                :key="item.code"
+                class="site-select-option"
+                role="option"
+                :aria-selected="item.code === locale"
+              >
+                <button
+                  type="button"
+                  class="site-select-option-button"
+                  @click="switchLanguage(item.code)"
+                >
+                  <Icon class="locale-flag-icon" :name="item.flagIcon" aria-hidden="true" />
+                  <span>{{ item.name }}</span>
+                </button>
+              </li>
+            </ul>
+          </Transition>
+        </div>
+
+        <NuxtLink
+          v-if="!isLoggedIn"
+          :to="localePath('/login')"
+          class="site-auth-button site-auth-login"
+          @click="closeMobileMenu"
+        >
           {{ headerText.loginRegister }}
         </NuxtLink>
 
-        <NuxtLink :to="localePath('/profile')" class="site-profile-link" aria-label="个人中心" @click="closeMobileMenu">
-          <span>D</span>
+        <NuxtLink
+          v-else
+          :to="localePath('/profile')"
+          class="site-profile-link"
+          :aria-label="profileLinkLabel"
+          @click="closeMobileMenu"
+        >
+          <img
+            v-if="authUser.avatar"
+            class="site-profile-avatar"
+            :src="authUser.avatar"
+            :alt="profileLinkLabel"
+          >
+          <span v-else>{{ profileInitial }}</span>
         </NuxtLink>
 
         <!-- 手机端菜单按钮，只负责展开或收起导航面板。 -->
@@ -68,20 +126,19 @@
 </template>
 
 <script setup>
-import { createAvailableLocales, createI18nPageContext, createSiteHeaderText } from '../utils/i18n-page'
-import { createSiteNavigationItems } from '../utils/navigation'
+import { getNavigation } from '../api/request/strapi'
 
-// 从工具函数中获取当前导航需要的多语言能力。
-const { locale, locales, setLocale, translate } = createI18nPageContext()
+const { locale, locales } = useI18n()
 
 // localePath 用来生成带当前语言前缀的页面地址。
 const localePath = useLocalePath()
 
-// switchLocalePath 用来生成当前页面对应语言的路由地址。
+// switchLocalePath 只负责生成当前页面对应语言的路由。
 const switchLocalePath = useSwitchLocalePath()
 
 // 当前路由用于在页面跳转后关闭手机端菜单和处理区块滚动。
 const route = useRoute()
+const { authUser } = useAuth()
 
 // 顶部导航模板只读取普通 ref，避免在模板中直接写翻译逻辑。
 const availableLocales = ref([])
@@ -94,6 +151,29 @@ const mobileMenuIcon = ref('lucide:menu')
 const isSmallHeader = ref(false)
 const activeNavigationKey = ref('clientDownload')
 const headerScrolled = ref(false)
+const isLoggedIn = computed(() => {
+  return Boolean(authUser.value?.user_id || authUser.value?.email || authUser.value?.nickname)
+})
+const profileName = computed(() => {
+  return authUser.value?.nickname || authUser.value?.email || '个人中心'
+})
+const profileInitial = computed(() => {
+  return profileName.value.trim().slice(0, 1).toUpperCase() || 'U'
+})
+const profileLinkLabel = computed(() => {
+  return `${profileName.value}的个人中心`
+})
+
+const createSiteHeaderText = () => {
+  return {
+    navBrand: 'VicastCam 导航',
+    brandMain: 'Vicast',
+    brandAccent: 'Cam',
+    menuLabel: '打开菜单',
+    loginRegister: '',
+    localeSwitchLabel: '切换语言',
+  }
+}
 
 const navigationSectionMap = {
   clientDownload: {
@@ -133,7 +213,6 @@ const isHomeRoute = () => {
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value
   mobileMenuIcon.value = mobileMenuOpen.value ? 'lucide:x' : 'lucide:menu'
-  localeMenuOpen.value = false
 }
 
 // 关闭手机端导航菜单。
@@ -141,6 +220,90 @@ const closeMobileMenu = () => {
   mobileMenuOpen.value = false
   mobileMenuIcon.value = 'lucide:menu'
 }
+
+// 根据 i18n 配置生成语言切换框数据，只用于切换 Strapi 请求语言和路由。
+const createAvailableLocales = () => {
+  return locales.value.map(item => {
+    if (typeof item === 'string') {
+      return { code: item, name: item, flagIcon: 'circle-flags:xx' }
+    }
+
+    return {
+      code: item.code,
+      name: item.name || item.code,
+      flagIcon: item.flagIcon || 'circle-flags:xx',
+    }
+  })
+}
+
+const refreshActiveLocale = () => {
+  activeLocale.value = availableLocales.value.find(item => item.code === locale.value) || availableLocales.value[0] || {}
+}
+
+// 桌面端滑过打开语言下拉，手机端保留点击打开。
+const openLocaleMenu = () => {
+  if (isSmallHeader.value) {
+    return
+  }
+
+  localeMenuOpen.value = true
+  closeMobileMenu()
+}
+
+const closeLocaleMenu = () => {
+  if (isSmallHeader.value) {
+    return
+  }
+
+  localeMenuOpen.value = false
+}
+
+const handleLocaleButtonClick = () => {
+  if (!isSmallHeader.value) {
+    return
+  }
+
+  localeMenuOpen.value = !localeMenuOpen.value
+  closeMobileMenu()
+}
+
+// 默认中文使用 prefix_except_default，不应该跳到 /zh-CN。
+const createDefaultLocalePath = () => {
+  if (route.fullPath === '/en') {
+    return '/'
+  }
+
+  if (route.fullPath.startsWith('/en/')) {
+    return route.fullPath.slice(3) || '/'
+  }
+
+  if (route.fullPath.startsWith('/en?')) {
+    return `/${route.fullPath.slice(4)}`
+  }
+
+  return route.fullPath || '/'
+}
+
+const switchLanguage = (code) => {
+  localeMenuOpen.value = false
+
+  if (!code || code === locale.value) {
+    return
+  }
+
+  const targetPath = code === 'zh-CN' ? createDefaultLocalePath() : switchLocalePath(code)
+
+  navigateTo(targetPath || '/')
+}
+
+// Strapi 导航字段和页面锚点 key 的对应关系。
+const navigationFieldMap = [
+  { key: 'clientDownload', field: 'navClientDownload' },
+  { key: 'features', field: 'navFeatures' },
+  { key: 'pricing', field: 'navPricing' },
+  { key: 'faq', field: 'navFaq' },
+  { key: 'sdk', label: 'SDK' },
+]
 
 const scrollToSection = (sectionId, behavior = 'smooth') => {
   const sectionElement = document.getElementById(sectionId)
@@ -190,7 +353,7 @@ const syncHeaderScrolledState = () => {
   headerScrolled.value = window.scrollY > 20
 }
 
-const handleNavigationClick = async (key) => {
+const handleNavigationClick = (key) => {
   closeMobileMenu()
 
   const sectionId = navigationSectionMap[key]?.targetId
@@ -200,12 +363,13 @@ const handleNavigationClick = async (key) => {
   activeNavigationKey.value = key
 
   if (!isHomeRoute()) {
-    await navigateTo({ path: getHomePath() })
-    nextTick(() => {
-      window.setTimeout(() => {
-        scrollToSection(sectionId)
-        syncActiveNavigationByScroll()
-      }, 40)
+    Promise.resolve(navigateTo({ path: getHomePath() })).then(() => {
+      nextTick(() => {
+        window.setTimeout(() => {
+          scrollToSection(sectionId)
+          syncActiveNavigationByScroll()
+        }, 40)
+      })
     })
     return
   }
@@ -214,72 +378,47 @@ const handleNavigationClick = async (key) => {
   syncActiveNavigationByScroll()
 }
 
-// 鼠标移入或键盘聚焦时打开语言下拉，并关闭手机端导航。
-const openLocaleMenu = () => {
-  if (isSmallHeader.value) {
-    return
+// 根据 Strapi 返回的导航数据生成顶部导航和登录按钮文案。
+const refreshNavigationItems = (navigationData) => {
+  navigationItems.value = navigationFieldMap.map(item => {
+    return {
+      key: item.key,
+      label: item.label || navigationData[item.field] || '',
+    }
+  })
+
+  headerText.value = {
+    ...headerText.value,
+    loginRegister: navigationData.navAuth || '',
   }
-
-  localeMenuOpen.value = true
-  closeMobileMenu()
 }
 
-// 鼠标移出语言区域时关闭语言下拉。
-const closeLocaleMenu = () => {
-  if (isSmallHeader.value) {
-    return
-  }
-
-  localeMenuOpen.value = false
-}
-
-// 小屏没有 hover，语言切换使用点击展开或收起。
-const handleLocaleButtonClick = () => {
-  if (!isSmallHeader.value) {
-    return
-  }
-
-  localeMenuOpen.value = !localeMenuOpen.value
-  closeMobileMenu()
-}
-
-// blur 事件会先于点击触发，延迟关闭可以保证下拉项点击正常执行。
-const closeLocaleMenuLater = () => {
-  window.setTimeout(() => {
-    localeMenuOpen.value = false
-  }, 120)
-}
-
-// 根据当前语言刷新正在显示的语言项。
-const refreshActiveLocale = () => {
-  activeLocale.value = availableLocales.value.find(item => item.code === locale.value) || availableLocales.value[0] || {}
-}
-
-// 根据当前语言刷新导航列表，导航项不做高亮。
-const refreshNavigationItems = () => {
-  navigationItems.value = createSiteNavigationItems({
-    translate,
+// 请求 Strapi 导航栏单类型内容。
+const loadSiteNavigation = () => {
+  getNavigation(locale.value).then((navigationContent) => {
+    refreshNavigationItems(navigationContent?.data?.[0] || {})
   })
 }
 
-// 初始化或切换语言后，统一刷新顶部导航文案和语言清单。
+// 初始化顶部导航文案和导航清单。
 const refreshHeaderData = () => {
-  availableLocales.value = createAvailableLocales(locales)
-  headerText.value = createSiteHeaderText(translate)
+  availableLocales.value = createAvailableLocales()
   refreshActiveLocale()
-  refreshNavigationItems()
+  headerText.value = createSiteHeaderText()
 }
 
 refreshHeaderData()
 
-// 当前语言变化后重新刷新导航文案，支持直接访问 /ja 或从下拉框切换到日语。
+// 当前语言变化时刷新切换框选中项，并重新请求 Strapi 导航文案。
 watch(locale, () => {
-  refreshHeaderData()
+  refreshActiveLocale()
+  loadSiteNavigation()
 })
 
 // 当前路由变化后关闭手机端菜单，并根据当前位置同步高亮。
 watch(() => route.fullPath, () => {
   closeMobileMenu()
+  localeMenuOpen.value = false
   if (!isHomeRoute()) {
     return
   }
@@ -296,6 +435,8 @@ let syncHeaderMode = null
 let syncScrollSpy = null
 
 onMounted(() => {
+  loadSiteNavigation()
+
   if ('scrollRestoration' in window.history) {
     window.history.scrollRestoration = 'manual'
   }
@@ -313,7 +454,7 @@ onMounted(() => {
   syncHeaderMode = () => {
     isSmallHeader.value = headerMediaQuery.matches
 
-    if (!headerMediaQuery.matches) {
+    if (!isSmallHeader.value) {
       localeMenuOpen.value = false
     }
   }
@@ -355,15 +496,6 @@ onBeforeUnmount(() => {
   }
 })
 
-// 下拉框切换语言时，切换语言并跳转到当前页面对应的语言路由。
-const switchLanguage = async (code) => {
-  localeMenuOpen.value = false
-
-  if (locale.value !== code) {
-    await setLocale(code)
-    await navigateTo(switchLocalePath(code))
-  }
-}
 </script>
 
 <style>
@@ -577,7 +709,6 @@ const switchLanguage = async (code) => {
   height: 20px;
 }
 
-/* Locale menu */
 .site-locale-select {
   position: relative;
   display: inline-flex;
@@ -671,6 +802,13 @@ const switchLanguage = async (code) => {
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
+  overflow: hidden;
+}
+
+.site-profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .site-select-menu {
@@ -709,6 +847,7 @@ const switchLanguage = async (code) => {
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
 .site-select-option-button span {
   min-width: 0;
   overflow: hidden;
@@ -895,10 +1034,6 @@ const switchLanguage = async (code) => {
     display: none;
   }
 
-  .site-select-button > .locale-flag-icon {
-    display: inline-block;
-  }
-
   .site-select-menu {
     left: auto;
     right: 0;
@@ -906,13 +1041,14 @@ const switchLanguage = async (code) => {
   }
 
   .site-auth-button {
-    min-width: 68px;
-    max-width: 92px;
-    flex: 0 1 auto;
+    min-width: 86px;
+    max-width: none;
+    flex: 0 0 auto;
     height: 36px;
-    padding: 5px 10px;
+    padding: 0 14px;
     margin-left: 0;
     font-size: 13px;
+    line-height: 36px;
   }
 
   .site-profile-link {

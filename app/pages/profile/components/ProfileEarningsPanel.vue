@@ -151,12 +151,12 @@
               <input v-model="withdrawForm.name" type="text" placeholder="请输入姓名">
             </div>
             <div class="earnings-withdraw-field">
-              <label>PayPal邮箱</label>
-              <input v-model="withdrawForm.email" type="text" placeholder="请输入邮箱">
+              <label>银行卡号</label>
+              <input v-model="withdrawForm.bankCard" type="text" placeholder="请输入卡号">
             </div>
             <div class="earnings-withdraw-field">
               <label>备注（可选）</label>
-              <textarea v-model="withdrawForm.remark" placeholder="填写补充说明"></textarea>
+              <textarea v-model="withdrawForm.remark" placeholder="填写补充说明..."></textarea>
             </div>
           </div>
 
@@ -164,6 +164,15 @@
             <Icon name="lucide:info" aria-hidden="true" />
             提现将在7个工作日内处理，请务必确认账户信息准确无误。
           </p>
+
+          <footer class="earnings-withdraw-actions">
+            <button type="button" class="earnings-withdraw-cancel" @click="closeWithdrawModal">
+              取消
+            </button>
+            <button type="button" class="earnings-withdraw-submit" @click="submitWithdraw">
+              确认提现
+            </button>
+          </footer>
         </section>
       </div>
     </Teleport>
@@ -225,7 +234,7 @@ const withdrawForm = reactive({
   amount: '',
   method: 'PayPal',
   name: 'Marcus Johnson',
-  email: 'you@example.com',
+  bankCard: '',
   remark: '',
 })
 
@@ -263,6 +272,10 @@ const closeWithdrawModal = () => {
 
 const setAllAmount = () => {
   withdrawForm.amount = '23560'
+}
+
+const submitWithdraw = () => {
+  showWithdrawModal.value = false
 }
 </script>
 
@@ -551,11 +564,13 @@ const setAllAmount = () => {
 .earnings-withdraw-modal {
   width: 477px;
   height: 745px;
+  display: flex;
+  flex-direction: column;
   border: 1px solid rgba(38, 49, 75, 1);
   border-radius: 12px;
   padding: 12px;
   background: rgba(27, 38, 62, 1);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .earnings-withdraw-header {
@@ -584,7 +599,7 @@ const setAllAmount = () => {
 }
 
 .earnings-withdraw-title h2 {
-  font-size: 22px;
+  font-size: 16px;
   line-height: 22px;
   font-weight: 700;
   color: rgba(239, 245, 255, 1);
@@ -751,6 +766,33 @@ const setAllAmount = () => {
   width: 14px;
   height: 14px;
   flex: 0 0 auto;
+}
+
+.earnings-withdraw-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.earnings-withdraw-cancel,
+.earnings-withdraw-submit {
+  height: 36px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.earnings-withdraw-cancel {
+  color: rgba(220, 229, 244, 1);
+  background: rgba(35, 47, 73, 1);
+}
+
+.earnings-withdraw-submit {
+  color: rgba(255, 255, 255, 1);
+  background: linear-gradient(90deg, rgba(58, 199, 239, 1), rgba(75, 204, 233, 1));
 }
 
 @media (max-width: 900px) {
