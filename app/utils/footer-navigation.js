@@ -4,9 +4,9 @@ export const siteFooterColumnConfig = [
     key: 'product',
     title: '产品',
     links: [
-      { key: 'features', label: '功能特色' },
-      { key: 'pricing', label: '价格' },
-      { key: 'download', label: '下载' },
+      { key: 'features', label: '功能特色', sectionId: 'home-features-anchor' },
+      { key: 'pricing', label: '价格', sectionId: 'home-pricing-anchor' },
+      { key: 'download', label: '下载', path: '/download' },
       { key: 'changelog', label: '更新日志' },
     ],
   },
@@ -33,8 +33,8 @@ export const siteFooterColumnConfig = [
     title: '支持',
     links: [
       { key: 'docs', label: '文档' },
-      { key: 'tutorials', label: '教程' },
-      { key: 'faq', label: '常见问题' },
+      { key: 'tutorials', label: '教程', path: '/tutorial' },
+      { key: 'faq', label: '常见问题', path: '/faq' },
       { key: 'contact', label: '联系我们' },
     ],
   },
@@ -57,6 +57,8 @@ export const createSiteFooterColumns = () => {
         return {
           key: link.key,
           label: link.label,
+          path: link.path || '',
+          sectionId: link.sectionId || '',
         }
       }),
     }

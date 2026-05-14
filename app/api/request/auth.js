@@ -24,6 +24,16 @@ export const loginByEmailCode = ({ email, captcha } = {}) => {
   })
 }
 
+// 账号密码登录。服务端会转发到 https://api.vicastcam.com/v1/LoginByPassword。
+export const loginByPassword = ({ account, password } = {}) => {
+  return authRequest.post('/login-by-password', {
+    account: String(account || '').trim(),
+    password: String(password || ''),
+  }, {
+    skipAuthExpiredRedirect: true,
+  })
+}
+
 // 获取扫码登录二维码。服务端会转发到 https://api.vicastcam.com/v1/GetQrcode。
 export const getLoginQrcode = () => {
   return authRequest.post('/get-qrcode', {}, {
@@ -37,6 +47,7 @@ export const checkScanLoginStatus = (uuid) => {
     uuid: String(uuid || '').trim(),
   }, {
     skipAuthExpiredRedirect: true,
+    skipGlobalLoading: true,
   })
 }
 

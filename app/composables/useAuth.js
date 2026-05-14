@@ -1,4 +1,4 @@
-import { checkScanLoginStatus, loginByEmailCode, updateUserProfile as requestUpdateUserProfile } from '../api/request/auth'
+import { checkScanLoginStatus, loginByEmailCode, loginByPassword, updateUserProfile as requestUpdateUserProfile } from '../api/request/auth'
 import { authUserCookieName, clearAuthStorage } from '../utils/auth-session'
 
 const getLoginUser = (response) => {
@@ -189,6 +189,22 @@ export const useAuth = () => {
     })
   }
 
+  const loginWithPassword = (payload) => {
+    return loginByPassword(payload).then((response) => {
+      const user = saveAuthFromResponse(response, {
+        requireUser: true,
+      })
+
+      if (!user) {
+        return Promise.reject(Object.assign(new Error(getLoginErrorMessage(response)), {
+          data: response,
+        }))
+      }
+
+      return response
+    })
+  }
+
   const loginWithScanQrcode = (uuid) => {
     return checkScanLoginStatus(uuid).then((response) => {
       const user = saveAuthFromResponse(response, {
@@ -229,6 +245,7 @@ export const useAuth = () => {
     authUser,
     authResponse,
     loginWithEmailCode,
+    loginWithPassword,
     loginWithScanQrcode,
     updateUserProfile,
     mergeAuthUser,

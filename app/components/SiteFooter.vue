@@ -46,6 +46,7 @@
             :key="item.key"
             type="button"
             class="site-footer-link"
+            @click="handleFooterLinkClick(item)"
           >
             {{ item.label }}
           </button>
@@ -58,9 +59,44 @@
 <script setup>
 import { createSiteFooterColumns, createSiteFooterText } from '../utils/footer-navigation'
 
+const localePath = useLocalePath()
+
 // 底部模板只读取普通 ref，避免模板里直接写翻译 key。
 const footerText = ref({})
 const footerColumns = ref([])
+
+const scrollToSection = (sectionId) => {
+  const sectionElement = document.getElementById(sectionId)
+
+  if (!sectionElement) {
+    return
+  }
+
+  const headerHeight = document.querySelector('.page-header')?.getBoundingClientRect().height || 0
+  const top = window.scrollY + sectionElement.getBoundingClientRect().top - headerHeight - 36
+
+  window.scrollTo({
+    top: Math.max(0, top),
+    behavior: 'smooth',
+  })
+}
+
+const handleFooterLinkClick = (item) => {
+  if (item.path) {
+    navigateTo(localePath(item.path))
+    return
+  }
+
+  if (!item.sectionId || !process.client) {
+    return
+  }
+
+  Promise.resolve(navigateTo(localePath('/'))).then(() => {
+    nextTick(() => {
+      window.setTimeout(() => scrollToSection(item.sectionId), 40)
+    })
+  })
+}
 
 // 初始化底部所有文案，未接 Strapi 的内容不跟随语言自动切换。
 const refreshFooterData = () => {
@@ -113,7 +149,7 @@ refreshFooterData()
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--theme-footer-title);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   line-height: 24px;
   white-space: nowrap;
@@ -125,7 +161,7 @@ refreshFooterData()
 .site-footer-description {
   margin-top: 24px;
   color: var(--theme-footer-text);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   line-height: 22px;
   overflow-wrap: anywhere;
@@ -152,8 +188,8 @@ refreshFooterData()
   transform: translateY(-1px);
 }
 .site-footer-social-icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 .site-footer-columns {
   flex: 1 1 auto;
@@ -173,9 +209,9 @@ refreshFooterData()
   max-width: 100%;
   margin-bottom: 18px;
   color: var(--theme-footer-title);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 20px;
+  line-height: 22px;
   overflow: hidden;
   overflow-wrap: anywhere;
   display: -webkit-box;
@@ -186,9 +222,9 @@ refreshFooterData()
   max-width: 100%;
   min-height: 24px;
   color: var(--theme-footer-text);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 22px;
   text-align: left;
   overflow: hidden;
   overflow-wrap: anywhere;

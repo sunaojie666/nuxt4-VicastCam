@@ -51,6 +51,7 @@ const loginBoxCopy = reactive({
   pwdLoginTab: '',
   qrLoginTab: '',
   emailInputPlaceholder: '',
+  accountInputPlaceholder: '',
   pwdInputPlaceholder: '',
   verifyCodePlaceholder: '',
   getVerifyCodeText: '',
@@ -66,6 +67,7 @@ const toastBoxCopy = reactive({
   sendCodeSuccess: '',
   sendCodeFail: '',
   passwordLoginNotReady: '',
+  passwordRequired: '',
   loginSuccess: '',
   loginFail: '',
   emailRequired: '',
@@ -129,6 +131,7 @@ const syncLoginBoxCopy = (loginData = {}) => {
   loginBoxCopy.pwdLoginTab = loginBox.pwdLoginTab || ''
   loginBoxCopy.qrLoginTab = loginBox.qrLoginTab || ''
   loginBoxCopy.emailInputPlaceholder = loginBox.emailInputPlaceholder || ''
+  loginBoxCopy.accountInputPlaceholder = loginBox.accountInputPlaceholder || loginBox.accountPlaceholder || ''
   loginBoxCopy.pwdInputPlaceholder = loginBox.pwdInputPlaceholder || loginBox.passwordInputPlaceholder || ''
   loginBoxCopy.verifyCodePlaceholder = loginBox.verifyCodePlaceholder || ''
   loginBoxCopy.getVerifyCodeText = loginBox.getVerifyCodeText || ''
@@ -147,6 +150,7 @@ const syncToastBoxCopy = (loginData = {}) => {
   toastBoxCopy.sendCodeSuccess = toastBox.sendCodeSuccess || ''
   toastBoxCopy.sendCodeFail = toastBox.sendCodeFail || ''
   toastBoxCopy.passwordLoginNotReady = toastBox.passwordLoginNotReady || ''
+  toastBoxCopy.passwordRequired = toastBox.passwordRequired || ''
   toastBoxCopy.loginSuccess = toastBox.loginSuccess || ''
   toastBoxCopy.loginFail = toastBox.loginFail || ''
   toastBoxCopy.emailRequired = toastBox.emailRequired || ''

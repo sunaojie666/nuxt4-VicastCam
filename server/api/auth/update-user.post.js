@@ -64,6 +64,7 @@ export default defineEventHandler((event) => {
     return requestVicastApi(event, {
       path: UPDATE_USER_PATH,
       formData: true,
+      auth: true,
       params,
       errorMessage: '用户资料修改失败',
     })

@@ -81,21 +81,44 @@
           {{ headerText.loginRegister }}
         </NuxtLink>
 
-        <NuxtLink
+        <div
           v-else
-          :to="localePath('/profile')"
-          class="site-profile-link"
-          :aria-label="profileLinkLabel"
-          @click="closeMobileMenu"
+          class="site-profile-menu"
+          @mouseenter="openProfileMenu"
+          @mouseleave="closeProfileMenu"
+          @focusin="openProfileMenu"
+          @focusout="handleProfileMenuFocusOut"
         >
-          <img
-            v-if="authUser.avatar"
-            class="site-profile-avatar"
-            :src="authUser.avatar"
-            :alt="profileLinkLabel"
+          <button
+            type="button"
+            class="site-profile-link"
+            :aria-label="profileLinkLabel"
+            :aria-expanded="profileMenuOpen"
+            aria-haspopup="menu"
+            @click="handleProfileButtonClick"
           >
-          <span v-else>{{ profileInitial }}</span>
-        </NuxtLink>
+            <img
+              v-if="authUser.avatar"
+              class="site-profile-avatar"
+              :src="authUser.avatar"
+              :alt="profileLinkLabel"
+            >
+            <span v-else>{{ profileInitial }}</span>
+          </button>
+
+          <Transition name="site-select-fade">
+            <div v-if="profileMenuOpen" class="site-profile-dropdown" role="menu">
+              <button type="button" class="site-profile-menu-item" role="menuitem" @click="goToProfile">
+                <Icon name="lucide:user-round" aria-hidden="true" />
+                <span>个人中心</span>
+              </button>
+              <button type="button" class="site-profile-menu-item" role="menuitem" @click="handleLogout">
+                <Icon name="lucide:log-out" aria-hidden="true" />
+                <span>退出登录</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
 
         <!-- 手机端菜单按钮，只负责展开或收起导航面板。 -->
         <button
@@ -138,7 +161,7 @@ const switchLocalePath = useSwitchLocalePath()
 
 // 当前路由用于在页面跳转后关闭手机端菜单和处理区块滚动。
 const route = useRoute()
-const { authUser } = useAuth()
+const { authUser, clearAuth } = useAuth()
 
 // 顶部导航模板只读取普通 ref，避免在模板中直接写翻译逻辑。
 const availableLocales = ref([])
@@ -146,10 +169,11 @@ const navigationItems = ref([])
 const headerText = ref({})
 const activeLocale = ref({})
 const localeMenuOpen = ref(false)
+const profileMenuOpen = ref(false)
 const mobileMenuOpen = ref(false)
 const mobileMenuIcon = ref('lucide:menu')
 const isSmallHeader = ref(false)
-const activeNavigationKey = ref('clientDownload')
+const activeNavigationKey = ref('')
 const headerScrolled = ref(false)
 const isLoggedIn = computed(() => {
   return Boolean(authUser.value?.user_id || authUser.value?.email || authUser.value?.nickname)
@@ -258,6 +282,54 @@ const closeLocaleMenu = () => {
   localeMenuOpen.value = false
 }
 
+const openProfileMenu = () => {
+  if (isSmallHeader.value) {
+    return
+  }
+
+  profileMenuOpen.value = true
+  localeMenuOpen.value = false
+  closeMobileMenu()
+}
+
+const closeProfileMenu = () => {
+  profileMenuOpen.value = false
+}
+
+const handleProfileMenuFocusOut = (event) => {
+  if (event.currentTarget?.contains(event.relatedTarget)) {
+    return
+  }
+
+  closeProfileMenu()
+}
+
+const handleProfileButtonClick = () => {
+  profileMenuOpen.value = !profileMenuOpen.value
+  localeMenuOpen.value = false
+  closeMobileMenu()
+}
+
+const goToProfile = () => {
+  closeProfileMenu()
+  closeMobileMenu()
+  navigateTo(localePath('/profile'))
+}
+
+const handleLogout = () => {
+  closeProfileMenu()
+  closeMobileMenu()
+  clearAuth()
+
+  if (process.client) {
+    $fetch('/api/auth/logout', {
+      method: 'POST',
+    }).catch(() => null)
+  }
+
+  navigateTo(localePath('/'))
+}
+
 const handleLocaleButtonClick = () => {
   if (!isSmallHeader.value) {
     return
@@ -323,6 +395,7 @@ const scrollToSection = (sectionId, behavior = 'smooth') => {
 
 const syncActiveNavigationByScroll = () => {
   if (!isHomeRoute()) {
+    activeNavigationKey.value = ''
     return
   }
 
@@ -419,7 +492,9 @@ watch(locale, () => {
 watch(() => route.fullPath, () => {
   closeMobileMenu()
   localeMenuOpen.value = false
+  closeProfileMenu()
   if (!isHomeRoute()) {
+    activeNavigationKey.value = ''
     return
   }
 
@@ -629,14 +704,15 @@ onBeforeUnmount(() => {
 
 .site-nav-link {
   position: relative;
-  min-width: 0;
-  max-width: 132px;
+  flex: 0 0 auto;
+  min-width: max-content;
+  max-width: none;
   display: inline-flex;
   align-items: center;
   border-radius: 4px;
   padding: 6px 10px;
   color: var(--theme-header-text);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 20px;
   white-space: nowrap;
@@ -644,9 +720,7 @@ onBeforeUnmount(() => {
 }
 
 .site-nav-link span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: max-content;
 }
 
 .site-nav-link::after {
@@ -805,10 +879,73 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
+.site-profile-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 20px;
+}
+
+.site-profile-menu::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 100%;
+  height: 8px;
+}
+
+.site-profile-menu .site-profile-link {
+  margin-left: 0;
+  cursor: pointer;
+}
+
 .site-profile-avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.site-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 138px;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  background-color: rgba(17, 24, 39, 1);
+  box-shadow: 0 10px 24px var(--theme-shadow);
+}
+
+.site-profile-menu-item {
+  width: 100%;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--theme-text);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.site-profile-menu-item svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--theme-text-muted);
+}
+
+.site-profile-menu-item:hover,
+.site-profile-menu-item:focus {
+  color: rgba(64, 217, 247, 1);
+  background-color: rgba(18, 44, 59, 1);
 }
 
 .site-select-menu {
@@ -830,6 +967,10 @@ onBeforeUnmount(() => {
   font-size: 14px;
   line-height: 20px;
   background-color: transparent;
+}
+
+.site-select-option-button {
+  font-size: 14px;
 }
 
 .site-select-option-button {
@@ -938,7 +1079,7 @@ onBeforeUnmount(() => {
   }
 
   .site-nav-link {
-    max-width: 96px;
+    max-width: none;
     padding-left: 6px;
     padding-right: 6px;
   }
@@ -958,6 +1099,14 @@ onBeforeUnmount(() => {
 
   .site-profile-link {
     margin-left: 8px;
+  }
+
+  .site-profile-menu {
+    margin-left: 8px;
+  }
+
+  .site-profile-menu .site-profile-link {
+    margin-left: 0;
   }
 }
 
@@ -1056,6 +1205,14 @@ onBeforeUnmount(() => {
     height: 36px;
     flex-basis: 36px;
     margin-left: 0;
+  }
+
+  .site-profile-menu {
+    margin-left: 0;
+  }
+
+  .site-profile-dropdown {
+    right: 0;
   }
 
   .site-menu-button {

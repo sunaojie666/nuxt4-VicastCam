@@ -5,9 +5,10 @@
         <Icon name="lucide:mail" aria-hidden="true" />
         <input
           v-model.trim="emailAddress"
-          type="email"
+          :type="isPasswordLogin ? 'text' : 'email'"
+          :inputmode="isPasswordLogin ? 'text' : 'email'"
           autocomplete="username"
-          :placeholder="loginBox.emailInputPlaceholder"
+          :placeholder="accountPlaceholder"
         >
       </span>
     </label>
@@ -17,7 +18,7 @@
         <Icon name="lucide:lock-keyhole" aria-hidden="true" />
         <input
           v-model="loginCredential"
-          :type="isPasswordLogin ? 'password' : 'text'"
+          :type="credentialInputType"
           :inputmode="isPasswordLogin ? undefined : 'numeric'"
           :autocomplete="isPasswordLogin ? 'current-password' : 'one-time-code'"
           :placeholder="credentialPlaceholder"
@@ -31,7 +32,15 @@
         >
           {{ codeButtonText }}
         </button>
-        <Icon v-else class="auth-input-trailing-icon" name="lucide:eye-off" aria-hidden="true" />
+        <button
+          v-else
+          type="button"
+          class="auth-password-visibility-button"
+          :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+          @click="showPassword = !showPassword"
+        >
+          <Icon class="auth-input-trailing-icon" :name="showPassword ? 'lucide:eye' : 'lucide:eye-off'" aria-hidden="true" />
+        </button>
       </span>
     </label>
 
@@ -78,21 +87,32 @@ const agreementModel = defineModel('agreementAccepted', {
   required: true,
 })
 const { showSuccessToast, showErrorToast } = useSiteToast()
-const { loginWithEmailCode } = useAuth()
+const { loginWithEmailCode, loginWithPassword } = useAuth()
 const localePath = useLocalePath()
 
 const emailAddress = ref('')
 const loginCredential = ref('')
 const isSendingCode = ref(false)
 const isLoggingIn = ref(false)
+const showPassword = ref(false)
 const codeCountdown = ref(0)
 let codeCountdownTimer = null
 
 const loginBox = computed(() => props.loginBox || {})
 const toastBox = computed(() => props.toastBox || {})
 const isPasswordLogin = computed(() => props.loginMethod === 'password')
+const accountPlaceholder = computed(() => {
+  return isPasswordLogin.value ? (loginBox.value.accountInputPlaceholder || '请输入手机号或邮箱') : loginBox.value.emailInputPlaceholder
+})
 const credentialPlaceholder = computed(() => {
   return isPasswordLogin.value ? loginBox.value.pwdInputPlaceholder : loginBox.value.verifyCodePlaceholder
+})
+const credentialInputType = computed(() => {
+  if (!isPasswordLogin.value) {
+    return 'text'
+  }
+
+  return showPassword.value ? 'text' : 'password'
 })
 const loginMethodToggleText = computed(() => {
   return isPasswordLogin.value ? loginBox.value.codeLoginTab : loginBox.value.pwdLoginTab
@@ -143,6 +163,17 @@ const validateEmail = () => {
   return email
 }
 
+const validateAccount = () => {
+  const account = emailAddress.value.trim()
+
+  if (!account) {
+    showErrorToast(toastBox.value.emailRequired || '')
+    return ''
+  }
+
+  return account
+}
+
 // 邮箱验证码发送成功后开启倒计时，避免用户连续点击重复发送。
 const startCodeCountdown = () => {
   codeCountdown.value = 60
@@ -185,22 +216,17 @@ const handleSendEmailCode = () => {
   )
 }
 
-// 邮箱验证码登录接口要求 email 和 captcha，以 multipart/form-data 转发到后端。
+// 邮箱验证码登录提交 email/captcha；密码登录提交 account/password。
 const handleLoginSubmit = () => {
-  const email = validateEmail()
-  const captcha = loginCredential.value.trim()
+  const account = isPasswordLogin.value ? validateAccount() : validateEmail()
+  const credential = loginCredential.value.trim()
 
-  if (!email) {
+  if (!account) {
     return
   }
 
-  if (isPasswordLogin.value) {
-    showErrorToast(toastBox.value.passwordLoginNotReady || '')
-    return
-  }
-
-  if (!captcha) {
-    showErrorToast(toastBox.value.verifyCodeRequired || '')
+  if (!credential) {
+    showErrorToast(isPasswordLogin.value ? (toastBox.value.passwordRequired || toastBox.value.loginFail || '') : (toastBox.value.verifyCodeRequired || ''))
     return
   }
 
@@ -211,7 +237,11 @@ const handleLoginSubmit = () => {
 
   isLoggingIn.value = true
 
-  loginWithEmailCode({ email, captcha }).then(
+  const loginRequest = isPasswordLogin.value
+    ? loginWithPassword({ account, password: credential })
+    : loginWithEmailCode({ email: account, captcha: credential })
+
+  loginRequest.then(
     () => {
       isLoggingIn.value = false
       showSuccessToast(toastBox.value.loginSuccess || '')
@@ -266,6 +296,17 @@ onBeforeUnmount(() => {
 .auth-input-wrap .auth-input-trailing-icon {
   width: 16px;
   height: 16px;
+}
+
+.auth-password-visibility-button {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: rgba(148, 163, 184, 1);
+  cursor: pointer;
 }
 
 .auth-input-wrap input {

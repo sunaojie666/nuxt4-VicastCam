@@ -207,7 +207,6 @@ const handleSaveProfile = () => {
 
   updateUserProfile(createProfilePayload()).then(
     () => {
-      profileForm.password = ''
       emit('profile-saved')
       showSuccessToast(toastText.value.profileSaved || '')
       isSaving.value = false
