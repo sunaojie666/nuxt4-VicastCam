@@ -70,10 +70,13 @@ import ProfileMembershipPanel from './components/ProfileMembershipPanel.vue'
 import ProfilePurchaseHistoryPanel from './components/ProfilePurchaseHistoryPanel.vue'
 import ProfileRedeemPanel from './components/ProfileRedeemPanel.vue'
 import ProfileTeamPanel from './components/ProfileTeamPanel.vue'
+import { setupPageSeo } from '../../utils/seo'
 
 definePageMeta({
   middleware: 'auth',
 })
+
+setupPageSeo('profile')
 
 const menuItems = [
   { key: 'account', label: '账号信息', icon: 'lucide:user-round' },
@@ -168,10 +171,6 @@ onBeforeUnmount(() => {
   clearAvatarPreview()
 })
 
-useSeoMeta({
-  title: '个人中心',
-  description: 'VicastCam 个人中心页面。',
-})
 </script>
 
 <style scoped>

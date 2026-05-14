@@ -16,23 +16,9 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import TutorialHeroSection from './components/TutorialHeroSection.vue'
 import TutorialPlayerSection from './components/TutorialPlayerSection.vue'
+import { setupPageSeo } from '../../utils/seo'
 
-const localeHead = useLocaleHead({
-  seo: {
-    canonicalQueries: [],
-  },
-})
-
-useHead(() => ({
-  meta: localeHead.value.meta,
-  link: localeHead.value.link,
-  htmlAttrs: localeHead.value.htmlAttrs,
-}))
-
-useSeoMeta({
-  title: '教程中心',
-  description: '查看 VicastCam 教程中心，学习下载、安装和使用方法。',
-})
+setupPageSeo('tutorial')
 </script>
 
 <style scoped>

@@ -149,6 +149,7 @@
 <script setup>
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
+import { setupPageSeo } from '../../utils/seo'
 
 const platforms = [
   {
@@ -254,22 +255,7 @@ const handleDownload = (platform) => {
   console.log(`download:${platform.key}`)
 }
 
-const localeHead = useLocaleHead({
-  seo: {
-    canonicalQueries: [],
-  },
-})
-
-useHead(() => ({
-  meta: localeHead.value.meta,
-  link: localeHead.value.link,
-  htmlAttrs: localeHead.value.htmlAttrs,
-}))
-
-useSeoMeta({
-  title: '下载中心',
-  description: '下载 VicastCam，支持 Windows、iOS 和 Android 平台。',
-})
+setupPageSeo('download')
 </script>
 
 <style scoped>

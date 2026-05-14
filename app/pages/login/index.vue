@@ -37,6 +37,9 @@ import AuthAccountForm from './components/AuthAccountForm.vue'
 import AuthBrandPanel from './components/AuthBrandPanel.vue'
 import AuthScanPanel from './components/AuthScanPanel.vue'
 import { getLogin } from '../../api/request/strapi'
+import { setupPageSeo } from '../../utils/seo'
+
+setupPageSeo('login')
 
 const localePath = useLocalePath()
 const { locale } = useI18n()
@@ -192,10 +195,6 @@ watch(locale, () => {
   loadLoginContent()
 })
 
-useSeoMeta({
-  title: '登录',
-  description: '登录 VicastCam 账号。',
-})
 </script>
 
 <style>

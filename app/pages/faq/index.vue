@@ -16,23 +16,9 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import FaqContentSection from './components/FaqContentSection.vue'
 import FaqHeroSection from './components/FaqHeroSection.vue'
+import { setupPageSeo } from '../../utils/seo'
 
-const localeHead = useLocaleHead({
-  seo: {
-    canonicalQueries: [],
-  },
-})
-
-useHead(() => ({
-  meta: localeHead.value.meta,
-  link: localeHead.value.link,
-  htmlAttrs: localeHead.value.htmlAttrs,
-}))
-
-useSeoMeta({
-  title: '常见问题',
-  description: '查看 VicastCam 常见问题、下载、安装和直播使用说明。',
-})
+setupPageSeo('faq')
 </script>
 
 <style scoped>

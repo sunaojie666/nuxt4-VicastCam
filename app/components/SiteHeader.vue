@@ -970,10 +970,6 @@ onBeforeUnmount(() => {
 }
 
 .site-select-option-button {
-  font-size: 14px;
-}
-
-.site-select-option-button {
   width: 100%;
   height: 36px;
   display: flex;

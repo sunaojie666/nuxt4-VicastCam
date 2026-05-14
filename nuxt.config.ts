@@ -108,6 +108,8 @@ export default defineNuxtConfig({
   sitemap: {
     // sitemap 自动读取 Nuxt 页面路由，并结合 @nuxtjs/i18n 生成多语言链接。
     autoI18n: true,
+    // 登录和个人中心属于账号页面，不进入 sitemap。
+    exclude: ['/login', '/en/login', '/profile', '/en/profile'],
     // 生成 sitemap 时自动发现页面中的图片，方便后续图片 SEO。
     discoverImages: true,
     defaults: {

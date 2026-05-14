@@ -52,19 +52,9 @@ import HomeVirtualBackgroundSection from './components/HomeVirtualBackgroundSect
 import HomePricingSection from './components/HomePricingSection.vue'
 import HomeFaqSection from './components/HomeFaqSection.vue'
 import HomeLearningSection from './components/HomeLearningSection.vue'
+import { setupPageSeo } from '../../utils/seo'
 
-// i18n 只负责 canonical、hreflang 和 html lang；页面 SEO 文案后续从 Strapi 读取。
-const localeHead = useLocaleHead({
-  seo: {
-    canonicalQueries: [],
-  },
-})
-
-useHead(() => ({
-  meta: localeHead.value.meta,
-  link: localeHead.value.link,
-  htmlAttrs: localeHead.value.htmlAttrs,
-}))
+setupPageSeo('home')
 
 const showBackToTop = ref(false)
 
