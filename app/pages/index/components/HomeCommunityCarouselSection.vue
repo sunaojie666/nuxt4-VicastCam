@@ -1,16 +1,15 @@
 <template>
   <section class="home-community-section" aria-labelledby="home-community-title">
     <div class="home-community-inner">
-      <span class="home-community-eyebrow" data-reveal>全球社区</span>
+      <span class="home-community-eyebrow" data-reveal>{{ communitySection.tag }}</span>
 
       <h2 id="home-community-title" class="home-community-title" data-reveal style="--reveal-delay: 80ms">
-        <span>全球直播者信赖的</span>
-        <span class="theme-gradient-text">直播工具</span>
+        <span>{{ communitySection.title_main }}</span>
+        <span class="theme-gradient-text">{{ communitySection.title_highlight }}</span>
       </h2>
 
       <p class="home-community-subtitle" data-reveal style="--reveal-delay: 160ms">
-        <span>从普通主播到专业人士——VicastCam为150多个国家的创</span>
-        <span>作者提供支持。</span>
+        <span>{{ communitySection.desc }}</span>
       </p>
     </div>
 
@@ -24,41 +23,13 @@
         >
           <article
             v-for="(creator, index) in creators"
-            :key="`${loopIndex}-${creator.name}-${index}`"
+            :key="`${loopIndex}-${creator.id || creator.name}-${index}`"
             :class="['home-community-card', { 'home-community-card-active': index === 2 }]"
           >
             <img
-              v-if="index === 0"
+              v-if="creator.avatar"
               class="home-community-image"
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=740&q=80"
-              :alt="creator.name"
-              loading="lazy"
-            >
-            <img
-              v-else-if="index === 1"
-              class="home-community-image"
-              src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?auto=format&fit=crop&w=740&q=80"
-              :alt="creator.name"
-              loading="lazy"
-            >
-            <img
-              v-else-if="index === 2"
-              class="home-community-image"
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=740&q=80"
-              :alt="creator.name"
-              loading="lazy"
-            >
-            <img
-              v-else-if="index === 3"
-              class="home-community-image"
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=740&q=80"
-              :alt="creator.name"
-              loading="lazy"
-            >
-            <img
-              v-else
-              class="home-community-image"
-              src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=740&q=80"
+              :src="creator.avatar"
               :alt="creator.name"
               loading="lazy"
             >
@@ -71,7 +42,7 @@
             <div class="home-community-card-body">
               <div>
                 <h2 class="home-community-card-name">{{ creator.name }}</h2>
-                <p class="home-community-handle">@{{ creator.handle }}</p>
+                <p class="home-community-handle">@{{ creator.username }}</p>
                 <p class="home-community-location">
                   <Icon name="lucide:map-pin" aria-hidden="true" />
                   {{ creator.location }}
@@ -79,8 +50,7 @@
               </div>
 
               <p class="home-community-fans">
-                <strong>{{ creator.fans }}</strong>
-                <span>粉丝</span>
+                <strong>{{ creator.followers }}</strong>
               </p>
             </div>
           </article>
@@ -88,22 +58,22 @@
       </div>
     </div>
 
-    <div ref="statsElement" class="home-community-stats" aria-label="VicastCam社区数据" data-reveal style="--reveal-delay: 120ms">
-      <div v-for="stat in stats" :key="stat.label" class="home-community-stat">
-        <strong>{{ stat.displayValue }}{{ stat.suffix }}</strong>
-        <span>{{ stat.label }}</span>
+    <div class="home-community-stats" aria-label="VicastCam社区数据" data-reveal style="--reveal-delay: 120ms">
+      <div v-for="stat in stats" :key="stat.id" class="home-community-stat">
+        <strong>{{ stat.number }}</strong>
+        <span>{{ stat.name }}</span>
       </div>
     </div>
 
     <div class="home-community-platforms" aria-labelledby="home-community-platforms-title" data-reveal style="--reveal-delay: 180ms">
-      <span class="home-community-platforms-eyebrow">多平台支持</span>
+      <span class="home-community-platforms-eyebrow">{{ multiPlatformSection.tag }}</span>
 
       <h2 id="home-community-platforms-title" class="home-community-platforms-title">
-        <span>支持多个直播平台</span>
-        <span class="theme-gradient-text">一键开播</span>
+        <span>{{ multiPlatformSection.title_main }}</span>
+        <span class="theme-gradient-text">{{ multiPlatformSection.title_highlight }}</span>
       </h2>
 
-      <p class="home-community-platforms-subtitle">覆盖全球主流直播平台，一键开播，触达全球观众。</p>
+      <p class="home-community-platforms-subtitle">{{ multiPlatformSection.description }}</p>
 
       <div class="home-community-platforms-marquee" aria-label="支持的直播平台">
         <div
@@ -133,48 +103,26 @@
 </template>
 
 <script setup>
-const creators = [
-  {
-    name: 'Marcus Johnson',
-    handle: 'marcusi',
-    location: 'Dubai, UAE',
-    fans: '12万',
-  },
-  {
-    name: 'Marcus Johnson',
-    handle: 'marcusi',
-    location: 'Dubai, UAE',
-    fans: '12万',
-  },
-  {
-    name: 'Marcus Johnson',
-    handle: 'marcusi',
-    location: 'Dubai, UAE',
-    fans: '12万',
-  },
-  {
-    name: 'Marcus Johnson',
-    handle: 'marcusi',
-    location: 'Dubai, UAE',
-    fans: '12万',
-  },
-  {
-    name: 'Marcus Johnson',
-    handle: 'marcusi',
-    location: 'Dubai, UAE',
-    fans: '12万',
-  },
-]
+import { getCommunity, getForm, getStreamers } from '../../../api/request/strapi'
 
-const statsElement = ref(null)
-const statsAnimated = ref(false)
+const { locale } = useI18n()
+const config = useRuntimeConfig()
+const creators = ref([])
 
-const stats = reactive([
-  { target: 150, displayValue: 0, suffix: '+', label: '国家', decimals: 0 },
-  { target: 2000, displayValue: 0, suffix: '+', label: '活跃主播', decimals: 0 },
-  { target: 5000, displayValue: 0, suffix: '+', label: '热度提升', decimals: 0 },
-  { target: 99.9, displayValue: 0, suffix: '%', label: '稳定性', decimals: 1 },
-])
+const communitySection = ref({
+  tag: '',
+  title_main: '',
+  title_highlight: '',
+  desc: '',
+})
+const multiPlatformSection = ref({
+  tag: '',
+  title_main: '',
+  title_highlight: '',
+  description: '',
+})
+
+const stats = ref([])
 
 const platformCatalog = [
   { name: '抖音', icon: '/images/live/platform-douyin.png' },
@@ -237,59 +185,152 @@ const platformRows = computed(() => {
   return rows.map(items => ({ items }))
 })
 
-const easeOutCubic = progress => 1 - Math.pow(1 - progress, 3)
-
-const animateStats = () => {
-  if (statsAnimated.value) {
-    return
+const createStrapiAssetUrl = (url) => {
+  if (!url) {
+    return ''
   }
 
-  statsAnimated.value = true
+  if (/^(https?:)?\/\//.test(url) || url.startsWith('data:')) {
+    return url
+  }
 
-  const duration = 1600
-  const startTime = performance.now()
+  return `${String(config.public.strapiUrl || '').replace(/\/+$/, '')}${url}`
+}
 
-  const tick = (currentTime) => {
-    const progress = Math.min((currentTime - startTime) / duration, 1)
-    const easedProgress = easeOutCubic(progress)
+const getStrapiItemData = (item = {}) => item.attributes || item
 
-    stats.forEach((stat) => {
-      const value = stat.target * easedProgress
-      stat.displayValue = stat.decimals > 0
-        ? value.toFixed(stat.decimals)
-        : Math.round(value)
-    })
+const getStrapiCollectionData = (response) => {
+  if (Array.isArray(response?.data)) {
+    return response.data.map(getStrapiItemData)
+  }
 
-    if (progress < 1) {
-      window.requestAnimationFrame(tick)
+  if (Array.isArray(response)) {
+    return response.map(getStrapiItemData)
+  }
+
+  return []
+}
+
+const getStrapiMediaUrl = (media) => {
+  if (Array.isArray(media)) {
+    return getStrapiMediaUrl(media[0])
+  }
+
+  if (Array.isArray(media?.data)) {
+    return getStrapiMediaUrl(media.data[0])
+  }
+
+  if (media?.data) {
+    return getStrapiMediaUrl(media.data)
+  }
+
+  const mediaData = media?.attributes || media || {}
+
+  return createStrapiAssetUrl(mediaData.url || '')
+}
+
+const getFormContentData = (response) => {
+  if (Array.isArray(response?.data)) {
+    const firstItem = response.data[0] || {}
+
+    return firstItem.attributes || firstItem
+  }
+
+  return response?.data?.attributes || response?.data || response || {}
+}
+
+const syncFormContent = (formData = {}) => {
+  multiPlatformSection.value = formData.data?.multi_platform_section || formData.multi_platform_section || {
+    tag: '',
+    title_main: '',
+    title_highlight: '',
+    description: '',
+  }
+}
+
+const getCommunityContentData = (response) => {
+  if (Array.isArray(response?.data)) {
+    const firstItem = response.data[0] || {}
+
+    return firstItem.attributes || firstItem
+  }
+
+  return response?.data?.attributes || response?.data || response || {}
+}
+
+const syncCommunityContent = (communityData = {}) => {
+  const content = communityData.content || communityData.community_section || communityData
+
+  communitySection.value = {
+    tag: content.tag || '',
+    title_main: content.title_main || '',
+    title_highlight: content.title_highlight || '',
+    desc: content.desc || '',
+  }
+
+  stats.value = Array.isArray(content.data_list)
+    ? content.data_list.map((item, index) => ({
+        id: item.id || `${index}-${item.name || ''}`,
+        number: item.number || '',
+        name: item.name || '',
+      })).filter(item => item.number || item.name)
+    : []
+}
+
+const syncStreamers = (streamerItems = []) => {
+  creators.value = streamerItems.map((item, index) => ({
+    id: item.id || `${index}-${item.name || ''}`,
+    name: item.name || '',
+    username: item.username || '',
+    followers: item.followers || '',
+    location: item.location || '',
+    avatar: getStrapiMediaUrl(item.avatar),
+  })).filter(item => item.name || item.username || item.followers || item.location || item.avatar)
+}
+
+const loadFormContent = () => {
+  getForm(locale.value).then(
+    response => {
+      syncFormContent(getFormContentData(response))
+    },
+    () => {
+      syncFormContent()
     }
-  }
+  )
+}
 
-  window.requestAnimationFrame(tick)
+const loadCommunityContent = () => {
+  getCommunity(locale.value).then(
+    response => {
+      syncCommunityContent(getCommunityContentData(response))
+    },
+    () => {
+      syncCommunityContent()
+    }
+  )
+}
+
+const loadStreamers = () => {
+  getStreamers(locale.value).then(
+    response => {
+      syncStreamers(getStrapiCollectionData(response))
+    },
+    () => {
+      syncStreamers()
+    }
+  )
 }
 
 onMounted(() => {
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  loadCommunityContent()
+  loadFormContent()
+  loadStreamers()
+})
 
-  if (prefersReducedMotion) {
-    stats.forEach((stat) => {
-      stat.displayValue = stat.decimals > 0 ? stat.target.toFixed(stat.decimals) : stat.target
-    })
-    return
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    if (entries.some(entry => entry.isIntersecting)) {
-      animateStats()
-      observer.disconnect()
-    }
-  }, {
-    threshold: 0.35,
-  })
-
-  if (statsElement.value) {
-    observer.observe(statsElement.value)
-  }
+watch(locale, () => {
+  loadCommunityContent()
+  loadFormContent()
+  loadStreamers()
 })
 </script>
 
@@ -538,13 +579,6 @@ onMounted(() => {
   color: rgba(148, 163, 184, 1);
   font-size: 12px;
   line-height: 18px;
-}
-
-.home-community-fans span {
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .home-community-fans strong {

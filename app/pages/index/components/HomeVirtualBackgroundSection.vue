@@ -1,19 +1,18 @@
 <template>
   <section class="home-virtual-section" aria-labelledby="home-virtual-title">
     <div class="home-virtual-inner">
-      <span class="home-virtual-eyebrow" data-reveal>虚拟相机</span>
+      <span class="home-virtual-eyebrow" data-reveal>{{ virtualSection.tag }}</span>
 
       <h2 id="home-virtual-title" class="home-virtual-title" data-reveal style="--reveal-delay: 80ms">
-        <span>把手机变成虚拟相机</span>
-        <span class="theme-gradient-text">即插即用</span>
+        <span>{{ virtualSection.title_main }}</span>
+        <span class="theme-gradient-text">{{ virtualSection.title_highlight }}</span>
       </h2>
 
       <p class="home-virtual-subtitle" data-reveal style="--reveal-delay: 160ms">
-        <span>支持 iPhone 和安卓端通过 USB 或无线方式连接到 Windows 电脑。</span>
-        <span>将手机变成你的 PC 摄像头</span>
+        <span>{{ virtualSection.description }}</span>
       </p>
 
-      <div class="home-virtual-media" data-reveal="scale" style="--reveal-delay: 240ms">
+      <div v-if="virtualVideoSrc" class="home-virtual-media" data-reveal="scale" style="--reveal-delay: 240ms">
         <div class="home-virtual-frame">
           <video
             class="home-virtual-video"
@@ -44,7 +43,71 @@
 </template>
 
 <script setup>
-const virtualVideoSrc = 'https://cdn.douyinggongchang.com/upload/sys/media/d0/6114f628f3df1f3facbc4f87127fd5.mp4'
+import { getVirtual } from '../../../api/request/strapi'
+
+const { locale } = useI18n()
+const config = useRuntimeConfig()
+const virtualVideoSrc = ref('')
+const virtualSection = ref({
+  tag: '',
+  title_main: '',
+  title_highlight: '',
+  description: '',
+})
+
+const getVirtualContentData = (response) => {
+  if (Array.isArray(response?.data)) {
+    const firstItem = response.data[0] || {}
+
+    return firstItem.attributes || firstItem
+  }
+
+  return response?.data?.attributes || response?.data || response || {}
+}
+
+const createStrapiAssetURL = (url) => {
+  if (!url) {
+    return ''
+  }
+
+  if (/^https?:\/\//.test(url)) {
+    return url
+  }
+
+  return `${String(config.public.strapiUrl || '').replace(/\/+$/, '')}${url}`
+}
+
+const getVirtualVideoURL = (virtualData = {}) => {
+  const media = Array.isArray(virtualData.bgVideo)
+    ? virtualData.bgVideo[0]
+    : virtualData.bgVideo
+
+  return createStrapiAssetURL(media?.url || '')
+}
+
+const syncVirtualContent = (virtualData = {}) => {
+  virtualSection.value = virtualData.data || virtualData.virtual_section || virtualData
+  virtualVideoSrc.value = getVirtualVideoURL(virtualData)
+}
+
+const loadVirtualContent = () => {
+  getVirtual(locale.value).then(
+    response => {
+      syncVirtualContent(getVirtualContentData(response))
+    },
+    () => {
+      syncVirtualContent()
+    }
+  )
+}
+
+onMounted(() => {
+  loadVirtualContent()
+})
+
+watch(locale, () => {
+  loadVirtualContent()
+})
 </script>
 
 <style>

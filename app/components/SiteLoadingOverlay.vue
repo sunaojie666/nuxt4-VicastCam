@@ -1,10 +1,10 @@
 <template>
   <Teleport to="body">
     <Transition name="site-loading-fade">
-      <div v-if="isVisible" class="site-loading-overlay" role="status" aria-live="polite" aria-label="加载中">
+      <div v-if="isVisible" class="site-loading-overlay" role="status" aria-live="polite" :aria-label="requestLoadingText">
         <div class="site-loading-indicator">
           <span class="site-loading-spinner" aria-hidden="true"></span>
-          <span>加载中...</span>
+          <span>{{ requestLoadingText }}</span>
         </div>
       </div>
     </Transition>
@@ -16,6 +16,7 @@ import { siteLoadingEndEvent, siteLoadingStartEvent } from '../utils/site-loadin
 
 const activeLoadingIds = new Set()
 const isVisible = ref(false)
+const { requestLoadingText } = useSiteToast()
 let showTimer = null
 
 const clearShowTimer = () => {

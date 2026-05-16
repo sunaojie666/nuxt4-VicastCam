@@ -111,31 +111,49 @@ const downloadCountLabel = ref('')
 const appStoreUrl = ref('')
 const googlePlayUrl = ref('')
 const desktopClientUrl = ref('')
+const { setToastText } = useSiteToast()
 
 // Strapi 本地上传文件返回 /uploads/...，前端播放时需要补上 Strapi 服务地址。
 const createStrapiAssetUrl = (url) => {
+  if (!url) {
+    return ''
+  }
+
   return url.startsWith('http') ? url : `${config.public.strapiUrl.replace(/\/+$/, '')}${url}`
+}
+
+const syncHomeHero = (homeData = {}) => {
+  const videoUrl = homeData.bgVideo?.[0]?.url
+
+  topBadge.value = homeData.topBadge || ''
+  heroTitle.value = homeData.heroTitle || ''
+  heroSubtitle.value = homeData.heroSubtitle || ''
+  heroDescription1.value = homeData.heroDescription1 || ''
+  heroDescription2.value = homeData.heroDescription2 || ''
+  userCountLabel.value = homeData.userCountLabel || ''
+  ratingLabel.value = homeData.ratingLabel || ''
+  downloadCountLabel.value = homeData.downloadCountLabel || ''
+  appStoreUrl.value = homeData.appStoreUrl || ''
+  googlePlayUrl.value = homeData.googlePlayUrl || ''
+  desktopClientUrl.value = homeData.desktopClientUrl || ''
+  heroVideoSrc.value = createStrapiAssetUrl(videoUrl)
+  setToastText({
+    requestLoading: homeData.requestLoading || '',
+    requestSuccess: homeData.requestSuccess || '',
+    requestFail: homeData.requestFail || '',
+  })
 }
 
 // 客户端通过封装好的 axios 请求 Strapi 首页背景视频。
 const loadHomeHero = () => {
-  getHomes(locale.value).then((homeContent) => {
-    const homeData = homeContent?.data?.[0] || {}
-    const videoUrl = homeData.bgVideo?.[0]?.url
-
-    topBadge.value = homeData.topBadge || ''
-    heroTitle.value = homeData.heroTitle || ''
-    heroSubtitle.value = homeData.heroSubtitle || ''
-    heroDescription1.value = homeData.heroDescription1 || ''
-    heroDescription2.value = homeData.heroDescription2 || ''
-    userCountLabel.value = homeData.userCountLabel || ''
-    ratingLabel.value = homeData.ratingLabel || ''
-    downloadCountLabel.value = homeData.downloadCountLabel || ''
-    appStoreUrl.value = homeData.appStoreUrl || ''
-    googlePlayUrl.value = homeData.googlePlayUrl || ''
-    desktopClientUrl.value = homeData.desktopClientUrl || ''
-    heroVideoSrc.value = videoUrl ? createStrapiAssetUrl(videoUrl) : ''
-  })
+  getHomes(locale.value).then(
+    homeContent => {
+      syncHomeHero(homeContent?.data?.[0] || {})
+    },
+    () => {
+      syncHomeHero()
+    }
+  )
 }
 
 onMounted(() => {

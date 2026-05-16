@@ -21,6 +21,10 @@ export const pageSeoCopy = {
       title: '教程中心',
       description: '查看 VicastCam 教程中心，学习下载、安装和使用方法。',
     },
+    sdk: {
+      title: 'VicastCam SDK',
+      description: '查看 VicastCam SDK 文档与 Demo 下载，快速集成虚拟相机、虚拟声卡和投屏能力。',
+    },
     login: {
       title: '登录',
       description: '登录 VicastCam 账号。',
@@ -48,6 +52,10 @@ export const pageSeoCopy = {
     tutorial: {
       title: 'Tutorial Center',
       description: 'Learn how to download, install, and use VicastCam.',
+    },
+    sdk: {
+      title: 'VicastCam SDK',
+      description: 'Explore VicastCam SDK documentation and demo downloads for virtual camera, virtual audio, and screen casting integrations.',
     },
     login: {
       title: 'Login',

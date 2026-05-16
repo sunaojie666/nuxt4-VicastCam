@@ -1,18 +1,12 @@
 import { defineEventHandler, readMultipartFormData } from 'h3'
-import { requestVicastApi, requireVicastParam } from '../../utils/vicast-api'
+import { requestVicastApi } from '../../utils/vicast-api'
 
 const UPDATE_USER_PATH = '/v1/UpdateUser'
 const updateUserFields = new Set([
   'user_id',
   'nickname',
-  'intro',
-  'industry',
-  'gender',
-  'area',
   'password',
   'avatar',
-  'mobile',
-  'email',
 ])
 
 const createTextValue = (part) => {
@@ -51,8 +45,6 @@ const readUpdateUserParams = (event) => {
 
       params[part.name] = createTextValue(part)
     })
-
-    params.user_id = requireVicastParam(params, 'user_id', '用户信息不存在，请重新登录')
 
     return params
   })

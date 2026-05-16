@@ -1,4 +1,4 @@
-import { checkScanLoginStatus, loginByEmailCode, loginByPassword, updateUserProfile as requestUpdateUserProfile } from '../api/request/auth'
+import { checkScanLoginStatus, getVipInfo, loginByEmailCode, loginByPassword, updateUserProfile as requestUpdateUserProfile } from '../api/request/auth'
 import { authUserCookieName, clearAuthStorage } from '../utils/auth-session'
 
 const getLoginUser = (response) => {
@@ -109,15 +109,7 @@ const setAuthPatchValue = (target, key, value) => {
 const createAuthPatchFromUpdatePayload = (payload = {}) => {
   const patch = {}
 
-  setAuthPatchValue(patch, 'user_id', payload.user_id)
   setAuthPatchValue(patch, 'nickname', payload.nickname)
-  setAuthPatchValue(patch, 'intro', payload.intro)
-  setAuthPatchValue(patch, 'industry', payload.industry)
-  setAuthPatchValue(patch, 'gender', payload.gender)
-  setAuthPatchValue(patch, 'region', payload.area)
-  setAuthPatchValue(patch, 'area', payload.area)
-  setAuthPatchValue(patch, 'mobile', payload.mobile)
-  setAuthPatchValue(patch, 'email', payload.email)
 
   return patch
 }
@@ -237,6 +229,27 @@ export const useAuth = () => {
     })
   }
 
+  const refreshVipInfo = () => {
+    const user_id = authUser.value?.user_id
+
+    if (!user_id) {
+      return Promise.resolve(null)
+    }
+
+    return getVipInfo({
+      user_id,
+    }).then((response) => {
+      if (isBusinessFailedResponse(response)) {
+        return Promise.reject(Object.assign(new Error(getLoginErrorMessage(response)), {
+          data: response,
+        }))
+      }
+
+      mergeAuthUser(getLoginUser(response) || {})
+      return response
+    })
+  }
+
   const clearAuth = () => {
     clearAuthStorage()
   }
@@ -248,6 +261,7 @@ export const useAuth = () => {
     loginWithPassword,
     loginWithScanQrcode,
     updateUserProfile,
+    refreshVipInfo,
     mergeAuthUser,
     clearAuth,
   }

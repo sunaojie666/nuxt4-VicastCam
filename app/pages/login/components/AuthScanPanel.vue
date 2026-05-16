@@ -1,7 +1,7 @@
 <template>
   <div class="auth-scan-panel">
     <div class="auth-scan-code">
-      <span v-if="isLoadingQrcode" class="auth-scan-placeholder">获取中...</span>
+      <span v-if="isLoadingQrcode" class="auth-scan-placeholder">{{ requestLoadingText }}</span>
 
       <button
         v-else-if="qrcodeLoadFailed"
@@ -47,7 +47,7 @@ const props = defineProps({
     default: () => ({}),
   },
 })
-const { showSuccessToast, showErrorToast } = useSiteToast()
+const { requestLoadingText, showErrorToast, showRequestFailToast, showRequestSuccessToast } = useSiteToast()
 const { loginWithScanQrcode } = useAuth()
 const localePath = useLocalePath()
 const qrcodeSource = ref('')
@@ -177,7 +177,7 @@ const expireQrcode = () => {
 
 const handleScanLoginSuccess = () => {
   stopScanStatusPolling()
-  showSuccessToast(toastBox.value.loginSuccess || '')
+  showRequestSuccessToast()
   navigateTo(localePath('/'))
 }
 
@@ -206,7 +206,7 @@ const checkScanLoginStatus = () => {
     () => {
       stopScanStatusPolling()
       qrcodeLoadFailed.value = true
-      showErrorToast(toastBox.value.scanStatusFail || '')
+      showRequestFailToast()
     }
   )
 }
@@ -236,7 +236,7 @@ const loadLoginQrcode = () => {
 
       if (!source || !uuid) {
         qrcodeLoadFailed.value = true
-        showErrorToast(toastBox.value.qrcodeIncomplete || '')
+        showRequestFailToast()
         return
       }
 
@@ -247,7 +247,7 @@ const loadLoginQrcode = () => {
     () => {
       isLoadingQrcode.value = false
       qrcodeLoadFailed.value = true
-      showErrorToast(toastBox.value.qrcodeFetchFail || '')
+      showRequestFailToast()
     }
   )
 }

@@ -7,11 +7,14 @@
         <aside class="profile-sidebar" aria-label="个人中心导航">
           <section class="profile-user-card">
             <div class="profile-avatar-wrap">
-              <img class="profile-avatar" :src="profileAvatar" :alt="profileName">
+              <button type="button" class="profile-avatar-button" aria-label="编辑头像" @click="openAvatarPicker">
+                <img class="profile-avatar" :src="profileAvatar" :alt="profileName">
+              </button>
               <button
                 type="button"
-                :class="['profile-avatar-edit', { 'profile-avatar-edit-selected': avatarFile }]"
+                class="profile-avatar-edit"
                 aria-label="编辑头像"
+                :disabled="isSavingAvatar"
                 @click="openAvatarPicker"
               >
                 <Icon name="lucide:edit-3" aria-hidden="true" />
@@ -99,20 +102,16 @@ const profileTabComponents = {
 const validProfileTabs = new Set(Object.keys(profileTabComponents))
 const profileTabCookie = useCookie('profile-active-tab', { sameSite: 'lax' })
 const activeTab = ref(validProfileTabs.has(profileTabCookie.value) ? profileTabCookie.value : 'account')
-const { authUser } = useAuth()
+const { authUser, updateUserProfile, refreshVipInfo } = useAuth()
+const { showRequestFailToast, showRequestSuccessToast } = useSiteToast()
 const avatarInput = ref(null)
 const avatarFile = ref(null)
 const avatarPreview = ref('')
+const isSavingAvatar = ref(false)
 
 const activePanelComponent = computed(() => profileTabComponents[activeTab.value] || ProfileAccountPanel)
 const activePanelProps = computed(() => {
-  if (activeTab.value !== 'account') {
-    return {}
-  }
-
-  return {
-    avatarFile: avatarFile.value,
-  }
+  return {}
 })
 const profileName = computed(() => {
   return authUser.value?.nickname || authUser.value?.email || '个人中心'
@@ -161,14 +160,43 @@ const handleAvatarChange = (event) => {
   clearAvatarPreview()
   avatarFile.value = file
   avatarPreview.value = window.URL.createObjectURL(file)
+  saveAvatar()
 }
 
 const handleProfileSaved = () => {
-  avatarFile.value = null
+  return null
+}
+
+const saveAvatar = () => {
+  if (!avatarFile.value || isSavingAvatar.value) {
+    return
+  }
+
+  isSavingAvatar.value = true
+
+  updateUserProfile({
+    avatar: avatarFile.value,
+  }).then(
+    () => {
+      avatarFile.value = null
+      showRequestSuccessToast()
+      isSavingAvatar.value = false
+    },
+    () => {
+      avatarFile.value = null
+      clearAvatarPreview()
+      showRequestFailToast()
+      isSavingAvatar.value = false
+    }
+  )
 }
 
 onBeforeUnmount(() => {
   clearAvatarPreview()
+})
+
+onMounted(() => {
+  refreshVipInfo().catch(() => null)
 })
 
 </script>
@@ -239,9 +267,18 @@ onBeforeUnmount(() => {
   height: 74px;
 }
 
+.profile-avatar-button,
 .profile-avatar {
   width: 74px;
   height: 74px;
+}
+
+.profile-avatar-button {
+  display: block;
+  cursor: pointer;
+}
+
+.profile-avatar {
   overflow: hidden;
   border-radius: 12px;
   object-fit: cover;
@@ -263,9 +300,9 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
-.profile-avatar-edit-selected {
-  color: rgba(34, 211, 238, 1);
-  border-color: rgba(34, 211, 238, 0.65);
+.profile-avatar-edit:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
 }
 
 .profile-avatar-input {

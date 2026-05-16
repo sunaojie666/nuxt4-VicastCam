@@ -10,32 +10,75 @@
 
       <article class="team-referrer-card">
         <div class="team-referrer-main">
-          <span class="team-referrer-avatar">D</span>
+          <span class="team-referrer-avatar">{{ referrerInitial }}</span>
           <div>
             <p>推荐人</p>
-            <strong>alex@example.com</strong>
+            <strong>{{ referrerName }}</strong>
           </div>
         </div>
         <button type="button" class="team-referrer-action">上级</button>
       </article>
 
-      <div class="team-level-tabs">
-        <button
-          type="button"
-          :class="['team-level-tab', { 'team-level-tab-active': selectedLevel === 'level1' }]"
-          @click="selectedLevel = 'level1'"
-        >
-          一级会员
-          <span>{{ levelTotals.level1 }}</span>
-        </button>
-        <button
-          type="button"
-          :class="['team-level-tab', { 'team-level-tab-active': selectedLevel === 'level2' }]"
-          @click="selectedLevel = 'level2'"
-        >
-          二级会员
-          <span>{{ levelTotals.level2 }}</span>
-        </button>
+      <div class="team-toolbar">
+        <div class="team-level-tabs">
+          <button
+            type="button"
+            :class="['team-level-tab', { 'team-level-tab-active': selectedLevel === '1' }]"
+            @click="selectedLevel = '1'"
+          >
+            一级会员
+            <span>{{ levelTotals[1] }}</span>
+          </button>
+          <button
+            type="button"
+            :class="['team-level-tab', { 'team-level-tab-active': selectedLevel === '2' }]"
+            @click="selectedLevel = '2'"
+          >
+            二级会员
+            <span>{{ levelTotals[2] }}</span>
+          </button>
+        </div>
+
+        <div ref="monthFilter" class="team-month-filter">
+          <button
+            type="button"
+            :class="['team-month-button', { 'team-month-button-active': isMonthPickerOpen }]"
+            aria-label="选择月份"
+            @click="toggleMonthPicker"
+          >
+            <Icon name="lucide:calendar-days" aria-hidden="true" />
+          </button>
+
+          <div v-if="isMonthPickerOpen" class="team-month-popover">
+            <header class="team-month-popover-header">
+              <button type="button" class="team-month-year-button" @click="pickerYear--">
+                <Icon name="lucide:chevron-left" aria-hidden="true" />
+              </button>
+              <strong>{{ pickerYear }}年</strong>
+              <button
+                type="button"
+                class="team-month-year-button"
+                :disabled="pickerYear >= currentYear"
+                @click="pickerYear++"
+              >
+                <Icon name="lucide:chevron-right" aria-hidden="true" />
+              </button>
+            </header>
+
+            <div class="team-month-grid">
+              <button
+                v-for="month in monthOptions"
+                :key="month.value"
+                type="button"
+                :class="['team-month-option', { 'team-month-option-active': selectedMonth === createMonthValue(pickerYear, month.value) }]"
+                :disabled="isFutureMonth(pickerYear, month.value)"
+                @click="selectMonth(pickerYear, month.value)"
+              >
+                {{ month.label }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="team-table-wrap">
@@ -47,13 +90,18 @@
               <th>加入时间</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody v-if="!isLoadingTeam && pagedRows.length">
             <tr v-for="row in pagedRows" :key="row.id">
               <td class="team-member-name">{{ row.name }}</td>
               <td>
                 <span :class="['team-member-status', row.statusClass]">{{ row.status }}</span>
               </td>
               <td>{{ row.joinedAt }}</td>
+            </tr>
+          </tbody>
+          <tbody v-else>
+            <tr>
+              <td colspan="3" class="team-empty-cell">{{ teamTableMessage }}</td>
             </tr>
           </tbody>
         </table>
@@ -91,45 +139,224 @@
 </template>
 
 <script setup>
-const levelTotals = {
-  level1: 12,
-  level2: 0,
-}
+import { getTeamList } from '../../../api/request/auth'
 
-const teamRows = [
-  { id: 1, level: 'level1', name: 'Marcus Johnson', status: '免费用户', statusClass: 'status-free', joinedAt: '2026-05-06 17:10:36' },
-  { id: 2, level: 'level1', name: 'Marcus Johnson', status: '终身会员', statusClass: 'status-life', joinedAt: '2026-05-06 17:10:36' },
-  { id: 3, level: 'level1', name: 'Marcus Johnson', status: '月卡会员', statusClass: 'status-month', joinedAt: '2026-05-06 17:10:36' },
-  { id: 4, level: 'level1', name: 'Marcus Johnson', status: '年卡会员', statusClass: 'status-year', joinedAt: '2026-05-06 17:10:36' },
-  { id: 5, level: 'level1', name: 'Marcus Johnson', status: '免费用户', statusClass: 'status-free', joinedAt: '2026-05-06 17:10:36' },
-  { id: 6, level: 'level1', name: 'Marcus Johnson', status: '终身会员', statusClass: 'status-life', joinedAt: '2026-05-06 17:10:36' },
-  { id: 7, level: 'level1', name: 'Marcus Johnson', status: '月卡会员', statusClass: 'status-month', joinedAt: '2026-05-06 17:10:36' },
-  { id: 8, level: 'level1', name: 'Marcus Johnson', status: '年卡会员', statusClass: 'status-year', joinedAt: '2026-05-06 17:10:36' },
-  { id: 9, level: 'level1', name: 'Marcus Johnson', status: '免费用户', statusClass: 'status-free', joinedAt: '2026-05-06 17:10:36' },
-  { id: 10, level: 'level1', name: 'Marcus Johnson', status: '年卡会员', statusClass: 'status-year', joinedAt: '2026-05-06 17:10:36' },
-  { id: 11, level: 'level1', name: 'Marcus Johnson', status: '免费用户', statusClass: 'status-free', joinedAt: '2026-05-06 17:10:36' },
-  { id: 12, level: 'level1', name: 'Marcus Johnson', status: '月卡会员', statusClass: 'status-month', joinedAt: '2026-05-06 17:10:36' },
-]
-
-const selectedLevel = ref('level1')
+const { authUser } = useAuth()
+const { requestLoadingText } = useSiteToast()
+const selectedLevel = ref('1')
+const selectedMonth = ref('')
+const isMonthPickerOpen = ref(false)
+const pickerYear = ref(new Date().getFullYear())
+const monthFilter = ref(null)
 const currentPage = ref(1)
 const pageSize = 10
+const teamRows = ref([])
+const referrer = ref(null)
+const levelTotals = reactive({
+  1: 0,
+  2: 0,
+})
+const isLoadingTeam = ref(false)
+const teamLoadError = ref('')
 
-const filteredRows = computed(() => teamRows.filter((row) => row.level === selectedLevel.value))
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / pageSize)))
-const pagedRows = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredRows.value.slice(start, start + pageSize)
+const currentMonth = computed(() => {
+  const date = new Date()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+
+  return `${date.getFullYear()}-${month}`
+})
+const currentYear = computed(() => Number(currentMonth.value.slice(0, 4)))
+const currentMonthNumber = computed(() => Number(currentMonth.value.slice(5, 7)))
+const monthOptions = Array.from({ length: 12 }, (_, index) => {
+  const value = index + 1
+
+  return {
+    value,
+    label: `${value}月`,
+  }
 })
 
-watch(selectedLevel, () => {
+selectedMonth.value = currentMonth.value
+
+const pickTeamValue = (...values) => {
+  return values.find(value => value !== undefined && value !== null && value !== '')
+}
+
+const getResponseData = (response) => {
+  return response?.data || response || {}
+}
+
+const getTeamItems = (response) => {
+  const data = getResponseData(response)
+  const items = data.list || data.rows || data.items || data.records || data.team_list || data.teamList || response?.list || response?.rows || []
+
+  return Array.isArray(items) ? items : []
+}
+
+const getTeamTotal = (response, fallbackLength) => {
+  const data = getResponseData(response)
+  const total = pickTeamValue(data.total, data.count, data.total_count, data.totalCount, response?.total, response?.count)
+
+  return Number(total) || fallbackLength
+}
+
+const getTeamReferrer = (response) => {
+  const data = getResponseData(response)
+  const referrerValue = data.parent || data.referrer || data.recommender || data.inviter || data.parent_user || data.parentUser || response?.parent || response?.referrer
+
+  return referrerValue && typeof referrerValue === 'object' ? referrerValue : null
+}
+
+const createMemberStatus = (member = {}) => {
+  const rawStatus = String(pickTeamValue(member.vip_type, member.vipType, member.vip_level, member.vipLevel, member.member_type, member.memberType, member.status, '') || '')
+  const normalized = rawStatus.toLowerCase()
+
+  if (normalized.includes('life') || rawStatus.includes('终身')) {
+    return { status: '终身会员', statusClass: 'status-life' }
+  }
+
+  if (normalized.includes('year') || rawStatus.includes('年')) {
+    return { status: '年卡会员', statusClass: 'status-year' }
+  }
+
+  if (normalized.includes('month') || rawStatus.includes('月')) {
+    return { status: '月卡会员', statusClass: 'status-month' }
+  }
+
+  return {
+    status: rawStatus || '免费用户',
+    statusClass: rawStatus ? 'status-month' : 'status-free',
+  }
+}
+
+const createTeamRow = (member = {}, index) => {
+  const memberStatus = createMemberStatus(member)
+
+  return {
+    id: pickTeamValue(member.user_id, member.uid, member.id, member.email, `${selectedLevel.value}-${currentPage.value}-${index}`),
+    name: String(pickTeamValue(member.nickname, member.nick_name, member.name, member.username, member.email, member.mobile, '未命名成员')),
+    joinedAt: String(pickTeamValue(member.created_at, member.createdAt, member.joined_at, member.joinedAt, member.create_time, member.createTime, '-')),
+    ...memberStatus,
+  }
+}
+
+const totalPages = computed(() => Math.max(1, Math.ceil((levelTotals[selectedLevel.value] || 0) / pageSize)))
+const pagedRows = computed(() => teamRows.value)
+const referrerName = computed(() => {
+  return pickTeamValue(referrer.value?.nickname, referrer.value?.nick_name, referrer.value?.name, referrer.value?.username, referrer.value?.email, referrer.value?.mobile, '暂无推荐人')
+})
+const referrerInitial = computed(() => {
+  return String(referrerName.value || '-').trim().slice(0, 1).toUpperCase() || '-'
+})
+const teamTableMessage = computed(() => {
+  if (isLoadingTeam.value) {
+    return requestLoadingText.value
+  }
+
+  if (teamLoadError.value) {
+    return teamLoadError.value
+  }
+
+  return '暂无团队成员'
+})
+
+const loadTeamList = () => {
+  const userId = authUser.value?.user_id
+
+  if (!userId) {
+    teamRows.value = []
+    levelTotals[selectedLevel.value] = 0
+    teamLoadError.value = '用户信息不存在，请重新登录'
+    return
+  }
+
+  isLoadingTeam.value = true
+  teamLoadError.value = ''
+
+  getTeamList({
+    user_id: userId,
+    level: selectedLevel.value,
+    month: selectedMonth.value,
+    page_index: currentPage.value,
+    page_size: pageSize,
+  }).then(
+    response => {
+      const items = getTeamItems(response)
+
+      referrer.value = getTeamReferrer(response)
+      teamRows.value = items.map(createTeamRow)
+      levelTotals[selectedLevel.value] = getTeamTotal(response, items.length)
+      isLoadingTeam.value = false
+    },
+    () => {
+      teamRows.value = []
+      levelTotals[selectedLevel.value] = 0
+      teamLoadError.value = '团队成员加载失败'
+      isLoadingTeam.value = false
+    }
+  )
+}
+
+const createMonthValue = (year, month) => {
+  return `${year}-${String(month).padStart(2, '0')}`
+}
+
+const isFutureMonth = (year, month) => {
+  return year > currentYear.value || (year === currentYear.value && month > currentMonthNumber.value)
+}
+
+const toggleMonthPicker = () => {
+  isMonthPickerOpen.value = !isMonthPickerOpen.value
+}
+
+const selectMonth = (year, month) => {
+  if (isFutureMonth(year, month)) {
+    return
+  }
+
+  selectedMonth.value = createMonthValue(year, month)
+  isMonthPickerOpen.value = false
+}
+
+const closeMonthPickerOnOutsideClick = (event) => {
+  if (!isMonthPickerOpen.value || monthFilter.value?.contains(event.target)) {
+    return
+  }
+
+  isMonthPickerOpen.value = false
+}
+
+watch([selectedLevel, selectedMonth], () => {
+  if (currentPage.value !== 1) {
+    currentPage.value = 1
+    return
+  }
+
   currentPage.value = 1
+  loadTeamList()
+})
+
+watch(currentPage, () => {
+  loadTeamList()
+})
+
+watch(selectedMonth, (month) => {
+  pickerYear.value = Number(String(month || currentMonth.value).slice(0, 4)) || currentYear.value
 })
 
 watch(totalPages, () => {
   if (currentPage.value > totalPages.value) {
     currentPage.value = totalPages.value
   }
+})
+
+onMounted(() => {
+  loadTeamList()
+  document.addEventListener('click', closeMonthPickerOnOutsideClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeMonthPickerOnOutsideClick)
 })
 </script>
 
@@ -213,6 +440,15 @@ watch(totalPages, () => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.team-toolbar {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
   margin-top: 20px;
 }
 
@@ -244,6 +480,120 @@ watch(totalPages, () => {
 
 .team-level-tab-active span {
   color: rgba(38, 196, 245, 1);
+}
+
+.team-month-filter {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-month-button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(45, 58, 86, 1);
+  border-radius: 9px;
+  color: rgba(148, 163, 184, 1);
+  background: rgba(31, 41, 61, 1);
+  cursor: pointer;
+}
+
+.team-month-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.team-month-button:hover,
+.team-month-button:focus,
+.team-month-button-active {
+  color: rgba(209, 237, 255, 1);
+  border-color: rgba(62, 91, 135, 1);
+}
+
+.team-month-popover {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 30;
+  width: 248px;
+  padding: 12px;
+  border: 1px solid rgba(50, 64, 96, 1);
+  border-radius: 10px;
+  background: rgba(15, 24, 42, 1);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+.team-month-popover-header {
+  height: 32px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 8px;
+  color: rgba(232, 242, 255, 1);
+}
+
+.team-month-popover-header strong {
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.team-month-year-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(45, 58, 86, 1);
+  border-radius: 8px;
+  color: rgba(148, 163, 184, 1);
+  background: rgba(18, 30, 51, 1);
+  cursor: pointer;
+}
+
+.team-month-year-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.team-month-year-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.team-month-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.team-month-option {
+  height: 34px;
+  border: 1px solid rgba(45, 58, 86, 1);
+  border-radius: 8px;
+  color: rgba(148, 163, 184, 1);
+  background: rgba(18, 30, 51, 1);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.team-month-option:hover,
+.team-month-option:focus {
+  color: rgba(209, 237, 255, 1);
+  border-color: rgba(38, 130, 176, 1);
+}
+
+.team-month-option-active {
+  color: rgba(221, 244, 255, 1);
+  border-color: rgba(38, 130, 176, 1);
+  background: rgba(20, 101, 145, 0.6);
+}
+
+.team-month-option:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .team-table-wrap {
@@ -312,6 +662,12 @@ watch(totalPages, () => {
   color: rgba(149, 156, 168, 1);
 }
 
+.team-empty-cell {
+  height: 120px !important;
+  color: rgba(149, 156, 168, 1) !important;
+  text-align: center !important;
+}
+
 .status-free {
   min-width: 84px;
   height: 28px;
@@ -375,6 +731,15 @@ watch(totalPages, () => {
 
   .team-table {
     min-width: 640px;
+  }
+
+  .team-toolbar {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .team-month-filter {
+    flex: 0 0 auto;
   }
 }
 </style>

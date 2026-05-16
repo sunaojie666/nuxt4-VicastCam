@@ -7,7 +7,7 @@ const LOGIN_BY_PASSWORD_PATH = '/v1/LoginByPassword'
 // 账号密码登录代理。前端提交 JSON，服务端转成后端要求的 multipart/form-data。
 export default defineEventHandler((event) => {
   return readVicastBody(event).then((requestBody) => {
-    const account = requireVicastParam(requestBody, 'account', '请输入手机号或邮箱')
+    const account = requireVicastParam(requestBody, 'account', 'Missing account')
     const password = requireVicastParam(requestBody, 'password', '请输入密码')
 
     return requestVicastApi(event, {

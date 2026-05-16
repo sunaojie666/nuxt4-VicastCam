@@ -1,73 +1,37 @@
 <template>
   <section id="home-sdk" class="home-learning-section" aria-labelledby="home-learning-title">
     <div class="home-learning-inner">
-      <span class="home-learning-eyebrow" data-reveal>教程中心</span>
+      <span class="home-learning-eyebrow" data-reveal>{{ tutorialContent.sectionTag }}</span>
 
       <h2 id="home-learning-title" class="home-learning-title" data-reveal style="--reveal-delay: 80ms">
-        <span>开启您的VicastCam</span>
-        <span class="theme-gradient-text">学习之旅</span>
+        <span>{{ tutorialContent.titleMain }}</span>
+        <span class="theme-gradient-text">{{ tutorialContent.titleHighlight }}</span>
       </h2>
 
       <p class="home-learning-subtitle" data-reveal style="--reveal-delay: 160ms">
-        <span>让您充分掌握软件使用方法</span>
-        <span class="theme-gradient-text">更快上手软件</span>
+        <span>{{ tutorialContent.description }}</span>
       </p>
 
       <div class="home-learning-grid">
         <article
           v-for="(course, index) in learningCards"
-          :key="course.title"
+          :key="course.id || `${course.title}-${index}`"
           class="home-learning-card"
           data-reveal="scale"
           :style="{ '--reveal-delay': `${course.delay}ms` }"
         >
           <img
-            v-if="index === 0"
+            v-if="course.coverImg"
             class="home-learning-image"
-            src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=740&q=80"
-            :alt="course.title"
-            loading="lazy"
-          >
-          <img
-            v-else-if="index === 1"
-            class="home-learning-image"
-            src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=740&q=80"
-            :alt="course.title"
-            loading="lazy"
-          >
-          <img
-            v-else-if="index === 2"
-            class="home-learning-image"
-            src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=740&q=80"
-            :alt="course.title"
-            loading="lazy"
-          >
-          <img
-            v-else-if="index === 3"
-            class="home-learning-image"
-            src="https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&w=740&q=80"
-            :alt="course.title"
-            loading="lazy"
-          >
-          <img
-            v-else-if="index === 4"
-            class="home-learning-image"
-            src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=740&q=80"
-            :alt="course.title"
-            loading="lazy"
-          >
-          <img
-            v-else
-            class="home-learning-image"
-            src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=740&q=80"
+            :src="course.coverImg"
             :alt="course.title"
             loading="lazy"
           >
 
           <div class="home-learning-card-body">
             <div class="home-learning-tags">
-              <span class="home-learning-tag home-learning-tag-muted">{{ course.type }}</span>
-              <span class="home-learning-tag home-learning-tag-primary">{{ course.level }}</span>
+              <span class="home-learning-tag home-learning-tag-muted">{{ course.tag1 }}</span>
+              <span class="home-learning-tag home-learning-tag-primary">{{ course.tag2 }}</span>
             </div>
 
             <h3 class="home-learning-card-title">{{ course.title }}</h3>
@@ -76,86 +40,139 @@
       </div>
 
       <NuxtLink :to="localePath('/tutorial')" class="home-learning-more theme-more-link">
-        <span>查看更多</span>
+        <span>{{ tutorialContent.buttonText }}</span>
         <img src="/images/Right.png" alt="" aria-hidden="true">
       </NuxtLink>
 
-      <div class="home-learning-cta" data-reveal style="--reveal-delay: 220ms">
-        <span class="home-learning-cta-eyebrow">
-          <img src="/images/star.png" alt="" aria-hidden="true">
-          AI赋能的直播工具
-        </span>
-
-        <h2 class="home-learning-cta-title">
-          <span>一键更换虚拟背景</span>
-            <span class="theme-gradient-text">
-            直播更精彩
-            <img class="home-learning-cta-line" src="/images/path.png" alt="" aria-hidden="true">
-          </span>
-        </h2>
-
-        <p class="home-learning-cta-copy">
-          <span>VicastCam使用先进的抠图技术，在直播期间随时替换您的背景。</span>
-          <span>打造丰富多彩的直播效果，处处展现专业形象。</span>
-        </p>
-
-        <div class="home-learning-cta-actions" aria-label="下载VicastCam">
-          <a href="#" class="home-learning-cta-download">
-            <img src="/images/apple.png" alt="" aria-hidden="true">
-            <span>在App Store<br><strong>下载</strong></span>
-          </a>
-
-          <a href="#" class="home-learning-cta-download">
-            <img src="/images/chromicon.png" alt="" aria-hidden="true">
-            <span>在Google Play<br><strong>下载</strong></span>
-          </a>
-        </div>
-      </div>
     </div>
   </section>
 </template>
 
 <script setup>
-const localePath = useLocalePath()
+import { getCards, getTutorials } from '../../../api/request/strapi'
 
-const learningCards = [
-  {
-    type: '安装',
-    level: '新手教程',
-    title: '如何下载与安装VicastCam',
-    delay: 0,
-  },
-  {
-    type: '安装',
-    level: '新手教程',
-    title: '如何下载与安装VicastCam',
-    delay: 90,
-  },
-  {
-    type: '安装',
-    level: '新手教程',
-    title: '如何下载与安装VicastCam',
-    delay: 180,
-  },
-  {
-    type: '安装',
-    level: '新手教程',
-    title: '如何下载与安装VicastCam',
-    delay: 0,
-  },
-  {
-    type: '安装',
-    level: '新手教程',
-    title: '如何下载与安装VicastCam',
-    delay: 90,
-  },
-  {
-    type: '安装',
-    level: '新手教程',
-    title: '如何下载与安装VicastCam',
-    delay: 180,
-  },
-]
+const localePath = useLocalePath()
+const { locale } = useI18n()
+const config = useRuntimeConfig()
+
+const tutorialContent = ref({
+  sectionTag: '',
+  titleMain: '',
+  titleHighlight: '',
+  description: '',
+  buttonText: '',
+})
+
+const learningCards = ref([])
+
+const createStrapiAssetUrl = (url) => {
+  if (!url) {
+    return ''
+  }
+
+  if (/^(https?:)?\/\//.test(url) || url.startsWith('data:')) {
+    return url
+  }
+
+  return `${String(config.public.strapiUrl || '').replace(/\/+$/, '')}${url}`
+}
+
+const getStrapiItemData = (item = {}) => item.attributes || item
+
+const getStrapiCollectionData = (response) => {
+  if (Array.isArray(response?.data)) {
+    return response.data.map(getStrapiItemData)
+  }
+
+  if (Array.isArray(response)) {
+    return response.map(getStrapiItemData)
+  }
+
+  return []
+}
+
+const getStrapiMediaUrl = (media) => {
+  if (Array.isArray(media)) {
+    return getStrapiMediaUrl(media[0])
+  }
+
+  if (Array.isArray(media?.data)) {
+    return getStrapiMediaUrl(media.data[0])
+  }
+
+  if (media?.data) {
+    return getStrapiMediaUrl(media.data)
+  }
+
+  const mediaData = media?.attributes || media || {}
+
+  return createStrapiAssetUrl(mediaData.url || '')
+}
+
+const getTutorialContentData = (response) => {
+  if (Array.isArray(response?.data)) {
+    const firstItem = response.data[0] || {}
+
+    return firstItem.attributes || firstItem
+  }
+
+  return response?.data?.attributes || response?.data || response || {}
+}
+
+const syncTutorialContent = (content = {}) => {
+  const tutorialData = content.data || content
+
+  tutorialContent.value = {
+    sectionTag: tutorialData.sectionTag || '',
+    titleMain: tutorialData.titleMain || '',
+    titleHighlight: tutorialData.titleHighlight || '',
+    description: tutorialData.description || '',
+    buttonText: tutorialData.buttonText || '',
+  }
+}
+
+const loadTutorialContent = () => {
+  getTutorials(locale.value).then(
+    response => {
+      syncTutorialContent(getTutorialContentData(response))
+    },
+    () => {
+      syncTutorialContent()
+    }
+  )
+}
+
+const syncLearningCards = (cards = []) => {
+  learningCards.value = cards.map((card, index) => ({
+    id: card.id || `${index}-${card.title || ''}`,
+    title: card.title || '',
+    tag1: card.tag1 || '',
+    tag2: card.tag2 || '',
+    coverImg: getStrapiMediaUrl(card.coverImg),
+    delay: (index % 3) * 90,
+  })).filter(card => card.title || card.tag1 || card.tag2 || card.coverImg)
+}
+
+const loadLearningCards = () => {
+  getCards(locale.value).then(
+    response => {
+      syncLearningCards(getStrapiCollectionData(response))
+    },
+    () => {
+      syncLearningCards()
+    }
+  )
+}
+
+onMounted(() => {
+  loadTutorialContent()
+  loadLearningCards()
+})
+
+watch(locale, () => {
+  loadTutorialContent()
+  loadLearningCards()
+})
 </script>
 
 <style>
@@ -306,145 +323,6 @@ const learningCards = [
   margin-top: 20px;
 }
 
-.home-learning-cta {
-  position: relative;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 160px;
-  text-align: center;
-}
-
-.home-learning-cta::before {
-  content: "";
-  position: absolute;
-  top: -270px;
-  left: 50%;
-  z-index: 0;
-  width: 1350px;
-  height: 840px;
-  background: url("/images/Circle.png") center / contain no-repeat;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.home-learning-cta > * {
-  position: relative;
-  z-index: 1;
-}
-
-.home-learning-cta-eyebrow {
-  max-width: 100%;
-  min-width: 242px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 0 18px;
-  border: 1px solid rgba(34, 211, 238, 0.38);
-  border-radius: 999px;
-  color: rgba(103, 232, 249, 1);
-  background-color: rgba(8, 145, 178, 0.18);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.home-learning-cta-eyebrow img {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 auto;
-  object-fit: contain;
-}
-
-.home-learning-cta-title {
-  max-width: 100%;
-  margin-top: 22px;
-  color: rgba(255, 255, 255, 1);
-  font-size: 58px;
-  font-weight: 900;
-  line-height: 68px;
-  overflow-wrap: anywhere;
-}
-
-.home-learning-cta-title span {
-  display: block;
-}
-
-.home-learning-cta-title span:last-child {
-  position: relative;
-  display: inline-block;
-}
-
-.home-learning-cta-line {
-  position: absolute;
-  left: 50%;
-  bottom: -13px;
-  width: 222px;
-  height: auto;
-  transform: translateX(-50%);
-}
-
-.home-learning-cta-copy {
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 28px;
-  color: rgba(229, 231, 235, 1);
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 30px;
-  overflow-wrap: anywhere;
-}
-
-.home-learning-cta-actions {
-  max-width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 28px;
-  margin-top: 27px;
-}
-
-.home-learning-cta-download {
-  width: 172px;
-  height: 64px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  border-radius: 15px;
-  color: rgba(89, 94, 104, 1);
-  background-color: rgba(255, 255, 255, 1);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 20px;
-  text-align: left;
-  overflow: hidden;
-}
-.home-learning-cta-download span {
-  min-width: 0;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-}
-
-.home-learning-cta-download img {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
-  object-fit: contain;
-}
-
-.home-learning-cta-download strong {
-  color: rgba(0, 0, 0, 1);
-}
-
 @media (max-width: 1153px) {
 
   .home-learning-grid {
@@ -486,22 +364,5 @@ const learningCards = [
     margin-top: 20px;
   }
 
-  .home-learning-cta {
-    margin-top: 72px;
-  }
-
-  .home-learning-cta-title {
-    font-size: 32px;
-    line-height: 40px;
-  }
-
-  .home-learning-cta-copy {
-    font-size: 14px;
-  }
-
-  .home-learning-cta-actions {
-    flex-direction: column;
-    gap: 16px;
-  }
 }
 </style>

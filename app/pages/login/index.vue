@@ -54,7 +54,6 @@ const loginBoxCopy = reactive({
   pwdLoginTab: '',
   qrLoginTab: '',
   emailInputPlaceholder: '',
-  accountInputPlaceholder: '',
   pwdInputPlaceholder: '',
   verifyCodePlaceholder: '',
   getVerifyCodeText: '',
@@ -67,22 +66,15 @@ const loginBoxCopy = reactive({
 })
 const toastBoxCopy = reactive({
   closeToastLabel: '',
-  sendCodeSuccess: '',
-  sendCodeFail: '',
+  requestLoading: '',
+  requestSuccess: '',
+  requestFail: '',
   passwordLoginNotReady: '',
   passwordRequired: '',
-  loginSuccess: '',
-  loginFail: '',
   emailRequired: '',
   verifyCodeRequired: '',
   agreeProtocolRequired: '',
   qrcodeExpired: '',
-  qrcodeIncomplete: '',
-  qrcodeFetchFail: '',
-  scanStatusFail: '',
-  profileSaved: '',
-  profileSaveFail: '',
-  inviteLinkCopied: '',
 })
 
 const authCardTitle = computed(() => {
@@ -134,7 +126,6 @@ const syncLoginBoxCopy = (loginData = {}) => {
   loginBoxCopy.pwdLoginTab = loginBox.pwdLoginTab || ''
   loginBoxCopy.qrLoginTab = loginBox.qrLoginTab || ''
   loginBoxCopy.emailInputPlaceholder = loginBox.emailInputPlaceholder || ''
-  loginBoxCopy.accountInputPlaceholder = loginBox.accountInputPlaceholder || loginBox.accountPlaceholder || ''
   loginBoxCopy.pwdInputPlaceholder = loginBox.pwdInputPlaceholder || loginBox.passwordInputPlaceholder || ''
   loginBoxCopy.verifyCodePlaceholder = loginBox.verifyCodePlaceholder || ''
   loginBoxCopy.getVerifyCodeText = loginBox.getVerifyCodeText || ''
@@ -150,22 +141,15 @@ const syncToastBoxCopy = (loginData = {}) => {
   const toastBox = getToastBoxData(loginData)
 
   toastBoxCopy.closeToastLabel = toastBox.closeToastLabel || ''
-  toastBoxCopy.sendCodeSuccess = toastBox.sendCodeSuccess || ''
-  toastBoxCopy.sendCodeFail = toastBox.sendCodeFail || ''
+  toastBoxCopy.requestLoading = toastBox.requestLoading || ''
+  toastBoxCopy.requestSuccess = toastBox.requestSuccess || ''
+  toastBoxCopy.requestFail = toastBox.requestFail || ''
   toastBoxCopy.passwordLoginNotReady = toastBox.passwordLoginNotReady || ''
   toastBoxCopy.passwordRequired = toastBox.passwordRequired || ''
-  toastBoxCopy.loginSuccess = toastBox.loginSuccess || ''
-  toastBoxCopy.loginFail = toastBox.loginFail || ''
   toastBoxCopy.emailRequired = toastBox.emailRequired || ''
   toastBoxCopy.verifyCodeRequired = toastBox.verifyCodeRequired || ''
   toastBoxCopy.agreeProtocolRequired = toastBox.agreeProtocolRequired || ''
   toastBoxCopy.qrcodeExpired = toastBox.qrcodeExpired || ''
-  toastBoxCopy.qrcodeIncomplete = toastBox.qrcodeIncomplete || ''
-  toastBoxCopy.qrcodeFetchFail = toastBox.qrcodeFetchFail || ''
-  toastBoxCopy.scanStatusFail = toastBox.scanStatusFail || ''
-  toastBoxCopy.profileSaved = toastBox.profileSaved || ''
-  toastBoxCopy.profileSaveFail = toastBox.profileSaveFail || ''
-  toastBoxCopy.inviteLinkCopied = toastBox.inviteLinkCopied || ''
   setToastText(toastBoxCopy)
 }
 

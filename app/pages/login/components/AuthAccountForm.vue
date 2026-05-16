@@ -86,7 +86,7 @@ const agreementModel = defineModel('agreementAccepted', {
   type: Boolean,
   required: true,
 })
-const { showSuccessToast, showErrorToast } = useSiteToast()
+const { requestLoadingText, showErrorToast, showRequestFailToast, showRequestSuccessToast } = useSiteToast()
 const { loginWithEmailCode, loginWithPassword } = useAuth()
 const localePath = useLocalePath()
 
@@ -102,7 +102,7 @@ const loginBox = computed(() => props.loginBox || {})
 const toastBox = computed(() => props.toastBox || {})
 const isPasswordLogin = computed(() => props.loginMethod === 'password')
 const accountPlaceholder = computed(() => {
-  return isPasswordLogin.value ? (loginBox.value.accountInputPlaceholder || '请输入手机号或邮箱') : loginBox.value.emailInputPlaceholder
+  return loginBox.value.emailInputPlaceholder
 })
 const credentialPlaceholder = computed(() => {
   return isPasswordLogin.value ? loginBox.value.pwdInputPlaceholder : loginBox.value.verifyCodePlaceholder
@@ -119,7 +119,7 @@ const loginMethodToggleText = computed(() => {
 })
 const codeButtonText = computed(() => {
   if (isSendingCode.value) {
-    return loginBox.value.getVerifyCodeText ? `${loginBox.value.getVerifyCodeText}...` : ''
+    return requestLoadingText.value
   }
 
   if (codeCountdown.value > 0) {
@@ -130,7 +130,7 @@ const codeButtonText = computed(() => {
 })
 const submitButtonText = computed(() => {
   if (isLoggingIn.value) {
-    return loginBox.value.loginBtnText ? `${loginBox.value.loginBtnText}...` : ''
+    return requestLoadingText.value
   }
 
   return loginBox.value.loginBtnText || ''
@@ -206,12 +206,12 @@ const handleSendEmailCode = () => {
   sendEmailCode(email).then(
     () => {
       isSendingCode.value = false
-      showSuccessToast(toastBox.value.sendCodeSuccess || '')
+      showRequestSuccessToast()
       startCodeCountdown()
     },
     () => {
       isSendingCode.value = false
-      showErrorToast(toastBox.value.sendCodeFail || '')
+      showRequestFailToast()
     }
   )
 }
@@ -226,7 +226,7 @@ const handleLoginSubmit = () => {
   }
 
   if (!credential) {
-    showErrorToast(isPasswordLogin.value ? (toastBox.value.passwordRequired || toastBox.value.loginFail || '') : (toastBox.value.verifyCodeRequired || ''))
+    showErrorToast(isPasswordLogin.value ? (toastBox.value.passwordRequired || '') : (toastBox.value.verifyCodeRequired || ''))
     return
   }
 
@@ -244,12 +244,12 @@ const handleLoginSubmit = () => {
   loginRequest.then(
     () => {
       isLoggingIn.value = false
-      showSuccessToast(toastBox.value.loginSuccess || '')
+      showRequestSuccessToast()
       navigateTo(localePath('/'))
     },
     () => {
       isLoggingIn.value = false
-      showErrorToast(toastBox.value.loginFail || '')
+      showRequestFailToast()
     }
   )
 }

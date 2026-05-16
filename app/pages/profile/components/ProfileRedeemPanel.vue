@@ -12,11 +12,21 @@
 
       <div class="membership-activation-row">
         <input
+          v-model="cardPwd"
           type="text"
           class="membership-activation-input"
           placeholder="请输入10位数激活码"
+          :disabled="isActivating"
+          @keyup.enter="handleActiveCard"
         >
-        <button type="button" class="membership-activation-button">立即激活</button>
+        <button
+          type="button"
+          class="membership-activation-button"
+          :disabled="isActivating"
+          @click="handleActiveCard"
+        >
+          立即激活
+        </button>
       </div>
 
       <p class="membership-activation-agreement">
@@ -26,6 +36,57 @@
     </section>
   </section>
 </template>
+
+<script setup>
+import { activeCard } from '../../../api/request/auth'
+
+const cardPwd = ref('')
+const isActivating = ref(false)
+const { authUser } = useAuth()
+const { showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+
+const isSuccessResponse = (response) => {
+  const code = Number(response?.code ?? response?.data?.code)
+  const status = String(response?.status ?? response?.data?.status ?? '').toLowerCase()
+
+  if (code && ![0, 200, 200001, 200200].includes(code)) {
+    return false
+  }
+
+  if (status && !['success', 'ok', 'succeed'].includes(status)) {
+    return false
+  }
+
+  return !response?.error && !response?.data?.error
+}
+
+const handleActiveCard = () => {
+  const card_pwd = cardPwd.value.trim()
+
+  if (!card_pwd || isActivating.value) {
+    return
+  }
+
+  isActivating.value = true
+
+  activeCard({
+    user_id: authUser.value?.user_id,
+    card_pwd,
+  }).then((response) => {
+    if (!isSuccessResponse(response)) {
+      return Promise.reject(new Error(response?.message || response?.data?.message || '激活失败'))
+    }
+
+    cardPwd.value = ''
+    showRequestSuccessToast()
+    return response
+  }).catch(() => {
+    showRequestFailToast()
+  }).finally(() => {
+    isActivating.value = false
+  })
+}
+</script>
 
 <style scoped>
 .membership-activation-panel {
@@ -81,6 +142,11 @@
   color: rgba(108, 125, 153, 1);
 }
 
+.membership-activation-input:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
 .membership-activation-button {
   height: 60px;
   border-radius: 8px;
@@ -89,6 +155,11 @@
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.membership-activation-button:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 .membership-activation-agreement {

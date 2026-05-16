@@ -1,16 +1,15 @@
 <template>
   <section id="home-faq" class="home-faq-section" aria-labelledby="home-faq-title">
     <div class="home-faq-inner">
-      <span id="home-faq-anchor" class="home-faq-eyebrow" data-reveal>常见问题</span>
+      <span id="home-faq-anchor" class="home-faq-eyebrow" data-reveal>{{ faqSection.tag }}</span>
 
       <h2 id="home-faq-title" class="home-faq-title" data-reveal style="--reveal-delay: 80ms">
-        <span>有疑问吗?</span>
-        <span class="theme-gradient-text">我们有解答。</span>
+        <span>{{ faqSection.title_main }}</span>
+        <span class="theme-gradient-text">{{ faqSection.title_highlight }}</span>
       </h2>
 
       <p class="home-faq-subtitle" data-reveal style="--reveal-delay: 160ms">
-        <span>关于VicastCam的常见问题都在下方</span>
-        <span>没有找到你想要的答案? <a href="#" class="home-faq-contact">请联系我们的团队</a></span>
+        <span>{{ faqSection.description }}</span>
       </p>
 
       <div class="home-faq-list">
@@ -44,7 +43,7 @@
       </div>
 
       <NuxtLink :to="localePath('/faq')" class="home-faq-more theme-more-link">
-        <span>查看更多</span>
+        <span>{{ viewMoreText }}</span>
         <img src="/images/Right.png" alt="" aria-hidden="true">
       </NuxtLink>
     </div>
@@ -52,38 +51,77 @@
 </template>
 
 <script setup>
-const localePath = useLocalePath()
+import { getFaq } from '../../../api/request/strapi'
 
-const questionText = '我可以用VicastCam在哪些平台进行直播?'
+const localePath = useLocalePath()
+const { locale } = useI18n()
 
 const activeFaqIndex = ref(0)
+const faqSection = ref({
+  tag: '',
+  title_main: '',
+  title_highlight: '',
+  description: '',
+  questions: [],
+  view_more: {
+    text: '',
+  },
+})
 
-const faqItems = [
-  {
-    question: questionText,
-    answer: 'VicastCam支持多个平台进行直播，包括 TikTok、YouTube Live、Twitch、InstagramLive、FacebookLive、Kick等等。只要你有直播权限，都可以进行直播。',
-  },
-  {
-    question: questionText,
-    answer: '',
-  },
-  {
-    question: questionText,
-    answer: '',
-  },
-  {
-    question: questionText,
-    answer: '',
-  },
-  {
-    question: questionText,
-    answer: '',
-  },
-]
+const faqItems = computed(() => {
+  return Array.isArray(faqSection.value.questions)
+    ? faqSection.value.questions
+    : []
+})
+const viewMoreText = computed(() => faqSection.value.view_more?.text || '')
+
+const getFaqContentData = (response) => {
+  if (Array.isArray(response?.data)) {
+    const firstItem = response.data[0] || {}
+
+    return firstItem.attributes || firstItem
+  }
+
+  return response?.data?.attributes || response?.data || response || {}
+}
+
+const syncFaqContent = (faqData = {}) => {
+  faqSection.value = faqData.faqData?.faq_section || faqData.faq_section || {
+    tag: '',
+    title_main: '',
+    title_highlight: '',
+    description: '',
+    questions: [],
+    view_more: {
+      text: '',
+    },
+  }
+
+  activeFaqIndex.value = faqItems.value.length ? 0 : -1
+}
+
+const loadFaqContent = () => {
+  getFaq(locale.value).then(
+    response => {
+      syncFaqContent(getFaqContentData(response))
+    },
+    () => {
+      syncFaqContent()
+    }
+  )
+}
 
 const toggleFaqItem = (index) => {
   activeFaqIndex.value = activeFaqIndex.value === index ? -1 : index
 }
+
+onMounted(() => {
+  loadFaqContent()
+})
+
+watch(locale, () => {
+  loadFaqContent()
+})
 </script>
 
 <style>

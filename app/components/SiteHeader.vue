@@ -429,6 +429,11 @@ const syncHeaderScrolledState = () => {
 const handleNavigationClick = (key) => {
   closeMobileMenu()
 
+  if (key === 'sdk') {
+    navigateTo(localePath('/sdk'))
+    return
+  }
+
   const sectionId = navigationSectionMap[key]?.targetId
   if (!sectionId) {
     return

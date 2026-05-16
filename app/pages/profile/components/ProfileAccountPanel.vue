@@ -1,5 +1,71 @@
 <template>
   <section class="profile-content" aria-label="账号信息">
+    <section class="profile-panel account-profile-panel">
+      <header class="profile-panel-heading">
+        <span>
+          <Icon name="lucide:user-round" aria-hidden="true" />
+        </span>
+        <h2>个人资料</h2>
+      </header>
+
+      <div class="account-form">
+        <div class="account-info-list">
+          <div class="account-info-row">
+            <Icon class="account-info-icon" name="lucide:user-round" aria-hidden="true" />
+            <span class="account-info-main">
+              <span>用户名</span>
+              <input
+                v-if="editingField === 'nickname'"
+                ref="nicknameInput"
+                v-model.trim="profileForm.nickname"
+                type="text"
+                autocomplete="name"
+                placeholder="请输入用户名"
+              >
+              <strong v-else>{{ profileName }}</strong>
+            </span>
+            <button
+              type="button"
+              class="account-row-action"
+              :disabled="isSaving"
+              @click="handleFieldAction('nickname')"
+            >
+              {{ editingField === 'nickname' ? '确定' : '修改' }}
+            </button>
+          </div>
+
+          <div class="account-info-row">
+            <Icon class="account-info-icon" name="lucide:lock-keyhole" aria-hidden="true" />
+            <span class="account-info-main">
+              <span>密码</span>
+              <span v-if="editingField === 'password'" class="account-password-wrap">
+                <input
+                  ref="passwordInput"
+                  v-model="profileForm.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  placeholder="不修改请留空"
+                >
+                <button type="button" aria-label="切换密码可见性" @click="showPassword = !showPassword">
+                  <Icon :name="showPassword ? 'lucide:eye' : 'lucide:eye-off'" aria-hidden="true" />
+                </button>
+              </span>
+              <strong v-else>••••••••••</strong>
+            </span>
+            <button
+              type="button"
+              class="account-row-action"
+              :disabled="isSaving"
+              @click="handleFieldAction('password')"
+            >
+              {{ editingField === 'password' ? '确定' : '修改' }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
     <section class="profile-panel profile-invite-panel">
       <header class="profile-panel-heading">
         <span>
@@ -8,10 +74,10 @@
         <h2>邀请链接</h2>
       </header>
 
-      <p class="profile-invite-text">分享你的专属邀请链接，好友通过链接加入后会自动绑定到你的团队。</p>
+      <p class="profile-invite-text">分享你的专属邀请链接，壮大团队，获得佣金收益。</p>
 
       <div class="profile-invite-link">
-        <Icon name="lucide:link-2" aria-hidden="true" />
+        <Icon name="lucide:external-link" aria-hidden="true" />
         <span>{{ inviteLink || '暂无邀请链接' }}</span>
         <button
           type="button"
@@ -23,141 +89,30 @@
         </button>
       </div>
     </section>
-
-    <section class="profile-panel account-profile-panel">
-      <header class="profile-panel-heading">
-        <span>
-          <Icon name="lucide:user-round" aria-hidden="true" />
-        </span>
-        <h2>个人资料</h2>
-      </header>
-
-      <form class="account-form" @submit.prevent="handleSaveProfile">
-        <div class="account-form-grid">
-          <label class="account-field">
-            <span>昵称</span>
-            <input v-model.trim="profileForm.nickname" type="text" placeholder="请输入昵称">
-          </label>
-
-          <label class="account-field">
-            <span>职业</span>
-            <input v-model.trim="profileForm.industry" type="text" placeholder="请输入职业">
-          </label>
-
-          <div class="account-field">
-            <span>性别</span>
-            <div class="account-gender-group">
-              <button
-                v-for="option in genderOptions"
-                :key="option"
-                type="button"
-                :class="['account-gender-option', { 'account-gender-option-active': profileForm.gender === option }]"
-                @click="profileForm.gender = option"
-              >
-                {{ option }}
-              </button>
-            </div>
-          </div>
-
-          <label class="account-field">
-            <span>地区</span>
-            <input v-model.trim="profileForm.region" type="text" placeholder="请输入地区">
-          </label>
-
-          <label class="account-field account-field-full">
-            <span>个人简介</span>
-            <span class="account-textarea-wrap">
-              <textarea
-                v-model.trim="profileForm.intro"
-                maxlength="120"
-                placeholder="请输入简介"
-              ></textarea>
-              <span>{{ profileForm.intro.length }}/120个字符</span>
-            </span>
-          </label>
-
-          <label class="account-field">
-            <span>手机号</span>
-            <input v-model.trim="profileForm.mobile" type="tel" placeholder="请输入手机号">
-          </label>
-
-          <label class="account-field">
-            <span>邮箱</span>
-            <input v-model.trim="profileForm.email" type="email" placeholder="请输入邮箱地址">
-          </label>
-
-          <label class="account-field account-field-full">
-            <span>新密码</span>
-            <span class="account-password-wrap">
-              <input
-                v-model="profileForm.password"
-                :type="showPassword ? 'text' : 'password'"
-                autocomplete="new-password"
-                placeholder="至少8位，包含字母与数字"
-              >
-              <button type="button" aria-label="切换密码可见性" @click="showPassword = !showPassword">
-                <Icon :name="showPassword ? 'lucide:eye' : 'lucide:eye-off'" aria-hidden="true" />
-              </button>
-            </span>
-          </label>
-        </div>
-
-        <footer class="account-form-footer">
-          <p>修改后请点击右侧「保存」按钮使资料生效</p>
-          <button type="submit" :disabled="isSaving">保存修改</button>
-        </footer>
-      </form>
-    </section>
   </section>
 </template>
 
 <script setup>
-const props = defineProps({
-  avatarFile: {
-    type: null,
-    default: null,
-  },
-})
 const emit = defineEmits(['profile-saved'])
 const { authUser, updateUserProfile } = useAuth()
-const { toastText, showSuccessToast, showErrorToast } = useSiteToast()
-const genderOptions = ['男', '女', '保密']
+const { showErrorToast, showRequestFailToast, showRequestSuccessToast } = useSiteToast()
 const showPassword = ref(false)
 const isSaving = ref(false)
+const editingField = ref('')
+const nicknameInput = ref(null)
+const passwordInput = ref(null)
 
 const profileForm = reactive({
   nickname: authUser.value?.nickname || '',
-  industry: '',
-  gender: '保密',
-  region: '',
-  intro: '',
-  mobile: '',
-  email: authUser.value?.email || '',
   password: '',
 })
 
-const normalizeGender = (value) => {
-  const gender = String(value || '').trim().toLowerCase()
-
-  if (gender === '男' || gender === 'male' || gender === 'm' || gender === '1') {
-    return '男'
-  }
-
-  if (gender === '女' || gender === 'female' || gender === 'f' || gender === '2') {
-    return '女'
-  }
-
-  return '保密'
-}
+const profileName = computed(() => {
+  return authUser.value?.nickname || '未设置用户名'
+})
 
 const syncProfileForm = (user = {}) => {
   profileForm.nickname = user.nickname || ''
-  profileForm.industry = user.industry || ''
-  profileForm.gender = normalizeGender(user.gender)
-  profileForm.region = user.region || user.area || [user.province, user.city].filter(Boolean).join(' ')
-  profileForm.intro = user.intro || ''
-  profileForm.mobile = user.mobile || ''
-  profileForm.email = user.email || ''
 }
 
 const inviteLink = computed(() => {
@@ -178,44 +133,88 @@ const copyInviteLink = () => {
   }
 
   window.navigator.clipboard.writeText(inviteLink.value).then(
-    () => showSuccessToast(toastText.value.inviteLinkCopied || ''),
+    () => showRequestSuccessToast(),
     () => null
   )
 }
 
-const createProfilePayload = () => {
-  return {
-    user_id: authUser.value?.user_id || '',
-    nickname: profileForm.nickname,
-    intro: profileForm.intro,
-    industry: profileForm.industry,
-    gender: profileForm.gender,
-    area: profileForm.region,
-    password: profileForm.password,
-    avatar: props.avatarFile,
-    mobile: profileForm.mobile,
-    email: profileForm.email,
+const createProfilePayload = (field) => {
+  if (field === 'nickname') {
+    return {
+      nickname: profileForm.nickname,
+    }
   }
+
+  if (field === 'password') {
+    return {
+      password: profileForm.password,
+    }
+  }
+
+  return {}
 }
 
-const handleSaveProfile = () => {
+const saveProfileField = (field) => {
   if (isSaving.value) {
     return
   }
 
   isSaving.value = true
 
-  updateUserProfile(createProfilePayload()).then(
+  updateUserProfile(createProfilePayload(field)).then(
     () => {
       emit('profile-saved')
-      showSuccessToast(toastText.value.profileSaved || '')
+      if (field === 'password') {
+        profileForm.password = ''
+        showPassword.value = false
+      }
+      editingField.value = ''
+      showRequestSuccessToast()
       isSaving.value = false
     },
     () => {
-      showErrorToast(toastText.value.profileSaveFail || '')
+      showRequestFailToast()
       isSaving.value = false
     }
   )
+}
+
+const focusEditingField = (field) => {
+  nextTick(() => {
+    const target = field === 'nickname' ? nicknameInput.value : passwordInput.value
+
+    target?.focus()
+  })
+}
+
+const handleFieldAction = (field) => {
+  if (editingField.value !== field) {
+    editingField.value = field
+
+    if (field === 'nickname') {
+      profileForm.nickname = authUser.value?.nickname || ''
+    }
+
+    if (field === 'password') {
+      profileForm.password = ''
+      showPassword.value = false
+    }
+
+    focusEditingField(field)
+    return
+  }
+
+  if (field === 'nickname' && !profileForm.nickname.trim()) {
+    showErrorToast('请输入用户名')
+    return
+  }
+
+  if (field === 'password' && !profileForm.password.trim()) {
+    showErrorToast('请输入密码')
+    return
+  }
+
+  saveProfileField(field)
 }
 
 watch(authUser, user => {
@@ -227,8 +226,10 @@ watch(authUser, user => {
 
 <style scoped>
 .account-profile-panel {
-  min-height: 502px !important;
-  padding: 28px 28px 27px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding-top: 0 !important;
+  padding-bottom: 20px !important;
 }
 
 .profile-invite-link button:disabled {
@@ -236,135 +237,96 @@ watch(authUser, user => {
   cursor: not-allowed;
 }
 
+.profile-invite-panel {
+  min-height: 0 !important;
+  height: auto !important;
+  padding-bottom: 20px !important;
+}
+
 .account-profile-panel .profile-panel-heading {
-  min-height: 52px;
-  padding-bottom: 21px;
+  min-height: 58px;
+  padding-bottom: 0;
 }
 
 .account-form {
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
-.account-form-grid {
+.account-info-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 20px;
+  gap: 14px;
 }
 
-.account-field {
+.account-info-row {
   min-width: 0;
   display: grid;
-  gap: 8px;
+  grid-template-columns: 20px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 16px;
+  min-height: 50px;
+  padding: 8px 14px;
+  border: 1px solid rgba(55, 65, 81, 0.86);
+  border-radius: 8px;
+  background: rgba(32, 41, 61, 1);
 }
 
-.account-field-full {
-  grid-column: 1 / -1;
+.account-info-icon {
+  width: 17px;
+  height: 17px;
+  color: rgba(149, 156, 168, 1);
 }
 
-.account-field > span:first-child {
+.account-info-main {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.account-info-main > span:first-child {
   color: rgba(149, 156, 168, 1);
   font-size: 12px;
-  line-height: 18px;
+  line-height: 16px;
 }
 
-.account-field input,
-.account-field textarea,
-.account-password-wrap {
+.account-info-main input {
   width: 100%;
-  border: 1px solid rgba(82, 101, 129, 1);
-  border-radius: 7px;
-  color: rgba(229, 238, 252, 1);
-  background: rgba(14, 24, 40, 1);
+  min-width: 0;
+  color: rgba(236, 244, 255, 1);
   font-size: 14px;
+  font-weight: 700;
   line-height: 20px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.account-field input {
-  height: 38px;
-  padding: 0 14px;
+.account-info-main input::placeholder {
+  color: rgba(120, 136, 162, 1);
+  font-weight: 400;
 }
 
-.account-field textarea {
-  height: 67px;
+.account-info-main strong {
   display: block;
-  padding: 11px 14px 22px;
-  resize: none;
-}
-
-.account-field input::placeholder,
-.account-field textarea::placeholder {
-  color: rgba(122, 136, 159, 1);
-}
-
-.account-field input:focus,
-.account-field textarea:focus,
-.account-password-wrap:focus-within {
-  border-color: rgba(34, 211, 238, 0.9);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
-  background: rgba(12, 22, 38, 1);
-}
-
-.account-gender-group {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.account-gender-option {
-  height: 38px;
-  border: 1px solid rgba(13, 22, 37, 1);
-  border-radius: 7px;
-  color: rgba(149, 156, 168, 1);
-  background: rgba(11, 19, 34, 1);
-  font-size: 13px;
-  line-height: 18px;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.account-gender-option-active {
-  border-color: rgba(46, 104, 255, 1);
-  color: rgba(34, 211, 238, 1);
-  background: rgba(22, 49, 88, 1);
-  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.45);
-}
-
-.account-textarea-wrap {
-  position: relative;
-  display: block;
-}
-
-.account-textarea-wrap > span {
-  position: absolute;
-  right: 12px;
-  bottom: 6px;
-  color: rgba(132, 145, 168, 1);
-  font-size: 10px;
-  line-height: 14px;
-  pointer-events: none;
+  min-width: 0;
+  color: rgba(236, 244, 255, 1);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-password-wrap {
-  height: 38px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 34px;
   align-items: center;
 }
 
 .account-password-wrap input {
-  height: 36px;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.account-password-wrap input:focus {
-  box-shadow: none;
+  padding-right: 8px;
 }
 
 .account-password-wrap button {
-  height: 36px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -377,49 +339,17 @@ watch(authUser, user => {
   height: 15px;
 }
 
-.account-form-footer {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 136px;
-  align-items: center;
-  gap: 20px;
-  margin-top: 18px;
-}
-
-.account-form-footer p {
-  min-width: 0;
-  color: rgba(149, 156, 168, 1);
-  font-size: 12px;
-  line-height: 18px;
-  overflow-wrap: anywhere;
-}
-
-.account-form-footer button {
-  height: 28px;
-  border-radius: 7px;
-  color: rgba(255, 255, 255, 1);
-  background: linear-gradient(90deg, rgba(59, 178, 233, 1), rgba(47, 125, 235, 1));
-  font-size: 12px;
-  line-height: 18px;
+.account-row-action {
+  justify-self: end;
+  color: rgba(34, 211, 238, 1);
+  font-size: 14px;
+  line-height: 20px;
   cursor: pointer;
-  transition: filter 0.2s ease, transform 0.2s ease;
 }
 
-.account-form-footer button:disabled {
-  opacity: 0.58;
+.account-row-action:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-}
-
-.account-form-footer button:hover,
-.account-form-footer button:focus {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-}
-
-.account-form-footer button:disabled:hover,
-.account-form-footer button:disabled:focus {
-  filter: none;
-  transform: none;
 }
 
 @media (max-width: 900px) {
@@ -429,14 +359,13 @@ watch(authUser, user => {
 }
 
 @media (max-width: 640px) {
-  .account-form-grid,
-  .account-form-footer {
-    grid-template-columns: 1fr;
+  .account-info-row {
+    grid-template-columns: 20px minmax(0, 1fr);
   }
 
-  .account-form-footer button {
-    width: 100%;
-    height: 38px;
+  .account-row-action {
+    grid-column: 2;
+    justify-self: start;
   }
 }
 </style>

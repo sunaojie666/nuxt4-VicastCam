@@ -12,20 +12,20 @@
         <div class="membership-current-main">
           <img class="membership-current-badge" :src="currentBadgeImage" alt="会员标识">
           <div class="membership-current-copy">
-            <strong>年度会员</strong>
+            <strong>{{ currentVipName }}</strong>
             <p>
               <Icon name="lucide:calendar" aria-hidden="true" />
-              到期日期: 2026-12-31
+              {{ currentVipExpireText }}
             </p>
           </div>
         </div>
-        <span class="membership-current-status">生效中</span>
+        <span class="membership-current-status">{{ currentVipStatusText }}</span>
       </article>
 
       <div class="membership-grid">
         <article
           v-for="plan in membershipPlans"
-          :key="plan.name"
+          :key="plan.id"
           class="membership-card"
         >
           <header class="membership-card-top" :class="plan.theme">
@@ -41,6 +41,7 @@
               <strong>{{ plan.price }}</strong>
               <span>{{ plan.unit }}</span>
             </div>
+            <div v-if="plan.originalPrice" class="membership-original-price">{{ plan.originalPrice }}</div>
 
             <ul class="membership-benefits">
               <li v-for="benefit in plan.benefits" :key="benefit">
@@ -114,40 +115,42 @@
 </template>
 
 <script setup>
-const membershipPlans = [
-  {
-    name: '月度会员',
-    subtitle: '低门槛随心用，全功能按月畅享',
-    price: '$9.99',
-    unit: '/月',
-    cta: '立即购买',
-    badgeImage: '/images/profile/month.png',
-    theme: 'theme-cyan',
-    benefits: ['普通会员特权', '普通会员标识', '普通会员内容', '普通会员支持'],
-  },
-  {
-    name: '年度会员',
-    subtitle: '超值特惠，性价比拉满更省钱',
-    price: '$69.99',
-    unit: '/年',
-    cta: '立即续费',
-    badgeImage: '/images/profile/year.png',
-    theme: 'theme-blue',
-    benefits: ['普通会员特权', '普通会员标识', '普通会员内容', '普通会员支持'],
-  },
-  {
-    name: '终身会员',
-    subtitle: '一次付费永久畅用，免费更新',
-    price: '$99.99',
-    unit: '',
-    cta: '立即升级',
-    badgeImage: '/images/profile/gold.png',
-    theme: 'theme-violet',
-    benefits: ['普通会员特权', '普通会员标识', '普通会员内容', '普通会员支持'],
-  },
-]
+const { authUser } = useAuth()
+const { vipPlans, loadVipTypes } = useVipTypes()
 
-const currentBadgeImage = '/images/profile/year.png'
+const membershipPlans = computed(() => vipPlans.value)
+
+const currentVipName = computed(() => {
+  return authUser.value?.vip_type || '未开通会员'
+})
+
+const currentVipExpireText = computed(() => {
+  return authUser.value?.vip_endtime
+    ? `到期日期: ${authUser.value.vip_endtime}`
+    : '到期日期: 暂无'
+})
+
+const currentVipStatusText = computed(() => {
+  return authUser.value?.vip_type ? '生效中' : '未开通'
+})
+
+const currentBadgeImage = computed(() => {
+  const vipType = String(authUser.value?.vip_type || '').toLowerCase()
+
+  if (vipType.includes('终身') || vipType.includes('永久') || vipType.includes('life')) {
+    return '/images/profile/gold.png'
+  }
+
+  if (vipType.includes('年')) {
+    return '/images/profile/year.png'
+  }
+
+  if (vipType.includes('月')) {
+    return '/images/profile/month.png'
+  }
+
+  return '/images/profile/year.png'
+})
 
 const compareRows = [
   { feature: '预设场景', month: '5个', year: '不限', life: '不限' },
@@ -162,6 +165,10 @@ const compareRows = [
   { feature: '控制器', month: 'check', year: 'check', life: 'check' },
   { feature: '美颜类型', month: 'cross', year: 'check', life: 'check' },
 ]
+
+onMounted(() => {
+  loadVipTypes()
+})
 
 </script>
 
@@ -324,7 +331,7 @@ const compareRows = [
 .membership-card-body {
   min-height: 204px;
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr;
   padding: 12px 16px 14px;
 }
 
@@ -338,7 +345,7 @@ const compareRows = [
 
 .membership-price strong {
   color: rgba(61, 180, 255, 1);
-  font-size: 36px;
+  font-size: 34px;
   font-weight: 800;
   line-height: 1;
 }
@@ -349,8 +356,17 @@ const compareRows = [
   line-height: 22px;
 }
 
+.membership-original-price {
+  margin-top: 6px;
+  color: rgba(100, 116, 139, 1);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+  text-decoration: line-through;
+}
+
 .membership-benefits {
-  margin-top: 20px;
+  margin-top: 14px;
   display: grid;
   justify-items: center;
   gap: 10px;

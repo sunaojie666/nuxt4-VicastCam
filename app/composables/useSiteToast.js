@@ -7,21 +7,14 @@ export const useSiteToast = () => {
   const toastItems = useState('site-toast-items', () => [])
   const toastText = useState('site-toast-text', () => ({
     closeToastLabel: '',
-    sendCodeSuccess: '',
-    sendCodeFail: '',
+    requestLoading: '',
+    requestSuccess: '',
+    requestFail: '',
     passwordLoginNotReady: '',
-    loginSuccess: '',
-    loginFail: '',
     emailRequired: '',
     verifyCodeRequired: '',
     agreeProtocolRequired: '',
     qrcodeExpired: '',
-    qrcodeIncomplete: '',
-    qrcodeFetchFail: '',
-    scanStatusFail: '',
-    profileSaved: '',
-    profileSaveFail: '',
-    inviteLinkCopied: '',
   }))
 
   const removeToast = (id) => {
@@ -32,21 +25,14 @@ export const useSiteToast = () => {
     toastText.value = {
       ...toastText.value,
       closeToastLabel: text.closeToastLabel || '',
-      sendCodeSuccess: text.sendCodeSuccess || '',
-      sendCodeFail: text.sendCodeFail || '',
+      requestLoading: text.requestLoading || '',
+      requestSuccess: text.requestSuccess || '',
+      requestFail: text.requestFail || '',
       passwordLoginNotReady: text.passwordLoginNotReady || '',
-      loginSuccess: text.loginSuccess || '',
-      loginFail: text.loginFail || '',
       emailRequired: text.emailRequired || '',
       verifyCodeRequired: text.verifyCodeRequired || '',
       agreeProtocolRequired: text.agreeProtocolRequired || '',
       qrcodeExpired: text.qrcodeExpired || '',
-      qrcodeIncomplete: text.qrcodeIncomplete || '',
-      qrcodeFetchFail: text.qrcodeFetchFail || '',
-      scanStatusFail: text.scanStatusFail || '',
-      profileSaved: text.profileSaved || '',
-      profileSaveFail: text.profileSaveFail || '',
-      inviteLinkCopied: text.inviteLinkCopied || '',
     }
   }
 
@@ -92,12 +78,33 @@ export const useSiteToast = () => {
     })
   }
 
+  const showRequestSuccessToast = (options = {}) => {
+    return showSuccessToast(toastText.value.requestSuccess || '请求成功', options)
+  }
+
+  const showRequestFailToast = (options = {}) => {
+    return showErrorToast(toastText.value.requestFail || '请求失败', options)
+  }
+
+  const requestLoadingText = computed(() => {
+    const text = String(toastText.value.requestLoading || '加载中').trim()
+
+    if (!text) {
+      return '加载中...'
+    }
+
+    return text.endsWith('...') ? text : `${text}...`
+  })
+
   return {
     toastItems,
     toastText,
+    requestLoadingText,
     showToast,
     showSuccessToast,
     showErrorToast,
+    showRequestSuccessToast,
+    showRequestFailToast,
     setToastText,
     removeToast,
   }

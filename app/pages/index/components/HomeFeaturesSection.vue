@@ -1,22 +1,21 @@
 <template>
   <section id="home-features" class="home-features-section" aria-labelledby="home-features-title">
     <div class="home-features-inner">
-      <span id="home-features-anchor" class="home-features-eyebrow" data-reveal>功能特色</span>
+      <span id="home-features-anchor" class="home-features-eyebrow" data-reveal>{{ featuresSection.title_tag }}</span>
 
       <h2 id="home-features-title" class="home-features-title" data-reveal style="--reveal-delay: 80ms">
-        <span>让您直播更加专业的</span>
-        <span class="theme-gradient-text">实用工具</span>
+        <span>{{ featuresSection.title_main }}</span>
+        <span class="theme-gradient-text">{{ featuresSection.title_highlight }}</span>
       </h2>
 
       <p class="home-features-subtitle" data-reveal style="--reveal-delay: 160ms">
-        <span>专业级功能集成到移动端应用中。随时随地创建精彩的直播场景。</span>
-        <span>打造更加丰富的直播效果</span>
+        <span>{{ featuresSection.description }}</span>
       </p>
 
       <div class="home-features-grid">
         <article
           v-for="(feature, index) in features"
-          :key="feature.title"
+          :key="feature.id"
           :class="['home-features-card', feature.direction]"
           data-reveal="feature"
           :style="{ '--reveal-delay': `${feature.delay}ms`, '--feature-icon-bg': feature.gradient }"
@@ -39,50 +38,85 @@
 </template>
 
 <script setup>
-const features = [
-  {
-    title: '多色抠图功能',
-    description: '可实时扣除背景，更换百科虚拟直播间背景，打造专业直播间效果。',
-    gradient: 'linear-gradient(135.96deg, rgba(6, 182, 212, 1) 0%, rgba(59, 130, 246, 1) 100%)',
-    direction: 'home-features-card-left',
-    delay: 0,
-  },
-  {
-    title: '多机位功能',
-    description: '在直播过程中，只需轻点一下即可无缝切换多个直播机位。',
-    gradient: 'linear-gradient(135.96deg, rgba(59, 130, 246, 1) 0%, rgba(56, 189, 248, 1) 100%)',
-    direction: 'home-features-card-up',
-    delay: 90,
-  },
-  {
-    title: '2D/3D特效添加',
-    description: '应用令人惊叹的2D/3D特效图层，打造丰富多彩的直播间。',
-    gradient: 'linear-gradient(135.96deg, rgba(45, 212, 191, 1) 0%, rgba(56, 189, 248, 1) 100%)',
-    direction: 'home-features-card-right',
-    delay: 180,
-  },
-  {
-    title: '多平台推流直播',
-    description: '支持YouTube、Twitch、TikTok、Facebook Live等平台推流直播',
-    gradient: 'linear-gradient(135.96deg, rgba(37, 99, 235, 1) 0%, rgba(56, 189, 248, 1) 100%)',
-    direction: 'home-features-card-left',
-    delay: 0,
-  },
-  {
-    title: '虚拟控制器',
-    description: '从任何设备远程控制您的直播，一切换场景、静音音频、即时调整效果。',
-    gradient: 'linear-gradient(135.96deg, rgba(34, 211, 238, 1) 0%, rgba(20, 184, 166, 1) 100%)',
-    direction: 'home-features-card-up',
-    delay: 90,
-  },
-  {
-    title: '多平台直播',
-    description: '通过电脑端可在TikTok、YouTube、Twitch、Instagram多个平台上同时开播。',
-    gradient: 'linear-gradient(135.96deg, rgba(96, 165, 250, 1) 0%, rgba(6, 182, 212, 1) 100%)',
-    direction: 'home-features-card-right',
-    delay: 180,
-  },
+import { getFeature } from '../../../api/request/strapi'
+
+const featureGradients = [
+  'linear-gradient(135.96deg, rgba(6, 182, 212, 1) 0%, rgba(59, 130, 246, 1) 100%)',
+  'linear-gradient(135.96deg, rgba(59, 130, 246, 1) 0%, rgba(56, 189, 248, 1) 100%)',
+  'linear-gradient(135.96deg, rgba(45, 212, 191, 1) 0%, rgba(56, 189, 248, 1) 100%)',
+  'linear-gradient(135.96deg, rgba(37, 99, 235, 1) 0%, rgba(56, 189, 248, 1) 100%)',
+  'linear-gradient(135.96deg, rgba(34, 211, 238, 1) 0%, rgba(20, 184, 166, 1) 100%)',
+  'linear-gradient(135.96deg, rgba(96, 165, 250, 1) 0%, rgba(6, 182, 212, 1) 100%)',
 ]
+const featureDirections = [
+  'home-features-card-left',
+  'home-features-card-up',
+  'home-features-card-right',
+  'home-features-card-left',
+  'home-features-card-up',
+  'home-features-card-right',
+]
+
+const { locale } = useI18n()
+const featuresSection = ref({
+  title_tag: '',
+  title_main: '',
+  title_highlight: '',
+  description: '',
+})
+const featureItems = ref([])
+
+const features = computed(() => {
+  return featureItems.value.map((feature, index) => ({
+    id: feature.id || `${feature.title}-${index}`,
+    title: feature.title || '',
+    description: feature.desc || feature.description || '',
+    gradient: featureGradients[index % featureGradients.length],
+    direction: featureDirections[index % featureDirections.length],
+    delay: (index % 3) * 90,
+  })).filter(feature => feature.title || feature.description)
+})
+
+const getFeatureContentData = (response) => {
+  if (Array.isArray(response?.data)) {
+    const firstItem = response.data[0] || {}
+
+    return firstItem.attributes || firstItem
+  }
+
+  return response?.data?.attributes || response?.data || response || {}
+}
+
+const syncFeatureContent = (featureData = {}) => {
+  const featureContent = featureData.featureObj || featureData
+
+  featuresSection.value = {
+    ...(featureContent.features_section || {}),
+  }
+
+  featureItems.value = Array.isArray(featureContent.feature_items) && featureContent.feature_items.length
+    ? featureContent.feature_items
+    : []
+}
+
+const loadFeatureContent = () => {
+  getFeature(locale.value).then(
+    response => {
+      syncFeatureContent(getFeatureContentData(response))
+    },
+    () => {
+      syncFeatureContent()
+    }
+  )
+}
+
+onMounted(() => {
+  loadFeatureContent()
+})
+
+watch(locale, () => {
+  loadFeatureContent()
+})
 </script>
 
 <style>

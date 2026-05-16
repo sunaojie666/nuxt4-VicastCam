@@ -76,14 +76,41 @@ export const updateUserProfile = (payload = {}) => {
 
   appendUpdateUserValue(formData, 'user_id', payload.user_id)
   appendUpdateUserValue(formData, 'nickname', payload.nickname)
-  appendUpdateUserValue(formData, 'intro', payload.intro)
-  appendUpdateUserValue(formData, 'industry', payload.industry)
-  appendUpdateUserValue(formData, 'gender', payload.gender)
-  appendUpdateUserValue(formData, 'area', payload.area)
   appendUpdateUserValue(formData, 'password', payload.password)
   appendUpdateUserValue(formData, 'avatar', payload.avatar)
-  appendUpdateUserValue(formData, 'mobile', payload.mobile)
-  appendUpdateUserValue(formData, 'email', payload.email)
 
   return authRequest.post('/update-user', formData)
+}
+
+// 获取团队成员列表。服务端会转发到 https://api.vicastcam.com/v1/GetTeamList。
+export const getTeamList = (payload = {}) => {
+  return authRequest.post('/get-team-list', {
+    user_id: String(payload.user_id || '').trim(),
+    level: String(payload.level || '1'),
+    month: String(payload.month || '').trim(),
+    page_index: Number(payload.page_index) || 1,
+    page_size: Number(payload.page_size) || 10,
+  })
+}
+
+// 获取 VIP 类型。服务端会转发到 https://api.vicastcam.com/v1/GetVipTypes。
+export const getVipTypes = () => {
+  return authRequest.post('/get-vip-types', {}, {
+    skipAuthExpiredRedirect: true,
+  })
+}
+
+// 激活兑换卡。服务端会转发到 https://api.vicastcam.com/v1/ActiveCard。
+export const activeCard = (payload = {}) => {
+  return authRequest.post('/active-card', {
+    user_id: String(payload.user_id || '').trim(),
+    card_pwd: String(payload.card_pwd || '').trim(),
+  })
+}
+
+// 获取会员状态信息。服务端会转发到 https://api.vicastcam.com/v1/GetVipInfo。
+export const getVipInfo = (payload = {}) => {
+  return authRequest.post('/get-vip-info', {
+    user_id: String(payload.user_id || '').trim(),
+  })
 }

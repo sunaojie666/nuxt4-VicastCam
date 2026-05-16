@@ -1,24 +1,24 @@
 <template>
   <section id="home-pricing" class="home-pricing-section" aria-labelledby="home-pricing-title">
     <div class="home-pricing-inner">
-      <span id="home-pricing-anchor" class="home-pricing-eyebrow" data-reveal>套餐价格</span>
+      <span id="home-pricing-anchor" class="home-pricing-eyebrow" data-reveal>{{ pricingContent.sectionTag }}</span>
 
       <h2 id="home-pricing-title" class="home-pricing-title" data-reveal style="--reveal-delay: 80ms">
-        <span>请选择你想要的</span>
-        <span class="theme-gradient-text">订阅计划</span>
+        <span>{{ pricingContent.titleMain }}</span>
+        <span class="theme-gradient-text">{{ pricingContent.titleHighlight }}</span>
       </h2>
 
-      <p class="home-pricing-subtitle" data-reveal style="--reveal-delay: 160ms">免费试用，也可以选择其他套餐</p>
+      <p class="home-pricing-subtitle" data-reveal style="--reveal-delay: 160ms">{{ pricingContent.description }}</p>
 
       <div class="home-pricing-grid">
         <article
           v-for="plan in pricingPlans"
-          :key="plan.name"
+          :key="plan.id"
           :class="['home-pricing-card', { 'home-pricing-card-featured': plan.featured }]"
           data-reveal="scale"
           :style="{ '--reveal-delay': `${plan.delay}ms` }"
         >
-          <span v-if="plan.featured" class="home-pricing-badge">最受欢迎</span>
+          <span v-if="plan.badgeText" class="home-pricing-badge">{{ plan.badgeText }}</span>
 
           <div>
             <h2 class="home-pricing-card-title">{{ plan.name }}</h2>
@@ -26,12 +26,17 @@
           </div>
 
           <div class="home-pricing-price">
-            <img :src="plan.priceImage" :alt="`${plan.name} 价格`">
+            <img v-if="plan.priceImage" :src="plan.priceImage" :alt="`${plan.name} 价格`">
+            <template v-else>
+              <strong>{{ plan.price }}</strong>
+              <span v-if="plan.unit">{{ plan.unit }}</span>
+            </template>
+            <del v-if="plan.originalPrice">{{ plan.originalPrice }}</del>
           </div>
 
           <ul class="home-pricing-features">
             <li
-              v-for="feature in plan.features"
+              v-for="feature in plan.benefits"
               :key="feature"
               class="home-pricing-feature"
             >
@@ -40,7 +45,7 @@
             </li>
           </ul>
 
-          <button class="home-pricing-button" type="button">购买</button>
+          <button class="home-pricing-button" type="button">{{ plan.cta }}</button>
         </article>
       </div>
     </div>
@@ -48,34 +53,60 @@
 </template>
 
 <script setup>
-const pricingFeatureText = '普通会员特权'
+import { getPricings } from '../../../api/request/strapi'
 
-const pricingPlans = [
-  {
-    name: '月卡',
-    description: '适合想体验软件功能的用户',
-    priceImage: '/images/9.99.png',
-    featured: false,
-    delay: 0,
-    features: Array.from({ length: 5 }, () => pricingFeatureText),
-  },
-  {
-    name: '年卡',
-    description: '适合想体验软件功能的用户',
-    priceImage: '/images/69.99.png',
-    featured: true,
-    delay: 120,
-    features: Array.from({ length: 5 }, () => pricingFeatureText),
-  },
-  {
-    name: '终身卡',
-    description: '适合想体验软件功能的用户',
-    priceImage: '/images/99.99.png',
-    featured: false,
-    delay: 240,
-    features: Array.from({ length: 5 }, () => pricingFeatureText),
-  },
-]
+const { locale } = useI18n()
+const { vipPlans, loadVipTypes } = useVipTypes()
+
+const pricingContent = ref({
+  sectionTag: '',
+  titleMain: '',
+  titleHighlight: '',
+  description: '',
+})
+
+const pricingPlans = computed(() => vipPlans.value)
+
+const getPricingContentData = (response) => {
+  if (Array.isArray(response?.data)) {
+    const firstItem = response.data[0] || {}
+
+    return firstItem.attributes || firstItem
+  }
+
+  return response?.data?.attributes || response?.data || response || {}
+}
+
+const syncPricingContent = (content = {}) => {
+  const pricingData = content.data || content
+
+  pricingContent.value = {
+    sectionTag: pricingData.sectionTag || '',
+    titleMain: pricingData.titleMain || '',
+    titleHighlight: pricingData.titleHighlight || '',
+    description: pricingData.description || '',
+  }
+}
+
+const loadPricingContent = () => {
+  getPricings(locale.value).then(
+    response => {
+      syncPricingContent(getPricingContentData(response))
+    },
+    () => {
+      syncPricingContent()
+    }
+  )
+}
+
+onMounted(() => {
+  loadPricingContent()
+  loadVipTypes()
+})
+
+watch(locale, () => {
+  loadPricingContent()
+})
 </script>
 
 <style>
@@ -232,13 +263,35 @@ const pricingPlans = [
   margin-top: 43px;
   min-height: 44px;
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .home-pricing-price img {
   width: auto;
   max-height: 44px;
   object-fit: contain;
+}
+
+.home-pricing-price strong {
+  color: rgba(255, 255, 255, 1);
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 44px;
+}
+
+.home-pricing-price span {
+  color: rgba(148, 163, 184, 1);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.home-pricing-price del {
+  color: rgba(100, 116, 139, 1);
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .home-pricing-features {

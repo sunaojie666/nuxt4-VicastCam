@@ -14,7 +14,7 @@ export const siteFooterColumnConfig = [
     key: 'developer',
     title: '开发者',
     links: [
-      { key: 'sdk', label: 'SDK' },
+      { key: 'sdk', label: 'SDK', path: '/sdk' },
       { key: 'apiDocs', label: 'API 文档' },
     ],
   },
