@@ -207,7 +207,7 @@ const activeQuestion = computed(() => {
 .faq-sidebar {
   overflow: hidden;
   width: 305px;
-  height: 882px;
+  height: fit-content;
   border: 1px solid rgba(37, 48, 70, 1);
   border-radius: 10px;
   background: rgba(15, 23, 42, 1);
