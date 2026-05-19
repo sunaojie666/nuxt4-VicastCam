@@ -50,6 +50,7 @@ button, input, textarea {
   --page-header-height: 80px;
   --page-footer-height: 397px;
   --page-footer-product-gap: 130px;
+  --page-route-background: rgba(15, 21, 32, 1);
 }
 
 .page-shell {

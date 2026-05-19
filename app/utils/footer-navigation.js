@@ -23,7 +23,7 @@ export const siteFooterColumnConfig = [
     title: '公司',
     links: [
       { key: 'about', label: '关于我们' },
-      { key: 'privacy', label: '隐私政策' },
+      { key: 'privacy', label: '隐私政策', path: '/privacy' },
       { key: 'terms', label: '服务条款' },
       { key: 'salesPolicy', label: '销售政策' },
     ],

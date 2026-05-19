@@ -156,7 +156,8 @@ watch(locale, () => {
 }
 
 .home-pricing-title {
-  width: min(100%, 440px);
+  width: max-content;
+  max-width: 100%;
   margin-top: 22px;
   color: rgba(255, 255, 255, 1);
   font-size: 40px;
@@ -168,6 +169,10 @@ watch(locale, () => {
 
 .home-pricing-title span {
   display: block;
+}
+
+.home-pricing-title span:first-child {
+  white-space: nowrap;
 }
 
 .home-pricing-subtitle {
@@ -391,6 +396,10 @@ watch(locale, () => {
     margin-top: 18px;
     font-size: 32px;
     line-height: 38px;
+  }
+
+  .home-pricing-title span:first-child {
+    white-space: normal;
   }
 
   .home-pricing-subtitle {

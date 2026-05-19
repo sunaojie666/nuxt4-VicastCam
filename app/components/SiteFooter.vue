@@ -1,6 +1,6 @@
 <template>
   <!-- 底部导航区域，左侧为品牌介绍，右侧为多列站点入口。 -->
-  <footer class="site-footer">
+  <footer :class="['site-footer', { 'site-footer-with-hero': hasFooterHero }]">
     <section v-if="hasFooterHero" class="site-footer-hero" aria-labelledby="site-footer-hero-title">
       <div class="page-container site-footer-hero-inner">
         <span v-if="footerHero.tag" class="site-footer-hero-eyebrow">
@@ -94,6 +94,7 @@ import { getFooter } from '../api/request/strapi'
 
 const localePath = useLocalePath()
 const { locale } = useI18n()
+const route = useRoute()
 
 const footerLinkActions = {
   功能特色: { sectionId: 'home-features-anchor' },
@@ -107,6 +108,8 @@ const footerLinkActions = {
   SDK: { path: '/sdk' },
   常见问题: { path: '/faq' },
   FAQ: { path: '/faq' },
+  隐私政策: { path: '/privacy' },
+  'Privacy Policy': { path: '/privacy' },
 }
 
 const footerColumns = ref([])
@@ -139,8 +142,13 @@ const footerText = computed(() => {
 })
 
 const footerHero = computed(() => footerContent.value.hero_section || {})
+const isHomeFooterRoute = computed(() => {
+  const normalizedPath = route.path.replace(/\/+$/, '') || '/'
+
+  return normalizedPath === '/' || /^\/[A-Za-z]{2,3}(?:-[A-Za-z]{2})?$/.test(normalizedPath)
+})
 const hasFooterHero = computed(() => {
-  return Boolean(
+  return isHomeFooterRoute.value && Boolean(
     footerHero.value.tag ||
     footerHero.value.title_main ||
     footerHero.value.title_highlight ||
@@ -282,12 +290,17 @@ watch(locale, () => {
 <style>
 .site-footer {
   width: 100%;
-  min-height: var(--page-footer-height);
+  height: var(--page-footer-height);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: rgba(3, 7, 18, 1);
+}
+
+.site-footer-with-hero {
+  height: auto;
+  min-height: var(--page-footer-height);
 }
 
 .site-footer-hero {
@@ -351,6 +364,7 @@ watch(locale, () => {
 }
 
 .site-footer-hero-title {
+  width: max-content;
   max-width: 100%;
   margin-top: 22px;
   color: rgba(255, 255, 255, 1);
@@ -362,6 +376,10 @@ watch(locale, () => {
 
 .site-footer-hero-title span {
   display: block;
+}
+
+.site-footer-hero-title > span:first-child {
+  white-space: nowrap;
 }
 
 .site-footer-hero-title span:last-child {
@@ -433,7 +451,7 @@ watch(locale, () => {
 }
 
 .site-footer-inner {
-  min-height: var(--page-footer-height);
+  height: var(--page-footer-height);
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
@@ -507,6 +525,10 @@ watch(locale, () => {
   width: 24px;
   height: 24px;
 }
+
+.site-footer-with-hero .site-footer-inner {
+  min-height: var(--page-footer-height);
+}
 .site-footer-columns {
   flex: 1 1 auto;
   display: grid;
@@ -565,8 +587,13 @@ watch(locale, () => {
   }
 
   .site-footer-hero-title {
+    width: auto;
     font-size: 32px;
     line-height: 40px;
+  }
+
+  .site-footer-hero-title > span:first-child {
+    white-space: normal;
   }
 
   .site-footer-hero-copy {

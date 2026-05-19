@@ -61,12 +61,6 @@ export default defineNuxtConfig({
     },
   },
 
-  routeRules: {
-    // 日语已下线，旧链接统一回到默认中文首页。
-    '/ja': { redirect: '/' },
-    '/ja/**': { redirect: '/' },
-  },
-
   hooks: {
     'pages:extend'(pages) {
       const removePageComponents = (routes: typeof pages) => {

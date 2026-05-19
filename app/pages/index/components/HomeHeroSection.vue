@@ -16,10 +16,10 @@
     <div class="home-hero-overlay"></div>
 
     <div class="home-hero-inner">
-      <span class="home-hero-eyebrow">
+      <div v-if="heroBadgeText" :key="heroBadgeText" class="home-hero-eyebrow">
         <img src="/images/star.png" alt="" aria-hidden="true">
-        {{ topBadge }}
-      </span>
+        <b>{{ heroBadgeText }}</b>
+      </div>
 
       <h1 id="home-hero-title" class="home-hero-title">
         <span>{{ heroTitle }}</span>
@@ -112,6 +112,7 @@ const appStoreUrl = ref('')
 const googlePlayUrl = ref('')
 const desktopClientUrl = ref('')
 const { setToastText } = useSiteToast()
+const heroBadgeText = computed(() => String(topBadge.value || '').trim())
 
 // Strapi 本地上传文件返回 /uploads/...，前端播放时需要补上 Strapi 服务地址。
 const createStrapiAssetUrl = (url) => {
@@ -218,13 +219,14 @@ watch(locale, () => {
 }
 .home-hero-eyebrow {
   max-width: 100%;
-  min-width: 242px;
-  height: 28px;
+  width: fit-content;
+  min-width: 0;
+  min-height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 0 18px;
+  padding: 4px 18px;
   border: 1px solid rgba(34, 211, 238, 0.38);
   border-radius: 999px;
   color: rgba(103, 232, 249, 1);
@@ -232,10 +234,8 @@ watch(locale, () => {
   box-shadow: inset 0 0 18px rgba(34, 211, 238, 0.14);
   font-size: 14px;
   font-weight: 700;
-  line-height: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 20px;
+  overflow: visible;
   animation: home-hero-enter 0.7s ease both;
 }
 .home-hero-eyebrow img {
@@ -243,6 +243,13 @@ watch(locale, () => {
   height: 14px;
   flex: 0 0 auto;
   object-fit: contain;
+}
+.home-hero-eyebrow b {
+  min-width: 0;
+  display: block;
+  font: inherit;
+  line-height: 20px;
+  overflow-wrap: anywhere;
 }
 .home-hero-title {
   max-width: 100%;
@@ -499,10 +506,6 @@ watch(locale, () => {
   .home-hero-inner {
     padding-top: 62px;
     padding-bottom: 58px;
-  }
-
-  .home-hero-eyebrow {
-    min-width: 172px;
   }
 
   .home-hero-title {

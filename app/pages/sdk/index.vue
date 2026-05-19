@@ -409,13 +409,13 @@ setupPageSeo('sdk')
   overflow-x: clip;
   padding-top: var(--page-header-height);
   color: var(--theme-text);
-  background: rgba(3, 7, 18, 1);
+  background: var(--page-route-background);
 }
 
 .sdk-page-main {
   width: 100%;
   flex: 1;
-  background: rgba(3, 7, 18, 1);
+  background: var(--page-route-background);
 }
 
 .sdk-hero {
@@ -513,7 +513,7 @@ setupPageSeo('sdk')
 .sdk-content-section {
   width: 100%;
   padding: 32px 0 88px;
-  background: rgba(3, 7, 18, 1);
+  background: var(--page-route-background);
 }
 
 .sdk-content-layout {

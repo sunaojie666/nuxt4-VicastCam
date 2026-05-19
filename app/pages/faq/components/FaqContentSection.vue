@@ -193,7 +193,7 @@ const activeQuestion = computed(() => {
   display: flex;
   justify-content: center;
   padding: 32px 0 78px;
-  background: rgba(3, 7, 18, 1);
+  background: var(--page-route-background);
 }
 
 .faq-content-layout {

@@ -195,7 +195,7 @@ watch(locale, () => {
   background:
     linear-gradient(90deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.12) 45%, rgba(3, 7, 18, 0.28) 100%),
     url("/images/loginbg.png") center / cover no-repeat,
-    rgba(3, 7, 18, 1);
+    var(--page-route-background);
 }
 
 .auth-page::before {

@@ -62,6 +62,7 @@
                 <button
                   type="button"
                   class="site-select-option-button"
+                  :dir="item.dir"
                   @click="switchLanguage(item.code)"
                 >
                   <Icon class="locale-flag-icon" :name="item.flagIcon" aria-hidden="true" />
@@ -256,6 +257,7 @@ const createAvailableLocales = () => {
       code: item.code,
       name: item.name || item.code,
       flagIcon: item.flagIcon || 'circle-flags:xx',
+      dir: item.dir || 'ltr',
     }
   })
 }
@@ -339,18 +341,28 @@ const handleLocaleButtonClick = () => {
   closeMobileMenu()
 }
 
+const nonDefaultLocaleCodes = computed(() => {
+  return availableLocales.value
+    .map(item => item.code)
+    .filter(code => code && code !== 'zh-CN')
+})
+
 // 默认中文使用 prefix_except_default，不应该跳到 /zh-CN。
 const createDefaultLocalePath = () => {
-  if (route.fullPath === '/en') {
-    return '/'
-  }
+  for (const code of nonDefaultLocaleCodes.value) {
+    const prefix = `/${code}`
 
-  if (route.fullPath.startsWith('/en/')) {
-    return route.fullPath.slice(3) || '/'
-  }
+    if (route.fullPath === prefix) {
+      return '/'
+    }
 
-  if (route.fullPath.startsWith('/en?')) {
-    return `/${route.fullPath.slice(4)}`
+    if (route.fullPath.startsWith(`${prefix}/`)) {
+      return route.fullPath.slice(prefix.length) || '/'
+    }
+
+    if (route.fullPath.startsWith(`${prefix}?`)) {
+      return `/${route.fullPath.slice(prefix.length + 1)}`
+    }
   }
 
   return route.fullPath || '/'
@@ -959,15 +971,35 @@ onBeforeUnmount(() => {
   left: 0;
   z-index: 20;
   min-width: 150px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  max-height: min(420px, calc(100vh - var(--page-header-height) - 24px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   padding: 4px 0;
   border: 1px solid var(--theme-border);
   border-radius: 4px;
   background-color: rgba(17, 24, 39, 1);
   box-shadow: 0 10px 24px var(--theme-shadow);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(64, 217, 247, 0.7) rgba(15, 23, 42, 1);
+}
+
+.site-select-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.site-select-menu::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 1);
+}
+
+.site-select-menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(64, 217, 247, 0.7);
 }
 
 .site-select-option {
-  min-width: 150px;
   color: var(--theme-text);
   font-size: 14px;
   line-height: 20px;
@@ -976,11 +1008,11 @@ onBeforeUnmount(() => {
 
 .site-select-option-button {
   width: 100%;
+  min-width: 150px;
   height: 36px;
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 0;
   padding: 8px 12px;
   color: var(--theme-text);
   font-size: 14px;
@@ -988,6 +1020,11 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.site-select-option-button[dir="rtl"] {
+  flex-direction: row-reverse;
+  text-align: right;
 }
 
 .site-select-option-button span {
@@ -1187,7 +1224,9 @@ onBeforeUnmount(() => {
   .site-select-menu {
     left: auto;
     right: 0;
+    width: max-content;
     max-width: calc(100vw - 32px);
+    max-height: min(420px, calc(100vh - var(--page-header-height) - 24px));
   }
 
   .site-auth-button {

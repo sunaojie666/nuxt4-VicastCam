@@ -203,7 +203,7 @@ onMounted(() => {
 
 <style scoped>
 .profile-page-shell {
-  --profile-page-background: var(--theme-page);
+  --profile-page-background: var(--page-route-background);
   --profile-panel-background: rgba(26, 34, 53, 1);
   --profile-panel-soft: rgba(32, 41, 61, 1);
   --profile-panel-strong: rgba(11, 18, 32, 1);
@@ -228,7 +228,7 @@ onMounted(() => {
   min-height: 714px;
   flex: 1;
   padding: 80px 0 120px;
-  background: rgba(8, 13, 24, 1);
+  background: var(--page-route-background);
 }
 
 .profile-layout {

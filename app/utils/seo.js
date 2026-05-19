@@ -17,6 +17,10 @@ export const pageSeoCopy = {
       title: '常见问题',
       description: '查看 VicastCam 常见问题、下载、安装和直播使用说明。',
     },
+    privacy: {
+      title: '隐私政策',
+      description: '查看 VicastCam 隐私政策，了解我们如何收集、使用和保护您的个人信息。',
+    },
     tutorial: {
       title: '教程中心',
       description: '查看 VicastCam 教程中心，学习下载、安装和使用方法。',
@@ -49,6 +53,10 @@ export const pageSeoCopy = {
       title: 'FAQ',
       description: 'Find answers about VicastCam downloads, installation, accounts, and live streaming.',
     },
+    privacy: {
+      title: 'Privacy Policy',
+      description: 'Read the VicastCam Privacy Policy to learn how we collect, use, and protect personal information.',
+    },
     tutorial: {
       title: 'Tutorial Center',
       description: 'Learn how to download, install, and use VicastCam.',
@@ -75,11 +83,15 @@ export const getPageSeoCopy = (pageKey, locale = 'zh-CN') => {
 }
 
 export const setupPageSeo = (pageKey, options = {}) => {
-  const { locale } = useI18n()
+  const { locale, locales } = useI18n()
   const localeHead = useLocaleHead({
     seo: {
       canonicalQueries: [],
     },
+  })
+
+  const activeLocaleConfig = computed(() => {
+    return locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
   })
 
   const pageSeo = computed(() => {
@@ -93,7 +105,10 @@ export const setupPageSeo = (pageKey, options = {}) => {
   useHead(() => ({
     meta: localeHead.value.meta,
     link: localeHead.value.link,
-    htmlAttrs: localeHead.value.htmlAttrs,
+    htmlAttrs: {
+      ...localeHead.value.htmlAttrs,
+      dir: activeLocaleConfig.value.dir || 'ltr',
+    },
   }))
 
   useSeoMeta({
