@@ -1,11 +1,11 @@
 <template>
-  <section class="profile-content" aria-label="账号信息">
+  <section class="profile-content" :aria-label="accountText.ariaLabel">
     <section class="profile-panel account-profile-panel">
       <header class="profile-panel-heading">
         <span>
           <Icon name="lucide:user-round" aria-hidden="true" />
         </span>
-        <h2>个人资料</h2>
+        <h2>{{ accountText.profileTitle }}</h2>
       </header>
 
       <div class="account-form">
@@ -13,14 +13,14 @@
           <div class="account-info-row">
             <Icon class="account-info-icon" name="lucide:user-round" aria-hidden="true" />
             <span class="account-info-main">
-              <span>用户名</span>
+              <span>{{ accountText.usernameLabel }}</span>
               <input
                 v-if="editingField === 'nickname'"
                 ref="nicknameInput"
                 v-model.trim="profileForm.nickname"
                 type="text"
                 autocomplete="name"
-                placeholder="请输入用户名"
+                :placeholder="accountText.usernamePlaceholder"
               >
               <strong v-else>{{ profileName }}</strong>
             </span>
@@ -30,27 +30,27 @@
               :disabled="isSaving"
               @click="handleFieldAction('nickname')"
             >
-              {{ editingField === 'nickname' ? '确定' : '修改' }}
+              {{ editingField === 'nickname' ? commonText.confirmButton : commonText.editButton }}
             </button>
           </div>
 
           <div class="account-info-row">
             <Icon class="account-info-icon" name="lucide:lock-keyhole" aria-hidden="true" />
             <span class="account-info-main">
-              <span>密码</span>
+              <span>{{ accountText.passwordLabel }}</span>
               <span v-if="editingField === 'password'" class="account-password-wrap">
                 <input
                   ref="passwordInput"
                   v-model="profileForm.password"
                   :type="showPassword ? 'text' : 'password'"
                   autocomplete="new-password"
-                  placeholder="不修改请留空"
+                  :placeholder="accountText.passwordPlaceholder"
                 >
-                <button type="button" aria-label="切换密码可见性" @click="showPassword = !showPassword">
+                <button type="button" :aria-label="commonText.togglePasswordLabel" @click="showPassword = !showPassword">
                   <Icon :name="showPassword ? 'lucide:eye' : 'lucide:eye-off'" aria-hidden="true" />
                 </button>
               </span>
-              <strong v-else>••••••••••</strong>
+              <strong v-else>{{ accountText.passwordMask }}</strong>
             </span>
             <button
               type="button"
@@ -58,7 +58,7 @@
               :disabled="isSaving"
               @click="handleFieldAction('password')"
             >
-              {{ editingField === 'password' ? '确定' : '修改' }}
+              {{ editingField === 'password' ? commonText.confirmButton : commonText.editButton }}
             </button>
           </div>
         </div>
@@ -71,17 +71,17 @@
         <span>
           <Icon name="lucide:link" aria-hidden="true" />
         </span>
-        <h2>邀请链接</h2>
+        <h2>{{ accountText.inviteTitle }}</h2>
       </header>
 
-      <p class="profile-invite-text">分享你的专属邀请链接，壮大团队，获得佣金收益。</p>
+      <p class="profile-invite-text">{{ accountText.inviteDescription }}</p>
 
       <div class="profile-invite-link">
         <Icon name="lucide:external-link" aria-hidden="true" />
-        <span>{{ inviteLink || '暂无邀请链接' }}</span>
+        <span>{{ inviteLink || accountText.emptyInviteLink }}</span>
         <button
           type="button"
-          aria-label="复制邀请链接"
+          :aria-label="commonText.copyButtonLabel"
           :disabled="!inviteLink"
           @click="copyInviteLink"
         >
@@ -96,6 +96,7 @@
 const emit = defineEmits(['profile-saved'])
 const { authUser, updateUserProfile } = useAuth()
 const { showErrorToast, showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+const { profileBox } = useProfileText()
 const showPassword = ref(false)
 const isSaving = ref(false)
 const editingField = ref('')
@@ -107,8 +108,10 @@ const profileForm = reactive({
   password: '',
 })
 
+const commonText = computed(() => profileBox.value?.common || {})
+const accountText = computed(() => profileBox.value?.account || {})
 const profileName = computed(() => {
-  return authUser.value?.nickname || '未设置用户名'
+  return authUser.value?.nickname || accountText.value.defaultUsername || ''
 })
 
 const syncProfileForm = (user = {}) => {
@@ -205,12 +208,12 @@ const handleFieldAction = (field) => {
   }
 
   if (field === 'nickname' && !profileForm.nickname.trim()) {
-    showErrorToast('请输入用户名')
+    showErrorToast(accountText.value.errors?.usernameRequired || '')
     return
   }
 
   if (field === 'password' && !profileForm.password.trim()) {
-    showErrorToast('请输入密码')
+    showErrorToast(accountText.value.errors?.passwordRequired || '')
     return
   }
 

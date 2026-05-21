@@ -41,7 +41,7 @@
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-light">
-          <img src="/images/chromicon.png" alt="" aria-hidden="true">
+          <img src="/images/anzhuodown.png" alt="" aria-hidden="true">
           <span>{{ googlePlayUrl }}</span>
         </a>
 
@@ -254,15 +254,15 @@ watch(locale, () => {
 .home-hero-title {
   max-width: 100%;
   margin-top: 22px;
-  font-size: 58px;
+  font-size: clamp(44px, 4.35vw, 58px);
   font-weight: 900;
-  line-height: 68px;
+  line-height: 1.17;
   text-align: center;
-  overflow-wrap: anywhere;
   animation: home-hero-enter 0.75s ease 0.08s both;
 }
 .home-hero-title span {
   display: block;
+  white-space: nowrap;
 }
 .home-hero-title span:last-child {
   position: relative;
@@ -512,6 +512,10 @@ watch(locale, () => {
     margin-top: 22px;
     font-size: 36px;
     line-height: 44px;
+  }
+
+  .home-hero-title span {
+    white-space: normal;
   }
 
   .home-hero-title span:last-child::after {

@@ -12,6 +12,7 @@
       <HomePricingSection />
       <HomeFaqSection />
       <HomeLearningSection />
+      <HomeFooterHeroSection />
     </main>
 
     <aside class="home-float-actions" aria-label="快捷操作">
@@ -52,6 +53,7 @@ import HomeVirtualBackgroundSection from './components/HomeVirtualBackgroundSect
 import HomePricingSection from './components/HomePricingSection.vue'
 import HomeFaqSection from './components/HomeFaqSection.vue'
 import HomeLearningSection from './components/HomeLearningSection.vue'
+import HomeFooterHeroSection from './components/HomeFooterHeroSection.vue'
 import { setupPageSeo } from '../../utils/seo'
 
 setupPageSeo('home')

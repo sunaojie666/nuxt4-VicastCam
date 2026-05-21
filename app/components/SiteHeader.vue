@@ -39,6 +39,7 @@
           <button
             class="site-select-button"
             type="button"
+            :dir="activeLocale.dir"
             :aria-label="headerText.localeSwitchLabel"
             :aria-expanded="localeMenuOpen"
             aria-haspopup="listbox"
@@ -51,7 +52,7 @@
           </button>
 
           <Transition name="site-select-fade">
-            <ul v-if="localeMenuOpen" class="site-select-menu" role="listbox">
+            <ul v-if="localeMenuOpen" class="site-select-menu" :dir="activeLocale.dir" role="listbox">
               <li
                 v-for="item in availableLocales"
                 :key="item.code"
@@ -62,11 +63,14 @@
                 <button
                   type="button"
                   class="site-select-option-button"
-                  :dir="item.dir"
+                  :dir="activeLocale.dir"
                   @click="switchLanguage(item.code)"
                 >
                   <Icon class="locale-flag-icon" :name="item.flagIcon" aria-hidden="true" />
-                  <span>{{ item.name }}</span>
+                  <span class="site-select-option-copy">
+                    <span>{{ item.name }}</span>
+                    <small v-if="item.translatedName">{{ item.translatedName }}</small>
+                  </span>
                 </button>
               </li>
             </ul>
@@ -111,11 +115,11 @@
             <div v-if="profileMenuOpen" class="site-profile-dropdown" role="menu">
               <button type="button" class="site-profile-menu-item" role="menuitem" @click="goToProfile">
                 <Icon name="lucide:user-round" aria-hidden="true" />
-                <span>个人中心</span>
+                <span>{{ profileMenuText.profile }}</span>
               </button>
               <button type="button" class="site-profile-menu-item" role="menuitem" @click="handleLogout">
                 <Icon name="lucide:log-out" aria-hidden="true" />
-                <span>退出登录</span>
+                <span>{{ profileMenuText.logout }}</span>
               </button>
             </div>
           </Transition>
@@ -163,6 +167,7 @@ const switchLocalePath = useSwitchLocalePath()
 // 当前路由用于在页面跳转后关闭手机端菜单和处理区块滚动。
 const route = useRoute()
 const { authUser, clearAuth } = useAuth()
+const { profileBox, loadProfileText } = useProfileText()
 
 // 顶部导航模板只读取普通 ref，避免在模板中直接写翻译逻辑。
 const availableLocales = ref([])
@@ -180,14 +185,15 @@ const isLoggedIn = computed(() => {
   return Boolean(authUser.value?.user_id || authUser.value?.email || authUser.value?.nickname)
 })
 const profileName = computed(() => {
-  return authUser.value?.nickname || authUser.value?.email || '个人中心'
+  return authUser.value?.nickname || authUser.value?.email || profileBox.value?.common?.defaultProfileName || ''
 })
 const profileInitial = computed(() => {
   return profileName.value.trim().slice(0, 1).toUpperCase() || 'U'
 })
 const profileLinkLabel = computed(() => {
-  return `${profileName.value}的个人中心`
+  return `${profileName.value}${profileBox.value?.headerUserMenu?.profileAriaSuffix || ''}`
 })
+const profileMenuText = computed(() => profileBox.value?.headerUserMenu || {})
 
 const createSiteHeaderText = () => {
   return {
@@ -246,16 +252,79 @@ const closeMobileMenu = () => {
   mobileMenuIcon.value = 'lucide:menu'
 }
 
+const getLocaleDisplayLanguage = (localeItem) => {
+  if (!localeItem || typeof localeItem === 'string') {
+    return localeItem || ''
+  }
+
+  return localeItem.language || localeItem.code || ''
+}
+
+const createLocaleDisplayNames = () => {
+  const activeLocaleConfig = locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
+  const displayLocale = getLocaleDisplayLanguage(activeLocaleConfig) || locale.value
+
+  if (typeof Intl === 'undefined' || !Intl.DisplayNames) {
+    return null
+  }
+
+  try {
+    return new Intl.DisplayNames([displayLocale], {
+      type: 'language',
+      languageDisplay: 'standard',
+    })
+  } catch {
+    return null
+  }
+}
+
+const createLocaleDisplayName = (localeItem, displayNames) => {
+  if (typeof localeItem === 'string') {
+    return displayNames?.of(localeItem) || localeItem
+  }
+
+  const languageCode = getLocaleDisplayLanguage(localeItem)
+
+  return displayNames?.of(languageCode) || localeItem.name || localeItem.code
+}
+
+const createLocaleNativeName = (localeItem) => {
+  if (typeof localeItem === 'string') {
+    return localeItem
+  }
+
+  return localeItem.name || localeItem.code
+}
+
+const createLocaleTranslatedName = (localeItem, displayNames) => {
+  const nativeName = createLocaleNativeName(localeItem)
+  const translatedName = createLocaleDisplayName(localeItem, displayNames)
+
+  if (!translatedName || translatedName === nativeName) {
+    return ''
+  }
+
+  return translatedName
+}
+
 // 根据 i18n 配置生成语言切换框数据，只用于切换 Strapi 请求语言和路由。
 const createAvailableLocales = () => {
+  const displayNames = createLocaleDisplayNames()
+
   return locales.value.map(item => {
     if (typeof item === 'string') {
-      return { code: item, name: item, flagIcon: 'circle-flags:xx' }
+      return {
+        code: item,
+        name: createLocaleNativeName(item),
+        translatedName: createLocaleTranslatedName(item, displayNames),
+        flagIcon: 'circle-flags:xx',
+      }
     }
 
     return {
       code: item.code,
-      name: item.name || item.code,
+      name: createLocaleNativeName(item),
+      translatedName: createLocaleTranslatedName(item, displayNames),
       flagIcon: item.flagIcon || 'circle-flags:xx',
       dir: item.dir || 'ltr',
     }
@@ -322,12 +391,6 @@ const handleLogout = () => {
   closeProfileMenu()
   closeMobileMenu()
   clearAuth()
-
-  if (process.client) {
-    $fetch('/api/auth/logout', {
-      method: 'POST',
-    }).catch(() => null)
-  }
 
   navigateTo(localePath('/'))
 }
@@ -501,8 +564,10 @@ refreshHeaderData()
 
 // 当前语言变化时刷新切换框选中项，并重新请求 Strapi 导航文案。
 watch(locale, () => {
+  availableLocales.value = createAvailableLocales()
   refreshActiveLocale()
   loadSiteNavigation()
+  loadProfileText()
 })
 
 // 当前路由变化后关闭手机端菜单，并根据当前位置同步高亮。
@@ -528,6 +593,7 @@ let syncScrollSpy = null
 
 onMounted(() => {
   loadSiteNavigation()
+  loadProfileText()
 
   if ('scrollRestoration' in window.history) {
     window.history.scrollRestoration = 'manual'
@@ -820,22 +886,27 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 110px;
-  min-width: 110px;
-  max-width: 110px;
-  height: 30px;
-  padding: 0 6px;
+  gap: 8px;
+  width: 146px;
+  min-width: 146px;
+  max-width: 146px;
+  height: 36px;
+  padding: 0 10px;
   border: 1px solid rgba(45, 48, 56, 1);
   border-radius: 6px;
   color: var(--theme-header-text);
   background-color: transparent;
   font-size: 14px;
   font-weight: 500;
-  line-height: 30px;
+  line-height: 36px;
   white-space: nowrap;
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.site-select-button[dir="rtl"] {
+  flex-direction: row-reverse;
+  text-align: right;
 }
 
 .site-select-button span {
@@ -851,13 +922,13 @@ onBeforeUnmount(() => {
 }
 
 .site-auth-button {
-  min-width: 100px;
-  max-width: 150px;
+  min-width: 112px;
+  max-width: 210px;
   height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 12px;
+  padding: 5px 18px;
   margin-left: 24px;
   border-radius: 999px;
   font-size: 14px;
@@ -928,7 +999,9 @@ onBeforeUnmount(() => {
   top: calc(100% + 8px);
   right: 0;
   z-index: 20;
-  width: 138px;
+  width: max-content;
+  min-width: 138px;
+  max-width: min(240px, calc(100vw - 32px));
   padding: 6px;
   border: 0;
   border-radius: 8px;
@@ -938,6 +1011,7 @@ onBeforeUnmount(() => {
 
 .site-profile-menu-item {
   width: 100%;
+  min-width: 126px;
   height: 38px;
   display: flex;
   align-items: center;
@@ -950,6 +1024,13 @@ onBeforeUnmount(() => {
   text-align: left;
   cursor: pointer;
   transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.site-profile-menu-item span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .site-profile-menu-item svg {
@@ -986,6 +1067,12 @@ onBeforeUnmount(() => {
   scrollbar-color: rgba(64, 217, 247, 0.7) rgba(15, 23, 42, 1);
 }
 
+.site-select-menu[dir="rtl"] {
+  left: auto;
+  right: 0;
+  text-align: right;
+}
+
 .site-select-menu::-webkit-scrollbar {
   width: 6px;
 }
@@ -1008,12 +1095,12 @@ onBeforeUnmount(() => {
 
 .site-select-option-button {
   width: 100%;
-  min-width: 150px;
-  height: 36px;
+  min-width: 176px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 7px 14px;
   color: var(--theme-text);
   font-size: 14px;
   line-height: 20px;
@@ -1027,10 +1114,28 @@ onBeforeUnmount(() => {
   text-align: right;
 }
 
-.site-select-option-button span {
+.site-select-option-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.site-select-option-button[dir="rtl"] .site-select-option-copy {
+  text-align: right;
+}
+
+.site-select-option-copy > span,
+.site-select-option-copy > small {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.site-select-option-copy > small {
+  color: rgba(148, 163, 184, 1);
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .site-select-option-button:hover,
@@ -1087,15 +1192,15 @@ onBeforeUnmount(() => {
 }
 
 .locale-flag-icon {
-  width: 19px;
-  height: 14px;
+  width: 22px;
+  height: 16px;
   flex: 0 0 auto;
   display: inline-block;
 }
 
 .locale-chevron-icon {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   color: var(--theme-text-muted);
   transition: transform 0.2s ease;
 }
@@ -1129,10 +1234,20 @@ onBeforeUnmount(() => {
 
   .site-auth-button {
     min-width: 82px;
-    max-width: 112px;
+    max-width: 160px;
     margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .site-locale-select {
+    margin-left: 20px;
+  }
+
+  .site-select-button {
+    width: 126px;
+    min-width: 126px;
+    max-width: 126px;
   }
 
   .site-profile-link {

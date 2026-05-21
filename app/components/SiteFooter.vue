@@ -1,39 +1,6 @@
 <template>
   <!-- 底部导航区域，左侧为品牌介绍，右侧为多列站点入口。 -->
-  <footer :class="['site-footer', { 'site-footer-with-hero': hasFooterHero }]">
-    <section v-if="hasFooterHero" class="site-footer-hero" aria-labelledby="site-footer-hero-title">
-      <div class="page-container site-footer-hero-inner">
-        <span v-if="footerHero.tag" class="site-footer-hero-eyebrow">
-          <img src="/images/star.png" alt="" aria-hidden="true">
-          {{ footerHero.tag }}
-        </span>
-
-        <h2 id="site-footer-hero-title" class="site-footer-hero-title">
-          <span>{{ footerHero.title_main }}</span>
-          <span class="theme-gradient-text">
-            {{ footerHero.title_highlight }}
-            <img class="site-footer-hero-line" src="/images/path.png" alt="" aria-hidden="true">
-          </span>
-        </h2>
-
-        <p v-if="footerHero.description" class="site-footer-hero-copy">
-          {{ footerHero.description }}
-        </p>
-
-        <div v-if="footerHeroButtons.length" class="site-footer-hero-actions" aria-label="下载VicastCam">
-          <a
-            v-for="button in footerHeroButtons"
-            :key="button.key"
-            :href="button.url || '#'"
-            class="site-footer-hero-download"
-          >
-            <img :src="button.icon" alt="" aria-hidden="true">
-            <span>{{ button.label }}</span>
-          </a>
-        </div>
-      </div>
-    </section>
-
+  <footer class="site-footer">
     <div class="page-container site-footer-inner">
       <div class="site-footer-brand">
         <div class="site-footer-logo-row">
@@ -94,7 +61,6 @@ import { getFooter } from '../api/request/strapi'
 
 const localePath = useLocalePath()
 const { locale } = useI18n()
-const route = useRoute()
 
 const footerLinkActions = {
   功能特色: { sectionId: 'home-features-anchor' },
@@ -114,13 +80,6 @@ const footerLinkActions = {
 
 const footerColumns = ref([])
 const footerContent = ref({
-  hero_section: {
-    tag: '',
-    title_main: '',
-    title_highlight: '',
-    description: '',
-    download_buttons: [],
-  },
   brand: {
     name: '',
     description: '',
@@ -139,42 +98,6 @@ const footerText = computed(() => {
     description: footerContent.value.brand?.description || '',
     socials: [],
   }
-})
-
-const footerHero = computed(() => footerContent.value.hero_section || {})
-const isHomeFooterRoute = computed(() => {
-  const normalizedPath = route.path.replace(/\/+$/, '') || '/'
-
-  return normalizedPath === '/' || /^\/[A-Za-z]{2,3}(?:-[A-Za-z]{2})?$/.test(normalizedPath)
-})
-const hasFooterHero = computed(() => {
-  return isHomeFooterRoute.value && Boolean(
-    footerHero.value.tag ||
-    footerHero.value.title_main ||
-    footerHero.value.title_highlight ||
-    footerHero.value.description ||
-    footerHeroButtons.value.length
-  )
-})
-const footerHeroButtons = computed(() => {
-  const buttons = Array.isArray(footerHero.value.download_buttons)
-    ? footerHero.value.download_buttons
-    : []
-
-  return buttons.map((button, index) => {
-    const platform = String(button.platform || '').trim()
-    const text = String(button.text || '').trim()
-    const normalizedPlatform = platform.toLowerCase()
-
-    return {
-      key: `${index}-${platform}`,
-      platform,
-      text,
-      label: platform && text ? `${text}\n${platform}` : (text || platform),
-      url: button.url || '',
-      icon: normalizedPlatform.includes('google') ? '/images/chromicon.png' : '/images/apple.png',
-    }
-  }).filter(button => button.platform || button.text)
 })
 
 const scrollToSection = (sectionId) => {
@@ -234,21 +157,9 @@ const createFooterLink = (link = {}, columnIndex, linkIndex) => {
 
 const syncFooterContent = (footerData = {}) => {
   const footerObject = footerData.footerobj || footerData
-  const heroSection = footerObject.hero_section || footerObject.cta || {}
   const content = footerObject.footer || {}
 
   footerContent.value = {
-    hero_section: {
-      tag: heroSection.tag || '',
-      title_main: heroSection.title_main || '',
-      title_highlight: heroSection.title_highlight || '',
-      description: heroSection.description || '',
-      download_buttons: Array.isArray(heroSection.download_buttons)
-        ? heroSection.download_buttons
-        : Array.isArray(heroSection.buttons)
-          ? heroSection.buttons
-        : [],
-    },
     brand: {
       name: content.brand?.name || '',
       description: content.brand?.description || '',
@@ -296,158 +207,6 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   background: rgba(3, 7, 18, 1);
-}
-
-.site-footer-with-hero {
-  height: auto;
-  min-height: var(--page-footer-height);
-}
-
-.site-footer-hero {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  padding-top: 96px;
-  padding-bottom: 76px;
-  color: var(--theme-text);
-  background: rgba(17, 24, 39, 1);
-}
-
-.site-footer-hero::before {
-  content: "";
-  position: absolute;
-  top: -220px;
-  left: 50%;
-  z-index: 0;
-  width: 1350px;
-  height: 840px;
-  background: url("/images/Circle.png") center / contain no-repeat;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.site-footer-hero-inner {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.site-footer-hero-eyebrow {
-  max-width: 100%;
-  min-width: 242px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 0 18px;
-  border: 1px solid rgba(34, 211, 238, 0.38);
-  border-radius: 999px;
-  color: rgba(103, 232, 249, 1);
-  background-color: rgba(8, 145, 178, 0.18);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.site-footer-hero-eyebrow img {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 auto;
-  object-fit: contain;
-}
-
-.site-footer-hero-title {
-  width: max-content;
-  max-width: 100%;
-  margin-top: 22px;
-  color: rgba(255, 255, 255, 1);
-  font-size: 58px;
-  font-weight: 900;
-  line-height: 68px;
-  overflow-wrap: anywhere;
-}
-
-.site-footer-hero-title span {
-  display: block;
-}
-
-.site-footer-hero-title > span:first-child {
-  white-space: nowrap;
-}
-
-.site-footer-hero-title span:last-child {
-  position: relative;
-  display: inline-block;
-}
-
-.site-footer-hero-line {
-  position: absolute;
-  left: 50%;
-  bottom: -13px;
-  width: 222px;
-  height: auto;
-  transform: translateX(-50%);
-}
-
-.site-footer-hero-copy {
-  max-width: 760px;
-  margin-top: 28px;
-  color: rgba(229, 231, 235, 1);
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 30px;
-  overflow-wrap: anywhere;
-}
-
-.site-footer-hero-actions {
-  max-width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 28px;
-  margin-top: 27px;
-}
-
-.site-footer-hero-download {
-  width: 172px;
-  height: 64px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  border-radius: 15px;
-  color: rgba(89, 94, 104, 1);
-  background-color: rgba(255, 255, 255, 1);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 20px;
-  text-align: left;
-  overflow: hidden;
-}
-
-.site-footer-hero-download span {
-  min-width: 0;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  white-space: pre-line;
-}
-
-.site-footer-hero-download img {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
-  object-fit: contain;
-}
-
-.site-footer-hero-download strong {
-  color: rgba(0, 0, 0, 1);
 }
 
 .site-footer-inner {
@@ -526,9 +285,6 @@ watch(locale, () => {
   height: 24px;
 }
 
-.site-footer-with-hero .site-footer-inner {
-  min-height: var(--page-footer-height);
-}
 .site-footer-columns {
   flex: 1 1 auto;
   display: grid;
@@ -580,31 +336,6 @@ watch(locale, () => {
   color: var(--theme-footer-link-hover);
 }
 @media (max-width: 768px) {
-
-  .site-footer-hero {
-    padding-top: 72px;
-    padding-bottom: 64px;
-  }
-
-  .site-footer-hero-title {
-    width: auto;
-    font-size: 32px;
-    line-height: 40px;
-  }
-
-  .site-footer-hero-title > span:first-child {
-    white-space: normal;
-  }
-
-  .site-footer-hero-copy {
-    font-size: 14px;
-    line-height: 24px;
-  }
-
-  .site-footer-hero-actions {
-    flex-direction: column;
-    gap: 16px;
-  }
 
   .site-footer-inner {
     min-height: auto;

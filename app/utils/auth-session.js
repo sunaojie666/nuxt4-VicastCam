@@ -51,18 +51,9 @@ const redirectToHome = () => {
   return navigateTo(homePath)
 }
 
-// 登录失效统一清状态并回首页；服务端 cookie 通过 logout 接口同步清理。
+// 登录失效统一清状态并回首页。
 export const handleAuthExpired = () => {
   clearAuthStorage()
 
-  if (!process.client) {
-    return redirectToHome()
-  }
-
-  return $fetch('/api/auth/logout', {
-    method: 'POST',
-  }).then(
-    () => redirectToHome(),
-    () => redirectToHome()
-  )
+  return redirectToHome()
 }

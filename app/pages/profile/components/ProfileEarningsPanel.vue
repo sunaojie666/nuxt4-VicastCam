@@ -1,11 +1,11 @@
 <template>
-  <section class="profile-content" aria-label="我的收益">
+  <section class="profile-content" :aria-label="earningsText.ariaLabel">
     <section class="profile-panel earnings-overview-panel">
       <header class="profile-panel-heading">
         <span>
           <Icon name="lucide:coins" aria-hidden="true" />
         </span>
-        <h2>我的收益</h2>
+        <h2>{{ earningsText.title }}</h2>
       </header>
 
       <div class="earnings-cards">
@@ -36,34 +36,72 @@
           <span>
             <Icon name="lucide:badge-check" aria-hidden="true" />
           </span>
-          <h2>权益对比</h2>
+          <h2>{{ earningsText.commissionTitle }}</h2>
         </div>
 
-        <select v-model="selectedStatus" class="earnings-status-filter">
-          <option value="all">全部状态</option>
-          <option value="paid">已到账</option>
-          <option value="review">审核中</option>
-        </select>
+        <div ref="monthFilter" class="earnings-month-filter">
+          <button
+            type="button"
+            :class="['earnings-month-button', { 'earnings-month-button-active': isMonthPickerOpen }]"
+            :aria-label="commonText.monthSelectLabel"
+            @click="toggleMonthPicker"
+          >
+            <Icon name="lucide:calendar-days" aria-hidden="true" />
+          </button>
+
+          <div v-if="isMonthPickerOpen" class="earnings-month-popover">
+            <header class="earnings-month-popover-header">
+              <button type="button" class="earnings-month-year-button" @click="pickerYear--">
+                <Icon name="lucide:chevron-left" aria-hidden="true" />
+              </button>
+              <strong>{{ pickerYear }}{{ commonText.yearSuffix }}</strong>
+              <button
+                type="button"
+                class="earnings-month-year-button"
+                :disabled="pickerYear >= currentYear"
+                @click="pickerYear++"
+              >
+                <Icon name="lucide:chevron-right" aria-hidden="true" />
+              </button>
+            </header>
+
+            <div class="earnings-month-grid">
+              <button
+                v-for="month in monthOptions"
+                :key="month.value"
+                type="button"
+                :class="['earnings-month-option', { 'earnings-month-option-active': selectedMonth === createMonthValue(pickerYear, month.value) }]"
+                :disabled="isFutureMonth(pickerYear, month.value)"
+                @click="selectMonth(pickerYear, month.value)"
+              >
+                {{ month.label }}
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
 
       <div class="earnings-table-wrap">
         <table class="earnings-table">
           <thead>
             <tr>
-              <th>申请时间</th>
-              <th>提现方式</th>
-              <th>提现金额</th>
-              <th>状态</th>
+              <th>{{ earningsText.commissionHeaders?.mobile }}</th>
+              <th>{{ earningsText.commissionHeaders?.saleTime }}</th>
+              <th>{{ earningsText.commissionHeaders?.goodsInfo }}</th>
+              <th>{{ earningsText.commissionHeaders?.commission }}</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="row in pagedRows" :key="row.id">
-              <td>{{ row.time }}</td>
-              <td>{{ row.method }}</td>
-              <td>${{ row.amount }}</td>
-              <td>
-                <span :class="['earnings-status', row.statusClass]">{{ row.statusLabel }}</span>
-              </td>
+          <tbody v-if="!isLoadingCommission && commissionRows.length">
+            <tr v-for="row in commissionRows" :key="row.id">
+              <td>{{ row.mobile }}</td>
+              <td>{{ row.saleTime }}</td>
+              <td>{{ row.goodsInfo }}</td>
+              <td>{{ row.commission }}</td>
+            </tr>
+          </tbody>
+          <tbody v-else>
+            <tr>
+              <td colspan="4" class="earnings-empty-cell">{{ commissionTableMessage }}</td>
             </tr>
           </tbody>
         </table>
@@ -72,24 +110,25 @@
       <div class="earnings-pagination">
         <button
           type="button"
-          :disabled="currentPage === 1"
+          :disabled="currentPage === 1 || isLoadingCommission"
           class="earnings-page-arrow"
           @click="currentPage--"
         >
           <Icon name="lucide:chevron-left" aria-hidden="true" />
         </button>
         <button
-          v-for="page in totalPages"
+          v-for="page in pages"
           :key="page"
           type="button"
           :class="['earnings-page-number', { 'earnings-page-number-active': currentPage === page }]"
+          :disabled="isLoadingCommission"
           @click="currentPage = page"
         >
           {{ page }}
         </button>
         <button
           type="button"
-          :disabled="currentPage === totalPages"
+          :disabled="currentPage === totalPages || isLoadingCommission"
           class="earnings-page-arrow"
           @click="currentPage++"
         >
@@ -100,15 +139,15 @@
 
     <Teleport to="body">
       <div v-if="showWithdrawModal" class="earnings-withdraw-overlay" @click.self="closeWithdrawModal">
-        <section class="earnings-withdraw-modal" role="dialog" aria-modal="true" aria-label="申请提现">
+        <section class="earnings-withdraw-modal" role="dialog" aria-modal="true" :aria-label="withdrawText.ariaLabel">
           <header class="earnings-withdraw-header">
             <div class="earnings-withdraw-title">
               <span>
                 <Icon name="lucide:wallet" aria-hidden="true" />
               </span>
-              <h2>申请提现</h2>
+              <h2>{{ withdrawText.title }}</h2>
             </div>
-            <button type="button" class="earnings-withdraw-close" aria-label="关闭" @click="closeWithdrawModal">
+            <button type="button" class="earnings-withdraw-close" :aria-label="withdrawText.closeLabel" @click="closeWithdrawModal">
               <Icon name="lucide:x" aria-hidden="true" />
             </button>
           </header>
@@ -116,22 +155,22 @@
           <article class="earnings-withdraw-balance">
             <div>
               <Icon name="lucide:wallet" aria-hidden="true" />
-              <strong>可提现</strong>
+              <strong>{{ withdrawText.balanceLabel }}</strong>
             </div>
             <strong>$23,560.00</strong>
           </article>
 
           <div class="earnings-withdraw-field">
-            <label>提现金额</label>
+            <label>{{ withdrawText.amountLabel }}</label>
             <div class="earnings-withdraw-amount-row">
-              <input v-model="withdrawForm.amount" type="text" placeholder="请输入提现金额">
-              <button type="button" @click="setAllAmount">全部</button>
+              <input v-model="withdrawForm.amount" type="text" :placeholder="withdrawText.amountPlaceholder">
+              <button type="button" @click="setAllAmount">{{ withdrawText.allButton }}</button>
             </div>
-            <p>单笔提现限额$9,999,最低提现金额$50</p>
+            <p>{{ withdrawText.amountTip }}</p>
           </div>
 
           <div class="earnings-withdraw-field">
-            <label>提现方式</label>
+            <label>{{ withdrawText.methodLabel }}</label>
             <div class="earnings-withdraw-methods">
               <button
                 v-for="method in withdrawMethods"
@@ -147,30 +186,30 @@
 
           <div class="earnings-withdraw-form-panel">
             <div class="earnings-withdraw-field">
-              <label>收款人姓名</label>
-              <input v-model="withdrawForm.name" type="text" placeholder="请输入姓名">
+              <label>{{ withdrawText.nameLabel }}</label>
+              <input v-model="withdrawForm.name" type="text" :placeholder="withdrawText.namePlaceholder">
             </div>
             <div class="earnings-withdraw-field">
-              <label>银行卡号</label>
-              <input v-model="withdrawForm.bankCard" type="text" placeholder="请输入卡号">
+              <label>{{ withdrawText.bankCardLabel }}</label>
+              <input v-model="withdrawForm.bankCard" type="text" :placeholder="withdrawText.bankCardPlaceholder">
             </div>
             <div class="earnings-withdraw-field">
-              <label>备注（可选）</label>
-              <textarea v-model="withdrawForm.remark" placeholder="填写补充说明..."></textarea>
+              <label>{{ withdrawText.remarkLabel }}</label>
+              <textarea v-model="withdrawForm.remark" :placeholder="withdrawText.remarkPlaceholder"></textarea>
             </div>
           </div>
 
           <p class="earnings-withdraw-note">
             <Icon name="lucide:info" aria-hidden="true" />
-            提现将在7个工作日内处理，请务必确认账户信息准确无误。
+            {{ withdrawText.note }}
           </p>
 
           <footer class="earnings-withdraw-actions">
             <button type="button" class="earnings-withdraw-cancel" @click="closeWithdrawModal">
-              取消
+              {{ withdrawText.cancelButton }}
             </button>
             <button type="button" class="earnings-withdraw-submit" @click="submitWithdraw">
-              确认提现
+              {{ withdrawText.submitButton }}
             </button>
           </footer>
         </section>
@@ -180,56 +219,68 @@
 </template>
 
 <script setup>
-const summaryCards = [
+import { getCommissionList } from '../../../api/request/auth'
+
+const createMoneyText = (value) => {
+  return `$ ${String(value || '0.00')}`
+}
+
+const { profileBox } = useProfileText()
+const commonText = computed(() => profileBox.value?.common || {})
+const earningsText = computed(() => profileBox.value?.earnings || {})
+const withdrawText = computed(() => earningsText.value.withdraw || {})
+const getSummaryText = (key) => {
+  return (earningsText.value.summaryCards || []).find(item => item.key === key) || {}
+}
+
+const summaryCards = computed(() => [
   {
-    title: '总收益',
-    value: '$ 28,560.00',
-    desc: '累计获得收益',
+    title: getSummaryText('total').title || '',
+    value: createMoneyText(totalCommission.value),
+    desc: getSummaryText('total').desc || '',
     icon: 'lucide:briefcase-business',
     theme: 'card-blue',
   },
   {
-    title: '待结算',
-    value: '$ 560.00',
-    desc: '预计结算周期内可结算',
+    title: getSummaryText('month').title || '',
+    value: createMoneyText(monthCommission.value),
+    desc: getSummaryText('month').desc || '',
     icon: 'lucide:clock-3',
     theme: 'card-amber',
   },
   {
-    title: '结算中',
+    title: getSummaryText('settling').title || '',
     value: '$ 1,560.00',
-    desc: '预计结算周期内可结算',
+    desc: getSummaryText('settling').desc || '',
     icon: 'lucide:info',
     theme: 'card-violet',
   },
   {
-    title: '可提现',
-    value: '$ 560.00',
-    desc: '预计结算周期内可结算',
+    title: getSummaryText('withdrawable').title || '',
+    value: createMoneyText(monthCommission.value),
+    desc: getSummaryText('withdrawable').desc || '',
     icon: 'lucide:wallet',
     theme: 'card-emerald',
-    action: '提现',
+    action: getSummaryText('withdrawable').action || '',
   },
-]
+])
 
-const allRows = Array.from({ length: 30 }, (_, index) => {
-  const isPaid = index % 2 === 0
-  return {
-    id: `row-${index + 1}`,
-    time: '2026-06-01 14:30:22',
-    method: isPaid ? 'PayPal' : 'Bank Transfer',
-    amount: '560',
-    statusLabel: isPaid ? '已到账' : '审核中',
-    statusClass: isPaid ? 'status-paid' : 'status-review',
-    statusValue: isPaid ? 'paid' : 'review',
-  }
-})
-
-const selectedStatus = ref('all')
+const { authUser } = useAuth()
+const { requestLoadingText } = useSiteToast()
+const selectedMonth = ref('')
+const isMonthPickerOpen = ref(false)
+const pickerYear = ref(new Date().getFullYear())
+const monthFilter = ref(null)
 const currentPage = ref(1)
 const pageSize = 10
+const commissionRows = ref([])
+const totalCommission = ref('0.00')
+const monthCommission = ref('0.00')
+const commissionTotal = ref(0)
+const isLoadingCommission = ref(false)
+const commissionLoadError = ref('')
 const showWithdrawModal = ref(false)
-const withdrawMethods = ['PayPal', '银行转账', 'USDT']
+const withdrawMethods = computed(() => Array.isArray(withdrawText.value.methods) ? withdrawText.value.methods : [])
 const withdrawForm = reactive({
   amount: '',
   method: 'PayPal',
@@ -238,28 +289,162 @@ const withdrawForm = reactive({
   remark: '',
 })
 
-const filteredRows = computed(() => {
-  if (selectedStatus.value === 'all') {
-    return allRows
+const currentMonth = computed(() => {
+  const date = new Date()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+
+  return `${date.getFullYear()}-${month}`
+})
+const currentYear = computed(() => Number(currentMonth.value.slice(0, 4)))
+const currentMonthNumber = computed(() => Number(currentMonth.value.slice(5, 7)))
+const monthOptions = computed(() => Array.from({ length: 12 }, (_, index) => {
+  const value = index + 1
+
+  return {
+    value,
+    label: `${value}${commonText.value.monthSuffix || ''}`,
   }
-  return allRows.filter((row) => row.statusValue === selectedStatus.value)
+}))
+const totalPages = computed(() => Math.max(1, Math.ceil((commissionTotal.value || commissionRows.value.length) / pageSize)))
+const pages = computed(() => {
+  const pageWindowSize = 5
+  const halfWindow = Math.floor(pageWindowSize / 2)
+  const startPage = Math.max(1, Math.min(currentPage.value - halfWindow, totalPages.value - pageWindowSize + 1))
+  const endPage = Math.min(totalPages.value, startPage + pageWindowSize - 1)
+
+  return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index)
+})
+const commissionTableMessage = computed(() => {
+  if (isLoadingCommission.value) {
+    return requestLoadingText.value
+  }
+
+  if (commissionLoadError.value) {
+    return commissionLoadError.value
+  }
+
+  return earningsText.value.emptyCommission || ''
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / pageSize)))
+selectedMonth.value = currentMonth.value
 
-const pagedRows = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredRows.value.slice(start, start + pageSize)
-})
+const pickCommissionValue = (...values) => {
+  return values.find(value => value !== undefined && value !== null && value !== '')
+}
 
-watch(selectedStatus, () => {
-  currentPage.value = 1
-})
+const createCommissionText = (...values) => {
+  const value = pickCommissionValue(...values)
+
+  return value === undefined ? '' : String(value)
+}
+
+const getCommissionData = (response) => {
+  return response?.data || response || {}
+}
+
+const getCommissionItems = (response) => {
+  const data = getCommissionData(response)
+  const items = data.list || data.rows || data.items || data.records || []
+
+  return Array.isArray(items) ? items : []
+}
+
+const createCommissionRow = (item = {}, index) => {
+  return {
+    id: createCommissionText(item.id, item.mobile, item.sale_time, `${selectedMonth.value}-${currentPage.value}-${index}`),
+    mobile: createCommissionText(item.mobile, '-'),
+    saleTime: createCommissionText(item.sale_time, item.saleTime, '-'),
+    goodsInfo: createCommissionText(item.goods_info, item.goodsInfo, '-'),
+    commission: createCommissionText(item.commission, '0.00'),
+  }
+}
+
+const loadCommissionList = () => {
+  const userId = authUser.value?.user_id
+
+  if (!userId) {
+    commissionRows.value = []
+    commissionTotal.value = 0
+    commissionLoadError.value = commonText.value.userMissing || ''
+    return
+  }
+
+  isLoadingCommission.value = true
+  commissionLoadError.value = ''
+
+  getCommissionList({
+    user_id: userId,
+    month: selectedMonth.value,
+    page_index: currentPage.value,
+    page_size: pageSize,
+  }).then(
+    response => {
+      const data = getCommissionData(response)
+      const items = getCommissionItems(response)
+
+      totalCommission.value = createCommissionText(data.total_commission, totalCommission.value)
+      monthCommission.value = createCommissionText(data.month_commission, monthCommission.value)
+      commissionTotal.value = Number(data.total || data.count || items.length) || items.length
+      commissionRows.value = items.map(createCommissionRow)
+      isLoadingCommission.value = false
+    },
+    () => {
+      commissionRows.value = []
+      commissionTotal.value = 0
+      commissionLoadError.value = earningsText.value.errors?.loadFail || ''
+      isLoadingCommission.value = false
+    }
+  )
+}
+
+const createMonthValue = (year, month) => {
+  return `${year}-${String(month).padStart(2, '0')}`
+}
+
+const isFutureMonth = (year, month) => {
+  return year > currentYear.value || (year === currentYear.value && month > currentMonthNumber.value)
+}
+
+const toggleMonthPicker = () => {
+  isMonthPickerOpen.value = !isMonthPickerOpen.value
+}
+
+const selectMonth = (year, month) => {
+  if (isFutureMonth(year, month)) {
+    return
+  }
+
+  selectedMonth.value = createMonthValue(year, month)
+  isMonthPickerOpen.value = false
+}
+
+const closeMonthPickerOnOutsideClick = (event) => {
+  if (!isMonthPickerOpen.value || monthFilter.value?.contains(event.target)) {
+    return
+  }
+
+  isMonthPickerOpen.value = false
+}
 
 watch(totalPages, () => {
   if (currentPage.value > totalPages.value) {
     currentPage.value = totalPages.value
   }
+})
+
+watch(selectedMonth, (month) => {
+  pickerYear.value = Number(String(month || currentMonth.value).slice(0, 4)) || currentYear.value
+
+  if (currentPage.value !== 1) {
+    currentPage.value = 1
+    return
+  }
+
+  loadCommissionList()
+})
+
+watch(currentPage, () => {
+  loadCommissionList()
 })
 
 const openWithdrawModal = () => {
@@ -277,6 +462,15 @@ const setAllAmount = () => {
 const submitWithdraw = () => {
   showWithdrawModal.value = false
 }
+
+onMounted(() => {
+  loadCommissionList()
+  document.addEventListener('click', closeMonthPickerOnOutsideClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeMonthPickerOnOutsideClick)
+})
 </script>
 
 <style scoped>
@@ -446,15 +640,118 @@ const submitWithdraw = () => {
   line-height: 22px;
 }
 
-.earnings-status-filter {
+.earnings-month-filter {
+  position: relative;
+  width: 34px;
   height: 34px;
-  min-width: 98px;
-  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.earnings-month-button {
+  width: 34px;
+  height: 34px;
   border: 1px solid rgba(45, 58, 86, 1);
+  border-radius: 9px;
+  color: rgba(148, 163, 184, 1);
+  background: rgba(31, 41, 61, 1);
+  cursor: pointer;
+}
+
+.earnings-month-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.earnings-month-button:hover,
+.earnings-month-button:focus,
+.earnings-month-button-active {
+  color: rgba(209, 237, 255, 1);
+  border-color: rgba(62, 91, 135, 1);
+}
+
+.earnings-month-popover {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 30;
+  width: 248px;
+  padding: 12px;
+  border: 1px solid rgba(50, 64, 96, 1);
   border-radius: 10px;
-  color: rgba(146, 163, 192, 1);
-  background: rgba(22, 34, 58, 1);
-  font-size: 12px;
+  background: rgba(15, 24, 42, 1);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+.earnings-month-popover-header {
+  height: 32px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 8px;
+  color: rgba(232, 242, 255, 1);
+}
+
+.earnings-month-popover-header strong {
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.earnings-month-year-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(45, 58, 86, 1);
+  border-radius: 8px;
+  color: rgba(148, 163, 184, 1);
+  background: rgba(18, 30, 51, 1);
+  cursor: pointer;
+}
+
+.earnings-month-year-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.earnings-month-year-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.earnings-month-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.earnings-month-option {
+  height: 34px;
+  border: 1px solid rgba(45, 58, 86, 1);
+  border-radius: 8px;
+  color: rgba(148, 163, 184, 1);
+  background: rgba(18, 30, 51, 1);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.earnings-month-option:hover,
+.earnings-month-option:focus {
+  color: rgba(209, 237, 255, 1);
+  border-color: rgba(38, 130, 176, 1);
+}
+
+.earnings-month-option-active {
+  color: rgba(221, 244, 255, 1);
+  border-color: rgba(38, 130, 176, 1);
+  background: rgba(20, 101, 145, 0.6);
+}
+
+.earnings-month-option:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .earnings-table-wrap {
@@ -509,16 +806,10 @@ const submitWithdraw = () => {
   padding-left: 14px;
 }
 
-.earnings-status {
-  font-weight: 600;
-}
-
-.status-paid {
-  color: rgba(45, 222, 137, 1);
-}
-
-.status-review {
-  color: rgba(235, 209, 42, 1);
+.earnings-empty-cell {
+  height: 120px !important;
+  color: rgba(149, 156, 168, 1) !important;
+  text-align: center !important;
 }
 
 .earnings-pagination {
@@ -539,9 +830,10 @@ const submitWithdraw = () => {
   cursor: pointer;
 }
 
-.earnings-page-arrow:disabled {
+.earnings-page-arrow:disabled,
+.earnings-page-number:disabled {
   opacity: 0.35;
-  cursor: default;
+  cursor: not-allowed;
 }
 
 .earnings-page-number-active {
@@ -826,8 +1118,8 @@ const submitWithdraw = () => {
     gap: 10px;
   }
 
-  .earnings-status-filter {
-    width: 100%;
+  .earnings-month-filter {
+    margin-left: auto;
   }
 
   .earnings-table-wrap {

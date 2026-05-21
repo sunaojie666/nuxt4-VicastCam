@@ -1,21 +1,21 @@
 <template>
-  <section class="profile-content" aria-label="兑换入口">
+  <section class="profile-content" :aria-label="redeemText.ariaLabel">
     <section class="profile-panel membership-activation-panel">
       <header class="profile-panel-heading">
         <span class="membership-heading-icon">
           <Icon name="lucide:ticket" aria-hidden="true" />
         </span>
-        <h2>兑换入口</h2>
+        <h2>{{ redeemText.title }}</h2>
       </header>
 
-      <p class="membership-activation-tip">使用您购买的CDKEY激活码进行激活</p>
+      <p class="membership-activation-tip">{{ redeemText.tip }}</p>
 
       <div class="membership-activation-row">
         <input
           v-model="cardPwd"
           type="text"
           class="membership-activation-input"
-          placeholder="请输入10位数激活码"
+          :placeholder="redeemText.placeholder"
           :disabled="isActivating"
           @keyup.enter="handleActiveCard"
         >
@@ -25,13 +25,13 @@
           :disabled="isActivating"
           @click="handleActiveCard"
         >
-          立即激活
+          {{ redeemText.submitButton }}
         </button>
       </div>
 
       <p class="membership-activation-agreement">
-        激活即表示您同意
-        <a href="javascript:void(0)">《用户协议》</a>
+        {{ redeemText.agreementPrefix }}
+        <a href="javascript:void(0)">《{{ redeemText.userProtocolText }}》</a>
       </p>
     </section>
   </section>
@@ -44,6 +44,8 @@ const cardPwd = ref('')
 const isActivating = ref(false)
 const { authUser } = useAuth()
 const { showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+const { profileBox } = useProfileText()
+const redeemText = computed(() => profileBox.value?.redeem || {})
 
 const isSuccessResponse = (response) => {
   const code = Number(response?.code ?? response?.data?.code)
@@ -74,7 +76,7 @@ const handleActiveCard = () => {
     card_pwd,
   }).then((response) => {
     if (!isSuccessResponse(response)) {
-      return Promise.reject(new Error(response?.message || response?.data?.message || '激活失败'))
+      return Promise.reject(new Error(response?.message || response?.data?.message || redeemText.value.errors?.activateFail || ''))
     }
 
     cardPwd.value = ''

@@ -7,7 +7,7 @@ const CHECK_STATUS_PATH = '/v1/CheckStatus'
 // 扫码登录状态检查：前端传 uuid，服务端按后端要求转成 multipart/form-data。
 export default defineEventHandler((event) => {
   return readVicastBody(event).then((requestBody) => {
-    const uuid = requireVicastParam(requestBody, 'uuid', '二维码已失效，请重新获取')
+    const uuid = requireVicastParam(requestBody, 'uuid')
 
     return requestVicastApi(event, {
       path: CHECK_STATUS_PATH,
@@ -15,7 +15,7 @@ export default defineEventHandler((event) => {
       params: {
         uuid,
       },
-      errorMessage: '检查扫码登录状态失败',
+      errorMessage: '',
     }).then(
       response => {
         return createAuthLoginResult(event, response)

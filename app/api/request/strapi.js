@@ -40,6 +40,7 @@ export const getLogin = (locale) => {
   return createStrapiRequest().get('/logins', {
     params: {
       locale,
+      populate: '*',
     },
   })
 }
@@ -137,6 +138,16 @@ export const getCards = (locale) => {
 // 首页订阅模块文案接口，对应 Strapi 里的 api::pricing.pricing，REST 路由为 /api/pricings。
 export const getPricings = (locale) => {
   return createStrapiRequest().get('/pricings', {
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 个人中心文案接口，对应 Strapi 里的 api::profile.profile。
+export const getProfiles = (locale) => {
+  return createStrapiRequest().get('/profiles', {
     params: {
       locale,
       populate: '*',

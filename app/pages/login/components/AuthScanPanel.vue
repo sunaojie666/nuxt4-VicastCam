@@ -1,7 +1,7 @@
 <template>
   <div class="auth-scan-panel">
     <div class="auth-scan-code">
-      <span v-if="isLoadingQrcode" class="auth-scan-placeholder">{{ requestLoadingText }}</span>
+      <span v-if="isLoadingQrcode && requestLoadingText" class="auth-scan-placeholder">{{ requestLoadingText }}</span>
 
       <button
         v-else-if="qrcodeLoadFailed"
@@ -10,12 +10,12 @@
         @click="loadLoginQrcode"
       >
         <Icon name="lucide:refresh-cw" aria-hidden="true" />
-        <span>重新获取</span>
+        <span v-if="loginBox.qrRetryText">{{ loginBox.qrRetryText }}</span>
       </button>
 
-      <img v-else-if="qrcodeSource" :src="qrcodeSource" alt="VicastCam APP扫码登录二维码">
+      <img v-else-if="qrcodeSource" :src="qrcodeSource" :alt="loginBox.qrCodeAlt || ''">
 
-      <span v-else class="auth-scan-placeholder">暂无二维码</span>
+      <span v-else-if="loginBox.qrEmptyText" class="auth-scan-placeholder">{{ loginBox.qrEmptyText }}</span>
     </div>
 
     <p class="auth-scan-tip">
@@ -26,10 +26,10 @@
     <p v-if="qrcodeSource && scanStatusText" class="auth-scan-status">{{ scanStatusText }}</p>
 
     <p class="auth-scan-agreement">
-      {{ agreementPrefix }}
-      <a v-if="loginBox.userProtocolText" href="#">《{{ loginBox.userProtocolText }}》</a>
-      <template v-if="loginBox.userProtocolText && loginBox.privacyPolicyText">和</template>
-      <a v-if="loginBox.privacyPolicyText" href="#">《{{ loginBox.privacyPolicyText }}》</a>
+      <span v-if="loginBox.agreeProtocolPrefix">{{ loginBox.agreeProtocolPrefix }}</span>
+      <span v-if="loginBox.privacyPolicyText" class="auth-scan-agreement-action">《{{ loginBox.privacyPolicyText }}》</span>
+      <span v-if="loginBox.privacyPolicyText && loginBox.userProtocolText && agreementConnector">{{ agreementConnector }}</span>
+      <span v-if="loginBox.userProtocolText" class="auth-scan-agreement-action">《{{ loginBox.userProtocolText }}》</span>
     </p>
   </div>
 </template>
@@ -63,13 +63,7 @@ const SCAN_STATUS_INTERVAL = 2000
 const SCAN_STATUS_MAX_COUNT = 90
 const loginBox = computed(() => props.loginBox || {})
 const toastBox = computed(() => props.toastBox || {})
-const agreementPrefix = computed(() => {
-  return String(loginBox.value.agreeProtocolText || '')
-    .replace(loginBox.value.userProtocolText || '', '')
-    .replace(loginBox.value.privacyPolicyText || '', '')
-    .replace('和', '')
-    .trim()
-})
+const agreementConnector = computed(() => loginBox.value.agreementConnector || '')
 
 const qrcodeSourceKeys = [
   'qrcode',
@@ -310,7 +304,7 @@ onBeforeUnmount(() => {
 
 .auth-scan-tip {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 9px;
   max-width: 100%;
@@ -322,6 +316,7 @@ onBeforeUnmount(() => {
 }
 
 .auth-scan-tip img {
+  margin-top: 1px;
   width: 19px;
   height: 19px;
   flex: 0 0 auto;
@@ -353,7 +348,7 @@ onBeforeUnmount(() => {
   overflow-wrap: anywhere;
 }
 
-.auth-scan-agreement a {
+.auth-scan-agreement-action {
   color: rgba(34, 211, 238, 1);
 }
 

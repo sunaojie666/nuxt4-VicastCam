@@ -15,7 +15,7 @@
       <div class="home-learning-grid">
         <article
           v-for="(course, index) in learningCards"
-          :key="course.id || `${course.title}-${index}`"
+          :key="createLearningCardKey(course, index)"
           class="home-learning-card"
           data-reveal="scale"
           :style="{ '--reveal-delay': `${course.delay}ms` }"
@@ -34,7 +34,7 @@
               <span class="home-learning-tag home-learning-tag-primary">{{ course.tag2 }}</span>
             </div>
 
-            <h3 class="home-learning-card-title">{{ course.title }}</h3>
+            <h3 class="home-learning-card-title" :dir="activeLocaleDir">{{ course.title }}</h3>
           </div>
         </article>
       </div>
@@ -52,8 +52,14 @@
 import { getCards, getTutorials } from '../../../api/request/strapi'
 
 const localePath = useLocalePath()
-const { locale } = useI18n()
+const { locale, locales } = useI18n()
 const config = useRuntimeConfig()
+
+const activeLocaleDir = computed(() => {
+  const activeLocale = locales.value.find(item => typeof item !== 'string' && item.code === locale.value)
+
+  return activeLocale?.dir || 'ltr'
+})
 
 const tutorialContent = ref({
   sectionTag: '',
@@ -64,6 +70,10 @@ const tutorialContent = ref({
 })
 
 const learningCards = ref([])
+
+const createLearningCardKey = (course, index) => {
+  return `${locale.value}-${course.id || course.title || index}`
+}
 
 const createStrapiAssetUrl = (url) => {
   if (!url) {
@@ -248,6 +258,7 @@ watch(locale, () => {
 .home-learning-grid {
   width: min(100%, var(--page-max-width));
   display: grid;
+  direction: ltr;
   grid-template-columns: repeat(3, 368px);
   justify-content: center;
   gap: 26px 22px;
@@ -260,6 +271,7 @@ watch(locale, () => {
   height: 310px;
   border-radius: 8px;
   background-color: rgba(3, 7, 18, 1);
+  direction: ltr;
 }
 
 .home-learning-image {

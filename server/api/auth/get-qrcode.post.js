@@ -11,6 +11,6 @@ export default defineEventHandler((event) => {
     query: {
       platform: 'pc',
     },
-    errorMessage: '获取扫码登录二维码失败',
+    errorMessage: '',
   })
 })

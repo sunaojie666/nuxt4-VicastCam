@@ -93,6 +93,25 @@ export const getTeamList = (payload = {}) => {
   })
 }
 
+// 获取购买记录。服务端会转发到 https://api.vicastcam.com/v1/GetBuyRecords。
+export const getBuyRecords = (payload = {}) => {
+  return authRequest.post('/get-buy-records', {
+    user_id: String(payload.user_id || '').trim(),
+    page: Number(payload.page) || 1,
+    limit: Number(payload.limit) || 5,
+  })
+}
+
+// 获取佣金明细。服务端会转发到 https://api.vicastcam.com/v1/GetCommissionList。
+export const getCommissionList = (payload = {}) => {
+  return authRequest.post('/get-commission-list', {
+    user_id: String(payload.user_id || '').trim(),
+    month: String(payload.month || '').trim(),
+    page_index: Number(payload.page_index) || 1,
+    page_size: Number(payload.page_size) || 10,
+  })
+}
+
 // 获取 VIP 类型。服务端会转发到 https://api.vicastcam.com/v1/GetVipTypes。
 export const getVipTypes = () => {
   return authRequest.post('/get-vip-types', {}, {

@@ -4,16 +4,19 @@
 
     <main class="profile-page-main">
       <div class="page-container profile-layout">
-        <aside class="profile-sidebar" aria-label="个人中心导航">
+        <aside class="profile-sidebar" :aria-label="profileCommon.sidebarAriaLabel">
           <section class="profile-user-card">
             <div class="profile-avatar-wrap">
-              <button type="button" class="profile-avatar-button" aria-label="编辑头像" @click="openAvatarPicker">
-                <img class="profile-avatar" :src="profileAvatar" :alt="profileName">
+              <button type="button" class="profile-avatar-button" :aria-label="profileCommon.editAvatarLabel" @click="openAvatarPicker">
+                <img v-if="profileAvatar" class="profile-avatar" :src="profileAvatar" :alt="profileName">
+                <span v-else class="profile-avatar-placeholder" aria-hidden="true">
+                  <Icon name="lucide:user-round" />
+                </span>
               </button>
               <button
                 type="button"
                 class="profile-avatar-edit"
-                aria-label="编辑头像"
+                :aria-label="profileCommon.editAvatarLabel"
                 :disabled="isSavingAvatar"
                 @click="openAvatarPicker"
               >
@@ -35,7 +38,7 @@
           <nav class="profile-menu">
             <button
               v-for="item in menuItems"
-              :key="item.label"
+              :key="item.key"
               type="button"
               :class="['profile-menu-item', { 'profile-menu-item-active': activeTab === item.key }]"
               @click="activeTab = item.key"
@@ -79,15 +82,13 @@ definePageMeta({
   middleware: 'auth',
 })
 
-setupPageSeo('profile')
-
-const menuItems = [
-  { key: 'account', label: '账号信息', icon: 'lucide:user-round' },
-  { key: 'membership', label: '会员中心', icon: 'lucide:crown' },
-  { key: 'redeem', label: '兑换入口', icon: 'lucide:ticket' },
-  { key: 'purchaseHistory', label: '购买记录', icon: 'lucide:clipboard-list' },
-  { key: 'team', label: '我的团队', icon: 'lucide:users-round' },
-  { key: 'earnings', label: '我的收益', icon: 'lucide:coins' },
+const profileMenuMeta = [
+  { key: 'account', field: 'account', icon: 'lucide:user-round' },
+  { key: 'membership', field: 'membership', icon: 'lucide:crown' },
+  { key: 'redeem', field: 'redeem', icon: 'lucide:ticket' },
+  { key: 'purchaseHistory', field: 'purchaseHistory', icon: 'lucide:clipboard-list' },
+  { key: 'team', field: 'team', icon: 'lucide:users-round' },
+  { key: 'earnings', field: 'earnings', icon: 'lucide:coins' },
 ]
 
 const profileTabComponents = {
@@ -104,23 +105,46 @@ const profileTabCookie = useCookie('profile-active-tab', { sameSite: 'lax' })
 const activeTab = ref(validProfileTabs.has(profileTabCookie.value) ? profileTabCookie.value : 'account')
 const { authUser, updateUserProfile, refreshVipInfo } = useAuth()
 const { showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+const { profileBox, loadProfileText } = useProfileText()
+const { locale } = useI18n()
 const avatarInput = ref(null)
 const avatarFile = ref(null)
 const avatarPreview = ref('')
 const isSavingAvatar = ref(false)
 
+setupPageSeo('profile', computed(() => ({
+  title: profileBox.value?.seo?.title || undefined,
+  description: profileBox.value?.seo?.description || undefined,
+})))
+
+const profileCommon = computed(() => {
+  return {
+    editAvatarLabel: profileBox.value?.common?.editAvatarLabel || '',
+    sidebarAriaLabel: profileBox.value?.sidebar?.ariaLabel || '',
+    defaultProfileName: profileBox.value?.common?.defaultProfileName || '',
+  }
+})
+const menuItems = computed(() => {
+  const menuText = profileBox.value?.sidebar?.menus || {}
+
+  return profileMenuMeta.map(item => ({
+    key: item.key,
+    label: menuText[item.field] || '',
+    icon: item.icon,
+  }))
+})
 const activePanelComponent = computed(() => profileTabComponents[activeTab.value] || ProfileAccountPanel)
 const activePanelProps = computed(() => {
   return {}
 })
 const profileName = computed(() => {
-  return authUser.value?.nickname || authUser.value?.email || '个人中心'
+  return authUser.value?.nickname || authUser.value?.email || profileCommon.value.defaultProfileName
 })
 const profileEmail = computed(() => {
   return authUser.value?.email || ''
 })
 const profileAvatar = computed(() => {
-  return avatarPreview.value || authUser.value?.avatar || '/images/profile/headPortrait.png'
+  return avatarPreview.value || authUser.value?.avatar || ''
 })
 const profileVipText = computed(() => {
   return authUser.value?.vip_type || ''
@@ -196,7 +220,12 @@ onBeforeUnmount(() => {
 })
 
 onMounted(() => {
+  loadProfileText()
   refreshVipInfo().catch(() => null)
+})
+
+watch(locale, () => {
+  loadProfileText()
 })
 
 </script>
@@ -268,20 +297,37 @@ onMounted(() => {
 }
 
 .profile-avatar-button,
-.profile-avatar {
+.profile-avatar,
+.profile-avatar-placeholder {
   width: 74px;
   height: 74px;
 }
 
 .profile-avatar-button {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(32, 41, 61, 1);
   cursor: pointer;
+  overflow: hidden;
 }
 
 .profile-avatar {
-  overflow: hidden;
   border-radius: 12px;
   object-fit: cover;
+}
+
+.profile-avatar-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--profile-muted);
+}
+
+.profile-avatar-placeholder :deep(svg) {
+  width: 30px;
+  height: 30px;
 }
 
 .profile-avatar-edit {

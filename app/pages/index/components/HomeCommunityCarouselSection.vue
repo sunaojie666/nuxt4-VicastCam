@@ -14,7 +14,7 @@
     </div>
 
     <div class="home-community-carousel" aria-label="全球直播者轮播" data-reveal="scale" style="--reveal-delay: 220ms">
-      <div class="home-community-track">
+      <div :key="`community-track-${locale}`" class="home-community-track">
         <div
           v-for="loopIndex in 4"
           :key="loopIndex"
@@ -41,9 +41,9 @@
 
             <div class="home-community-card-body">
               <div>
-                <h2 class="home-community-card-name">{{ creator.name }}</h2>
-                <p class="home-community-handle">@{{ creator.username }}</p>
-                <p class="home-community-location">
+                <h2 class="home-community-card-name" :dir="activeLocaleDir">{{ creator.name }}</h2>
+                <p class="home-community-handle" :dir="activeLocaleDir">@{{ creator.username }}</p>
+                <p class="home-community-location" :dir="activeLocaleDir">
                   <Icon name="lucide:map-pin" aria-hidden="true" />
                   {{ creator.location }}
                 </p>
@@ -78,7 +78,7 @@
       <div class="home-community-platforms-marquee" aria-label="支持的直播平台">
         <div
           v-for="(row, rowIndex) in platformRows"
-          :key="`platform-row-${rowIndex}`"
+          :key="`platform-row-${locale}-${rowIndex}`"
           :class="['home-community-platforms-track', { 'home-community-platforms-track-reverse': rowIndex % 2 === 1 }]"
         >
           <div
@@ -105,9 +105,15 @@
 <script setup>
 import { getCommunity, getForm, getStreamers } from '../../../api/request/strapi'
 
-const { locale } = useI18n()
+const { locale, locales } = useI18n()
 const config = useRuntimeConfig()
 const creators = ref([])
+
+const activeLocaleDir = computed(() => {
+  const activeLocale = locales.value.find(item => typeof item !== 'string' && item.code === locale.value)
+
+  return activeLocale?.dir || 'ltr'
+})
 
 const communitySection = ref({
   tag: '',
@@ -407,11 +413,13 @@ watch(locale, () => {
   width: 100%;
   max-width: 100vw;
   overflow: hidden;
+  direction: ltr;
   margin-top: 76px;
 }
 
 .home-community-track {
   display: flex;
+  direction: ltr;
   align-items: stretch;
   gap: 0;
   width: max-content;
@@ -521,6 +529,7 @@ watch(locale, () => {
   gap: 16px;
   padding: 24px 22px 20px;
   background-color: rgba(3, 7, 18, 1);
+  direction: ltr;
 }
 
 .home-community-card-body > div {
@@ -689,6 +698,7 @@ watch(locale, () => {
   align-items: stretch;
   gap: 28px;
   overflow: hidden;
+  direction: ltr;
   margin-top: 74px;
   padding: 6px 0;
 }
@@ -696,6 +706,7 @@ watch(locale, () => {
 .home-community-platforms-track {
   --home-platform-gap: 40px;
   display: flex;
+  direction: ltr;
   gap: 0;
   width: max-content;
   animation: home-community-platform-marquee 72s linear infinite;
@@ -732,6 +743,7 @@ watch(locale, () => {
   flex: 0 0 auto;
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  direction: ltr;
 }
 
 .home-community-platform-card:hover,

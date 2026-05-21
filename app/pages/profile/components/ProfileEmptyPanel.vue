@@ -9,7 +9,7 @@
       </header>
 
       <div class="profile-empty-state">
-        <p>暂无内容</p>
+        <p>{{ emptyText }}</p>
       </div>
     </section>
   </section>
@@ -26,4 +26,7 @@ defineProps({
     required: true,
   },
 })
+
+const { profileBox } = useProfileText()
+const emptyText = computed(() => profileBox.value?.common?.emptyContent || '')
 </script>

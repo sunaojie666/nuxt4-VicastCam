@@ -1,22 +1,22 @@
 <template>
-  <section class="profile-content" aria-label="我的团队">
+  <section class="profile-content" :aria-label="teamText.ariaLabel">
     <section class="profile-panel team-panel">
       <header class="profile-panel-heading team-panel-heading">
         <span>
           <Icon name="lucide:users-round" aria-hidden="true" />
         </span>
-        <h2>我的团队</h2>
+        <h2>{{ teamText.title }}</h2>
       </header>
 
       <article class="team-referrer-card">
         <div class="team-referrer-main">
           <span class="team-referrer-avatar">{{ referrerInitial }}</span>
           <div>
-            <p>推荐人</p>
+            <p>{{ teamText.referrerLabel }}</p>
             <strong>{{ referrerName }}</strong>
           </div>
         </div>
-        <button type="button" class="team-referrer-action">上级</button>
+        <button type="button" class="team-referrer-action">{{ teamText.parentButton }}</button>
       </article>
 
       <div class="team-toolbar">
@@ -26,7 +26,7 @@
             :class="['team-level-tab', { 'team-level-tab-active': selectedLevel === '1' }]"
             @click="selectedLevel = '1'"
           >
-            一级会员
+            {{ teamText.levelOne }}
             <span>{{ levelTotals[1] }}</span>
           </button>
           <button
@@ -34,7 +34,7 @@
             :class="['team-level-tab', { 'team-level-tab-active': selectedLevel === '2' }]"
             @click="selectedLevel = '2'"
           >
-            二级会员
+            {{ teamText.levelTwo }}
             <span>{{ levelTotals[2] }}</span>
           </button>
         </div>
@@ -43,7 +43,7 @@
           <button
             type="button"
             :class="['team-month-button', { 'team-month-button-active': isMonthPickerOpen }]"
-            aria-label="选择月份"
+            :aria-label="commonText.monthSelectLabel"
             @click="toggleMonthPicker"
           >
             <Icon name="lucide:calendar-days" aria-hidden="true" />
@@ -54,7 +54,7 @@
               <button type="button" class="team-month-year-button" @click="pickerYear--">
                 <Icon name="lucide:chevron-left" aria-hidden="true" />
               </button>
-              <strong>{{ pickerYear }}年</strong>
+              <strong>{{ pickerYear }}{{ commonText.yearSuffix }}</strong>
               <button
                 type="button"
                 class="team-month-year-button"
@@ -85,9 +85,9 @@
         <table class="team-table">
           <thead>
             <tr>
-              <th>成员名称</th>
-              <th>会员状态</th>
-              <th>加入时间</th>
+              <th>{{ teamText.tableHeaders?.name }}</th>
+              <th>{{ teamText.tableHeaders?.status }}</th>
+              <th>{{ teamText.tableHeaders?.joinedAt }}</th>
             </tr>
           </thead>
           <tbody v-if="!isLoadingTeam && pagedRows.length">
@@ -143,6 +143,7 @@ import { getTeamList } from '../../../api/request/auth'
 
 const { authUser } = useAuth()
 const { requestLoadingText } = useSiteToast()
+const { profileBox } = useProfileText()
 const selectedLevel = ref('1')
 const selectedMonth = ref('')
 const isMonthPickerOpen = ref(false)
@@ -159,6 +160,8 @@ const levelTotals = reactive({
 const isLoadingTeam = ref(false)
 const teamLoadError = ref('')
 
+const commonText = computed(() => profileBox.value?.common || {})
+const teamText = computed(() => profileBox.value?.team || {})
 const currentMonth = computed(() => {
   const date = new Date()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -167,14 +170,14 @@ const currentMonth = computed(() => {
 })
 const currentYear = computed(() => Number(currentMonth.value.slice(0, 4)))
 const currentMonthNumber = computed(() => Number(currentMonth.value.slice(5, 7)))
-const monthOptions = Array.from({ length: 12 }, (_, index) => {
+const monthOptions = computed(() => Array.from({ length: 12 }, (_, index) => {
   const value = index + 1
 
   return {
     value,
-    label: `${value}月`,
+    label: `${value}${commonText.value.monthSuffix || ''}`,
   }
-})
+}))
 
 selectedMonth.value = currentMonth.value
 
@@ -212,19 +215,19 @@ const createMemberStatus = (member = {}) => {
   const normalized = rawStatus.toLowerCase()
 
   if (normalized.includes('life') || rawStatus.includes('终身')) {
-    return { status: '终身会员', statusClass: 'status-life' }
+    return { status: teamText.value.memberStatus?.life || '', statusClass: 'status-life' }
   }
 
   if (normalized.includes('year') || rawStatus.includes('年')) {
-    return { status: '年卡会员', statusClass: 'status-year' }
+    return { status: teamText.value.memberStatus?.year || '', statusClass: 'status-year' }
   }
 
   if (normalized.includes('month') || rawStatus.includes('月')) {
-    return { status: '月卡会员', statusClass: 'status-month' }
+    return { status: teamText.value.memberStatus?.month || '', statusClass: 'status-month' }
   }
 
   return {
-    status: rawStatus || '免费用户',
+    status: rawStatus || teamText.value.memberStatus?.free || '',
     statusClass: rawStatus ? 'status-month' : 'status-free',
   }
 }
@@ -234,7 +237,7 @@ const createTeamRow = (member = {}, index) => {
 
   return {
     id: pickTeamValue(member.user_id, member.uid, member.id, member.email, `${selectedLevel.value}-${currentPage.value}-${index}`),
-    name: String(pickTeamValue(member.nickname, member.nick_name, member.name, member.username, member.email, member.mobile, '未命名成员')),
+    name: String(pickTeamValue(member.nickname, member.nick_name, member.name, member.username, member.email, member.mobile, teamText.value.emptyMemberName || '')),
     joinedAt: String(pickTeamValue(member.created_at, member.createdAt, member.joined_at, member.joinedAt, member.create_time, member.createTime, '-')),
     ...memberStatus,
   }
@@ -243,7 +246,7 @@ const createTeamRow = (member = {}, index) => {
 const totalPages = computed(() => Math.max(1, Math.ceil((levelTotals[selectedLevel.value] || 0) / pageSize)))
 const pagedRows = computed(() => teamRows.value)
 const referrerName = computed(() => {
-  return pickTeamValue(referrer.value?.nickname, referrer.value?.nick_name, referrer.value?.name, referrer.value?.username, referrer.value?.email, referrer.value?.mobile, '暂无推荐人')
+  return pickTeamValue(referrer.value?.nickname, referrer.value?.nick_name, referrer.value?.name, referrer.value?.username, referrer.value?.email, referrer.value?.mobile, teamText.value.emptyReferrer || '')
 })
 const referrerInitial = computed(() => {
   return String(referrerName.value || '-').trim().slice(0, 1).toUpperCase() || '-'
@@ -257,7 +260,7 @@ const teamTableMessage = computed(() => {
     return teamLoadError.value
   }
 
-  return '暂无团队成员'
+  return teamText.value.emptyTeam || ''
 })
 
 const loadTeamList = () => {
@@ -266,7 +269,7 @@ const loadTeamList = () => {
   if (!userId) {
     teamRows.value = []
     levelTotals[selectedLevel.value] = 0
-    teamLoadError.value = '用户信息不存在，请重新登录'
+    teamLoadError.value = commonText.value.userMissing || ''
     return
   }
 
@@ -291,7 +294,7 @@ const loadTeamList = () => {
     () => {
       teamRows.value = []
       levelTotals[selectedLevel.value] = 0
-      teamLoadError.value = '团队成员加载失败'
+      teamLoadError.value = teamText.value.errors?.loadFail || ''
       isLoadingTeam.value = false
     }
   )

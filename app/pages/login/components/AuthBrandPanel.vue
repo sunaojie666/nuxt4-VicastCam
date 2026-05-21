@@ -16,7 +16,7 @@
       </p>
     </div>
 
-    <div v-if="visibleFeatures.length" class="auth-feature-list" aria-label="VicastCam特色">
+    <div v-if="visibleFeatures.length" class="auth-feature-list">
       <div v-for="feature in visibleFeatures" :key="feature.key" class="auth-feature">
         <span>
           <img :src="feature.icon" alt="" aria-hidden="true">
@@ -155,20 +155,22 @@ watch(() => props.loginData, (loginData) => {
 }
 
 .auth-feature-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: clamp(28px, 3.02vw, 58px);
+  width: 100%;
+  max-width: 560px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2.2vw, 42px);
   margin-top: 190px;
   min-width: 0;
 }
 
 .auth-feature {
-  width: max-content;
-  min-width: 68px;
+  width: 100%;
+  min-width: 0;
   display: grid;
-  justify-items: center;
+  justify-items: start;
   color: rgba(203, 213, 225, 1);
-  text-align: center;
+  text-align: left;
 }
 
 .auth-feature > span {
@@ -197,8 +199,7 @@ watch(() => props.loginData, (loginData) => {
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
-  overflow-wrap: normal;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .auth-feature small {
@@ -207,8 +208,7 @@ watch(() => props.loginData, (loginData) => {
   color: rgba(148, 163, 184, 1);
   font-size: 14px;
   line-height: 20px;
-  overflow-wrap: normal;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 900px) {
@@ -228,8 +228,11 @@ watch(() => props.loginData, (loginData) => {
   }
 
   .auth-feature-list {
-    justify-content: space-between;
     gap: 16px;
+  }
+
+  .auth-feature {
+    width: 100%;
   }
 }
 </style>

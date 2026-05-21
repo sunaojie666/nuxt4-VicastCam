@@ -1,16 +1,16 @@
 <template>
-  <section class="profile-content" aria-label="会员中心">
+  <section class="profile-content" :aria-label="membershipText.ariaLabel">
     <section class="profile-panel profile-membership-panel">
       <header class="profile-panel-heading">
         <span class="membership-heading-icon">
           <Icon name="lucide:crown" aria-hidden="true" />
         </span>
-        <h2>会员中心</h2>
+        <h2>{{ membershipText.title }}</h2>
       </header>
 
       <article class="membership-current">
         <div class="membership-current-main">
-          <img class="membership-current-badge" :src="currentBadgeImage" alt="会员标识">
+          <img class="membership-current-badge" :src="currentBadgeImage" :alt="membershipText.badgeAlt">
           <div class="membership-current-copy">
             <strong>{{ currentVipName }}</strong>
             <p>
@@ -62,17 +62,17 @@
         <span class="membership-heading-icon">
           <Icon name="lucide:crown" aria-hidden="true" />
         </span>
-        <h2>权益对比</h2>
+        <h2>{{ membershipText.compareTitle }}</h2>
       </header>
 
       <div class="membership-compare-table-wrap">
         <table class="membership-compare-table">
           <thead>
             <tr>
-              <th>功能</th>
-              <th>月度会员</th>
-              <th>年度会员</th>
-              <th>终身会员</th>
+              <th>{{ membershipText.compareHeaders?.feature }}</th>
+              <th>{{ membershipText.compareHeaders?.month }}</th>
+              <th>{{ membershipText.compareHeaders?.year }}</th>
+              <th>{{ membershipText.compareHeaders?.life }}</th>
             </tr>
           </thead>
           <tbody>
@@ -117,21 +117,25 @@
 <script setup>
 const { authUser } = useAuth()
 const { vipPlans, loadVipTypes } = useVipTypes()
+const { profileBox } = useProfileText()
 
 const membershipPlans = computed(() => vipPlans.value)
+const membershipText = computed(() => profileBox.value?.membership || {})
 
 const currentVipName = computed(() => {
-  return authUser.value?.vip_type || '未开通会员'
+  return authUser.value?.vip_type || membershipText.value.defaultVipName || ''
 })
 
 const currentVipExpireText = computed(() => {
   return authUser.value?.vip_endtime
-    ? `到期日期: ${authUser.value.vip_endtime}`
-    : '到期日期: 暂无'
+    ? `${membershipText.value.expirePrefix || ''} ${authUser.value.vip_endtime}`.trim()
+    : `${membershipText.value.expirePrefix || ''} ${membershipText.value.emptyExpireDate || ''}`.trim()
 })
 
 const currentVipStatusText = computed(() => {
-  return authUser.value?.vip_type ? '生效中' : '未开通'
+  return authUser.value?.vip_type
+    ? membershipText.value.activeStatus || ''
+    : membershipText.value.inactiveStatus || ''
 })
 
 const currentBadgeImage = computed(() => {
@@ -152,19 +156,7 @@ const currentBadgeImage = computed(() => {
   return '/images/profile/year.png'
 })
 
-const compareRows = [
-  { feature: '预设场景', month: '5个', year: '不限', life: '不限' },
-  { feature: '控制器', month: 'check', year: 'check', life: 'check' },
-  { feature: '推广分成', month: '50%', year: '60%', life: '65%' },
-  { feature: '控制器', month: 'check', year: 'check', life: 'check' },
-  { feature: '多机位', month: 'check', year: 'check', life: 'check' },
-  { feature: '控制器', month: 'check', year: 'check', life: 'check' },
-  { feature: '美颜类型', month: 'cross', year: 'check', life: 'check' },
-  { feature: '控制器', month: 'check', year: 'check', life: 'check' },
-  { feature: '多机位', month: 'check', year: 'check', life: 'check' },
-  { feature: '控制器', month: 'check', year: 'check', life: 'check' },
-  { feature: '美颜类型', month: 'cross', year: 'check', life: 'check' },
-]
+const compareRows = computed(() => Array.isArray(membershipText.value.compareRows) ? membershipText.value.compareRows : [])
 
 onMounted(() => {
   loadVipTypes()
@@ -283,6 +275,8 @@ onMounted(() => {
 .membership-card {
   width: 256px;
   height: 426px;
+  display: grid;
+  grid-template-rows: 132px minmax(0, 1fr);
   border: 1px solid rgba(50, 64, 96, 1);
   border-radius: 8px;
   background: rgba(15, 24, 42, 1);
@@ -291,12 +285,12 @@ onMounted(() => {
 
 .membership-card-top {
   width: 256px;
-  height: 146px;
+  height: 132px;
   display: grid;
   justify-items: center;
   align-content: center;
   text-align: center;
-  padding: 10px 12px 8px;
+  padding: 8px 12px 7px;
 }
 
 .membership-card-top h3 {
@@ -315,24 +309,24 @@ onMounted(() => {
 }
 
 .membership-medal {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .membership-medal img {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
 .membership-card-body {
-  min-height: 204px;
+  min-height: 0;
   display: grid;
-  grid-template-rows: auto auto auto 1fr;
-  padding: 12px 16px 14px;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  padding: 10px 16px 20px;
 }
 
 .membership-price {
@@ -340,7 +334,7 @@ onMounted(() => {
   align-items: baseline;
   justify-content: center;
   gap: 2px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .membership-price strong {
@@ -366,21 +360,32 @@ onMounted(() => {
 }
 
 .membership-benefits {
-  margin-top: 14px;
+  min-height: 0;
+  margin-top: 12px;
   display: grid;
   justify-items: center;
-  gap: 10px;
+  align-content: start;
+  gap: 8px;
+  overflow: hidden;
   color: rgba(148, 164, 187, 1);
   font-size: 13px;
-  line-height: 19px;
+  line-height: 18px;
+}
+
+.membership-benefits li {
+  max-width: 100%;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .membership-action {
   width: 216px;
   height: 42px;
-  align-self: start;
+  align-self: end;
   justify-self: center;
-  margin-top: 31px;
+  margin-top: 30px;
   border-radius: 8px;
   color: rgba(237, 248, 255, 1);
   font-size: 16px;

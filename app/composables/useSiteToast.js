@@ -79,18 +79,18 @@ export const useSiteToast = () => {
   }
 
   const showRequestSuccessToast = (options = {}) => {
-    return showSuccessToast(toastText.value.requestSuccess || '请求成功', options)
+    return showSuccessToast(toastText.value.requestSuccess, options)
   }
 
   const showRequestFailToast = (options = {}) => {
-    return showErrorToast(toastText.value.requestFail || '请求失败', options)
+    return showErrorToast(toastText.value.requestFail, options)
   }
 
   const requestLoadingText = computed(() => {
-    const text = String(toastText.value.requestLoading || '加载中').trim()
+    const text = String(toastText.value.requestLoading || '').trim()
 
     if (!text) {
-      return '加载中...'
+      return ''
     }
 
     return text.endsWith('...') ? text : `${text}...`

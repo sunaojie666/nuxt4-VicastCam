@@ -36,7 +36,7 @@
           v-else
           type="button"
           class="auth-password-visibility-button"
-          :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+          :aria-label="passwordVisibilityLabel"
           @click="showPassword = !showPassword"
         >
           <Icon class="auth-input-trailing-icon" :name="showPassword ? 'lucide:eye' : 'lucide:eye-off'" aria-hidden="true" />
@@ -54,11 +54,11 @@
 
     <label class="auth-agreement">
       <input v-model="agreementModel" type="checkbox">
-      <span>
-        {{ agreementPrefix }}
-        <a v-if="loginBox.userProtocolText" href="#">《{{ loginBox.userProtocolText }}》</a>
-        <template v-if="loginBox.userProtocolText && loginBox.privacyPolicyText">和</template>
-        <a v-if="loginBox.privacyPolicyText" href="#">《{{ loginBox.privacyPolicyText }}》</a>
+      <span class="auth-agreement-copy">
+        <span v-if="loginBox.agreeProtocolPrefix">{{ loginBox.agreeProtocolPrefix }}</span>
+        <span v-if="loginBox.privacyPolicyText" class="auth-agreement-action">《{{ loginBox.privacyPolicyText }}》</span>
+        <span v-if="loginBox.privacyPolicyText && loginBox.userProtocolText && agreementConnector">{{ agreementConnector }}</span>
+        <span v-if="loginBox.userProtocolText" class="auth-agreement-action">《{{ loginBox.userProtocolText }}》</span>
       </span>
     </label>
   </form>
@@ -135,12 +135,9 @@ const submitButtonText = computed(() => {
 
   return loginBox.value.loginBtnText || ''
 })
-const agreementPrefix = computed(() => {
-  return String(loginBox.value.agreeProtocolText || '')
-    .replace(loginBox.value.userProtocolText || '', '')
-    .replace(loginBox.value.privacyPolicyText || '', '')
-    .replace('和', '')
-    .trim()
+const agreementConnector = computed(() => loginBox.value.agreementConnector || '')
+const passwordVisibilityLabel = computed(() => {
+  return showPassword.value ? (loginBox.value.hidePasswordLabel || '') : (loginBox.value.showPasswordLabel || '')
 })
 
 const isValidEmail = (email) => {
@@ -278,7 +275,7 @@ onBeforeUnmount(() => {
   height: 60px;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   min-width: 0;
   padding: 0 19px;
   border: 1px solid rgba(71, 85, 105, 1);
@@ -321,10 +318,10 @@ onBeforeUnmount(() => {
 }
 
 .auth-code-button {
-  flex: 0 1 auto;
-  max-width: 150px;
+  flex: 0 0 auto;
+  max-width: 112px;
   color: rgba(20, 198, 239, 1);
-  font-size: 16px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -352,7 +349,7 @@ onBeforeUnmount(() => {
 
 .auth-agreement {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 10px;
   min-width: 0;
@@ -362,18 +359,20 @@ onBeforeUnmount(() => {
 }
 
 .auth-agreement input {
+  margin-top: 2px;
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
   accent-color: rgba(20, 198, 239, 1);
 }
 
-.auth-agreement span {
+.auth-agreement-copy {
   min-width: 0;
+  text-align: left;
   overflow-wrap: anywhere;
 }
 
-.auth-agreement a {
+.auth-agreement-action {
   color: rgba(20, 198, 239, 1);
 }
 

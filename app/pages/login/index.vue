@@ -3,7 +3,7 @@
     <div class="auth-layout">
       <AuthBrandPanel :login-data="loginContent" />
 
-      <NuxtLink :to="localePath('/')" class="auth-mobile-logo" aria-label="VicastCam首页">
+      <NuxtLink :to="localePath('/')" class="auth-mobile-logo">
         <img src="/images/logo.png" alt="" aria-hidden="true">
         <span>Vicast<span>Cam</span></span>
       </NuxtLink>
@@ -60,9 +60,16 @@ const loginBoxCopy = reactive({
   loginBtnText: '',
   qrLoginTip: '',
   qrWaitingTip: '',
+  qrRetryText: '',
+  qrEmptyText: '',
+  qrCodeAlt: '',
   agreeProtocolText: '',
+  agreeProtocolPrefix: '',
+  agreementConnector: '',
   userProtocolText: '',
   privacyPolicyText: '',
+  showPasswordLabel: '',
+  hidePasswordLabel: '',
 })
 const toastBoxCopy = reactive({
   closeToastLabel: '',
@@ -98,24 +105,53 @@ const toggleLoginView = () => {
   loginView.value = loginView.value === 'account' ? 'scan' : 'account'
 }
 
+const parseStrapiJsonField = (value) => {
+  if (typeof value !== 'string') {
+    return value
+  }
+
+  try {
+    return JSON.parse(value)
+  } catch {
+    return {}
+  }
+}
+
+const normalizeStrapiRecord = (record) => {
+  if (!record || typeof record !== 'object') {
+    return {}
+  }
+
+  const recordData = record.logins || record.attributes?.logins || record
+
+  return {
+    ...recordData,
+    ...(recordData.attributes || {}),
+  }
+}
+
 const getLoginContentData = (response) => {
-  return response?.data?.[0] || response?.data || {}
+  return normalizeStrapiRecord(response?.data?.[0] || response?.data || {})
 }
 
 const getLoginBoxData = (loginData = {}) => {
-  if (Array.isArray(loginData.loginBox)) {
-    return loginData.loginBox[0] || {}
+  const loginBox = parseStrapiJsonField(loginData.loginBox)
+
+  if (Array.isArray(loginBox)) {
+    return normalizeStrapiRecord(loginBox[0])
   }
 
-  return loginData.loginBox || {}
+  return normalizeStrapiRecord(loginBox)
 }
 
 const getToastBoxData = (loginData = {}) => {
-  if (Array.isArray(loginData.toastBox)) {
-    return loginData.toastBox[0] || {}
+  const toastBox = parseStrapiJsonField(loginData.toastBox)
+
+  if (Array.isArray(toastBox)) {
+    return normalizeStrapiRecord(toastBox[0])
   }
 
-  return loginData.toastBox || {}
+  return normalizeStrapiRecord(toastBox)
 }
 
 const syncLoginBoxCopy = (loginData = {}) => {
@@ -132,9 +168,16 @@ const syncLoginBoxCopy = (loginData = {}) => {
   loginBoxCopy.loginBtnText = loginBox.loginBtnText || ''
   loginBoxCopy.qrLoginTip = loginBox.qrLoginTip || ''
   loginBoxCopy.qrWaitingTip = loginBox.qrWaitingTip || ''
+  loginBoxCopy.qrRetryText = loginBox.qrRetryText || ''
+  loginBoxCopy.qrEmptyText = loginBox.qrEmptyText || ''
+  loginBoxCopy.qrCodeAlt = loginBox.qrCodeAlt || ''
   loginBoxCopy.agreeProtocolText = loginBox.agreeProtocolText || ''
+  loginBoxCopy.agreeProtocolPrefix = loginBox.agreeProtocolPrefix || ''
+  loginBoxCopy.agreementConnector = loginBox.agreementConnector || ''
   loginBoxCopy.userProtocolText = loginBox.userProtocolText || ''
   loginBoxCopy.privacyPolicyText = loginBox.privacyPolicyText || ''
+  loginBoxCopy.showPasswordLabel = loginBox.showPasswordLabel || ''
+  loginBoxCopy.hidePasswordLabel = loginBox.hidePasswordLabel || ''
 }
 
 const syncToastBoxCopy = (loginData = {}) => {
@@ -184,9 +227,9 @@ watch(locale, () => {
 <style>
 .auth-page {
   position: relative;
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,9 +294,9 @@ watch(locale, () => {
   position: relative;
   z-index: 1;
   width: 476px;
-  height: 621px;
-  max-height: 621px;
-  overflow: hidden;
+  min-height: 621px;
+  overflow-x: hidden;
+  overflow-y: visible;
   justify-self: end;
   padding: 41px 39px 28px;
   border: 1px solid rgba(38, 48, 68, 1);
@@ -291,7 +334,7 @@ watch(locale, () => {
   align-items: center;
   gap: 12px;
   width: fit-content;
-  max-width: 100%;
+  max-width: calc(100% - var(--auth-corner-size));
   padding-bottom: 18px;
   border-bottom: 3px solid rgba(34, 211, 238, 1);
   color: rgba(34, 211, 238, 1);
@@ -306,6 +349,7 @@ watch(locale, () => {
 }
 
 .auth-card-heading h2 {
+  min-width: 0;
   font-size: 20px;
   font-weight: 400;
   line-height: 28px;
@@ -315,9 +359,7 @@ watch(locale, () => {
 @media (max-width: 900px) {
 
   .auth-page {
-    height: auto;
     min-height: 100dvh;
-    overflow: hidden;
     align-items: center;
     padding: 48px 20px;
   }
@@ -339,8 +381,6 @@ watch(locale, () => {
 
   .auth-card {
     width: min(100%, 476px);
-    height: auto;
-    max-height: none;
     min-width: 0;
     min-height: 621px;
     justify-self: center;
@@ -356,11 +396,11 @@ watch(locale, () => {
   }
 
   .auth-layout {
-    grid-template-columns: minmax(240px, 1fr) minmax(420px, 44vw);
+    grid-template-columns: minmax(240px, 1fr) minmax(440px, 46vw);
   }
 
   .auth-card {
-    width: min(44vw, 476px);
+    width: min(46vw, 476px);
   }
 }
 

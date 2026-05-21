@@ -1,10 +1,10 @@
 <template>
   <Teleport to="body">
     <Transition name="site-loading-fade">
-      <div v-if="isVisible" class="site-loading-overlay" role="status" aria-live="polite" :aria-label="requestLoadingText">
-        <div class="site-loading-indicator">
+      <div v-if="isVisible" class="site-loading-overlay" role="status" aria-live="polite" :aria-label="requestLoadingText || undefined">
+        <div :class="['site-loading-indicator', { 'site-loading-indicator-icon-only': !requestLoadingText }]">
           <span class="site-loading-spinner" aria-hidden="true"></span>
-          <span>{{ requestLoadingText }}</span>
+          <span v-if="requestLoadingText">{{ requestLoadingText }}</span>
         </div>
       </div>
     </Transition>
@@ -114,6 +114,12 @@ onBeforeUnmount(() => {
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.36);
   font-size: 14px;
   line-height: 20px;
+}
+
+.site-loading-indicator-icon-only {
+  min-width: 52px;
+  width: 52px;
+  padding: 0;
 }
 
 .site-loading-spinner {
