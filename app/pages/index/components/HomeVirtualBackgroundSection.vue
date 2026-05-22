@@ -1,14 +1,14 @@
 <template>
   <section class="home-virtual-section" aria-labelledby="home-virtual-title">
     <div class="home-virtual-inner">
-      <span class="home-virtual-eyebrow" data-reveal>{{ virtualSection.tag }}</span>
+      <span class="home-virtual-eyebrow home-section-eyebrow" data-reveal>{{ virtualSection.tag }}</span>
 
-      <h2 id="home-virtual-title" class="home-virtual-title" data-reveal style="--reveal-delay: 80ms">
+      <h2 id="home-virtual-title" class="home-virtual-title home-section-title" data-reveal style="--reveal-delay: 80ms">
         <span>{{ virtualSection.title_main }}</span>
         <span class="theme-gradient-text">{{ virtualSection.title_highlight }}</span>
       </h2>
 
-      <p class="home-virtual-subtitle" data-reveal style="--reveal-delay: 160ms">
+      <p class="home-virtual-subtitle home-section-subtitle" data-reveal style="--reveal-delay: 160ms">
         <span>{{ virtualSection.description }}</span>
       </p>
 
@@ -118,7 +118,7 @@ watch(locale, () => {
   padding-top: 80px;
   padding-bottom: 0;
   color: var(--theme-text);
-  background-color: var(--theme-page);
+  background-color: var(--theme-virtual-background, var(--theme-page));
 }
 
 .home-virtual-inner {
@@ -140,10 +140,10 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   padding: 0 10px;
-  border: 1px solid rgba(59, 130, 246, 0.34);
+  border: 1px solid var(--theme-primary-border);
   border-radius: 999px;
-  color: rgba(99, 179, 255, 1);
-  background-color: rgba(30, 64, 175, 0.22);
+  color: var(--theme-info-blue);
+  background-color: var(--theme-primary-softer);
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
@@ -155,12 +155,13 @@ watch(locale, () => {
 .home-virtual-title {
   max-width: 100%;
   margin-top: 18px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 40px;
   font-weight: 900;
   line-height: 48px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-virtual-title span {
@@ -173,12 +174,13 @@ watch(locale, () => {
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-virtual-media {
@@ -204,7 +206,7 @@ watch(locale, () => {
   height: 91.6%;
   object-fit: cover;
   border-radius: 22px;
-  background-color: rgba(15, 23, 42, 1);
+  background-color: var(--theme-surface);
 }
 
 .home-virtual-reflection {

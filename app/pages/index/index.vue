@@ -103,10 +103,10 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(203, 232, 255, 0.85);
+  border: 1px solid var(--theme-extra-203-232-255-085);
   border-radius: 50%;
-  color: rgba(23, 30, 45, 1);
-  background: rgba(255, 255, 255, 0.96);
+  color: var(--theme-text-inverse);
+  background: var(--theme-white-96);
   box-shadow: none;
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
@@ -114,15 +114,15 @@ onBeforeUnmount(() => {
 
 .home-float-button:hover,
 .home-float-button:focus {
-  color: rgba(255, 255, 255, 1);
-  border-color: rgba(118, 232, 250, 0.9);
+  color: var(--theme-white);
+  border-color: var(--theme-extra-118-232-250-09);
   background: linear-gradient(
     112.91deg,
-    rgba(36, 207, 237, 1) 0%,
-    rgba(88, 171, 248, 1) 53.06%,
-    rgba(103, 231, 249, 1) 100%
+    var(--theme-cyan-alt) 0%,
+    var(--theme-gradient-mid) 53.06%,
+    var(--theme-gradient-end) 100%
   );
-  box-shadow: 0 0 18px rgba(53, 196, 245, 0.62), 0 10px 24px rgba(5, 16, 35, 0.42);
+  box-shadow: 0 0 18px var(--theme-extra-53-196-245-062), 0 10px 24px var(--theme-extra-5-16-35-042);
 }
 
 .home-float-button :deep(svg) {

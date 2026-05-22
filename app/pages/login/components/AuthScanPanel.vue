@@ -270,7 +270,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   overflow: hidden;
   border-radius: 4px;
-  background-color: rgba(255, 255, 255, 1);
+  background-color: var(--theme-white);
 }
 
 .auth-scan-code img {
@@ -286,7 +286,7 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(17, 24, 39, 1);
+  color: var(--theme-surface-alt);
   font-size: 14px;
   line-height: 20px;
   text-align: center;
@@ -309,7 +309,7 @@ onBeforeUnmount(() => {
   gap: 9px;
   max-width: 100%;
   margin-top: 17px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 14px;
   line-height: 20px;
   overflow-wrap: anywhere;
@@ -324,14 +324,14 @@ onBeforeUnmount(() => {
 }
 
 .auth-scan-tip strong {
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-accent);
   font-weight: 400;
 }
 
 .auth-scan-status {
   max-width: 100%;
   margin-top: 10px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 13px;
   line-height: 18px;
   text-align: center;
@@ -341,7 +341,7 @@ onBeforeUnmount(() => {
 .auth-scan-agreement {
   max-width: 100%;
   margin-top: 44px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 14px;
   line-height: 20px;
   text-align: center;
@@ -349,7 +349,7 @@ onBeforeUnmount(() => {
 }
 
 .auth-scan-agreement-action {
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-accent);
 }
 
 @media (max-width: 520px) {

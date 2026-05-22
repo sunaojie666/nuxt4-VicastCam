@@ -268,15 +268,15 @@ watch(authUser, user => {
   gap: 16px;
   min-height: 50px;
   padding: 8px 14px;
-  border: 1px solid rgba(55, 65, 81, 0.86);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-strong-86));
   border-radius: 8px;
-  background: rgba(32, 41, 61, 1);
+  background: var(--theme-profile-field-background, var(--theme-panel-soft));
 }
 
 .account-info-icon {
   width: 17px;
   height: 17px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted-alt));
 }
 
 .account-info-main {
@@ -286,7 +286,7 @@ watch(authUser, user => {
 }
 
 .account-info-main > span:first-child {
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted-alt));
   font-size: 12px;
   line-height: 16px;
 }
@@ -294,21 +294,21 @@ watch(authUser, user => {
 .account-info-main input {
   width: 100%;
   min-width: 0;
-  color: rgba(236, 244, 255, 1);
+  color: var(--theme-profile-field-text, var(--theme-text-strong));
   font-size: 14px;
   font-weight: 700;
   line-height: 20px;
 }
 
 .account-info-main input::placeholder {
-  color: rgba(120, 136, 162, 1);
+  color: var(--theme-profile-field-placeholder, var(--theme-extra-120-136-162-1));
   font-weight: 400;
 }
 
 .account-info-main strong {
   display: block;
   min-width: 0;
-  color: rgba(236, 244, 255, 1);
+  color: var(--theme-profile-field-text, var(--theme-text-strong));
   font-size: 14px;
   font-weight: 700;
   line-height: 20px;
@@ -333,7 +333,7 @@ watch(authUser, user => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted-alt));
   cursor: pointer;
 }
 
@@ -344,7 +344,7 @@ watch(authUser, user => {
 
 .account-row-action {
   justify-self: end;
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-profile-field-action, var(--theme-accent));
   font-size: 14px;
   line-height: 20px;
   cursor: pointer;

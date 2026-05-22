@@ -234,9 +234,9 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   padding: 32px 10.68vw 32px 10.73vw;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   background:
-    linear-gradient(90deg, rgba(3, 7, 18, 0.08) 0%, rgba(3, 7, 18, 0.12) 45%, rgba(3, 7, 18, 0.28) 100%),
+    linear-gradient(90deg, var(--theme-page-08) 0%, var(--theme-page-12) 45%, var(--theme-page-28) 100%),
     url("/images/loginbg.png") center / cover no-repeat,
     var(--page-route-background);
 }
@@ -245,7 +245,7 @@ watch(locale, () => {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(3, 7, 18, 0) 0%, rgba(3, 7, 18, 0.1) 48%, rgba(3, 7, 18, 0.42) 100%);
+  background: linear-gradient(90deg, var(--theme-page-00) 0%, var(--theme-page-10) 48%, var(--theme-page-42) 100%);
   pointer-events: none;
 }
 
@@ -265,7 +265,7 @@ watch(locale, () => {
   justify-self: center;
   gap: 10px;
   max-width: 100%;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 24px;
   font-weight: 900;
   line-height: 32px;
@@ -286,7 +286,7 @@ watch(locale, () => {
 }
 
 .auth-mobile-logo span span {
-  color: rgba(20, 198, 239, 1);
+  color: var(--theme-accent-brand);
 }
 
 .auth-card {
@@ -299,9 +299,9 @@ watch(locale, () => {
   overflow-y: visible;
   justify-self: end;
   padding: 41px 39px 28px;
-  border: 1px solid rgba(38, 48, 68, 1);
+  border: 1px solid var(--theme-extra-38-48-68-1);
   border-radius: 14px;
-  background-color: rgba(17, 24, 39, 1);
+  background-color: var(--theme-surface-alt);
 }
 
 .auth-card-corner {
@@ -316,7 +316,7 @@ watch(locale, () => {
   clip-path: polygon(0 0, 100% 0, 100% 100%);
   background:
     url("/images/qrbg.png") center / 100% 100% no-repeat,
-    rgba(17, 24, 39, 1);
+    var(--theme-surface-alt);
   cursor: pointer;
 }
 
@@ -336,8 +336,8 @@ watch(locale, () => {
   width: fit-content;
   max-width: calc(100% - var(--auth-corner-size));
   padding-bottom: 18px;
-  border-bottom: 3px solid rgba(34, 211, 238, 1);
-  color: rgba(34, 211, 238, 1);
+  border-bottom: 3px solid var(--theme-accent);
+  color: var(--theme-accent);
 }
 
 .auth-card-heading img {

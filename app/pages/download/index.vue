@@ -7,29 +7,6 @@
         <div class="page-container download-hero-inner">
           <span class="download-eyebrow">下载中心</span>
           <h1>下载VicastCam</h1>
-          <p>支持iOS、Android和Windows<br>选择你的平台，几分钟内即可开播。</p>
-
-          <dl class="download-meta" aria-label="版本信息">
-            <div>
-              <dt>开发者：</dt>
-              <dd>VICAST INTERNATIONAL LIMITED</dd>
-            </div>
-            <div class="download-policy-links">
-              <button type="button">应用权限</button>
-              <NuxtLink :to="localePath('/privacy')">隐私政策</NuxtLink>
-              <button type="button">用户协议</button>
-            </div>
-            <div class="download-meta-break">
-              <div>
-                <dt>版本号：</dt>
-                <dd>3.0.2</dd>
-              </div>
-              <div>
-                <dt>更新时间：</dt>
-                <dd>2026-05-15</dd>
-              </div>
-            </div>
-          </dl>
         </div>
       </section>
 
@@ -97,17 +74,6 @@
             </article>
           </div>
 
-          <section class="download-mobile-help" aria-labelledby="download-mobile-help-title">
-            <span class="download-mobile-help-icon" aria-hidden="true">
-              <Icon name="lucide:messages-square" />
-            </span>
-            <div>
-              <h2 id="download-mobile-help-title">下载遇到问题？</h2>
-              <p>您可联系我们获取专业的设备顾问，我们将帮助您完成软件安装</p>
-            </div>
-            <button type="button">联系客服</button>
-          </section>
-
           <section class="download-reasons" aria-labelledby="download-reasons-title">
             <h2 id="download-reasons-title">为什么选择VicastCam</h2>
 
@@ -125,13 +91,6 @@
               </article>
             </div>
 
-            <section class="download-desktop-help" aria-labelledby="download-desktop-help-title">
-              <div class="download-desktop-help-copy">
-                <h2 id="download-desktop-help-title">下载遇到问题？</h2>
-                <p>查看常见问题或联系我们的客服团队，我们将竭诚为您提供帮助</p>
-              </div>
-              <button type="button">联系客服</button>
-            </section>
           </section>
         </div>
       </section>
@@ -145,8 +104,6 @@
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import { setupPageSeo } from '../../utils/seo'
-
-const localePath = useLocalePath()
 
 const platforms = [
   {
@@ -240,13 +197,13 @@ setupPageSeo('download')
   overflow-x: clip;
   padding-top: var(--page-header-height);
   color: var(--theme-text);
-  background: var(--page-route-background);
+  background: var(--theme-route-page-background, var(--page-route-background));
 }
 
 .download-page-main {
   width: 100%;
   flex: 1;
-  background: var(--page-route-background);
+  background: var(--theme-route-page-background, var(--page-route-background));
 }
 
 .download-hero {
@@ -254,9 +211,15 @@ setupPageSeo('download')
   display: flex;
   align-items: center;
   background:
-    radial-gradient(circle at 45% 0%, rgba(58, 44, 131, 0.42), transparent 34%),
-    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.26), transparent 30%),
-    linear-gradient(180deg, rgba(10, 17, 31, 1), rgba(9, 15, 28, 1));
+    radial-gradient(circle at 45% 0%, var(--theme-extra-58-44-131-042), transparent 34%),
+    radial-gradient(circle at 12% 0%, var(--theme-extra-37-99-235-026), transparent 30%),
+    linear-gradient(180deg, var(--theme-surface-start), var(--theme-surface-deeper));
+}
+
+@media (min-width: 901px) {
+  :root[data-theme="light"] .download-hero {
+    background: url("/images/qiansebg.png") center / cover no-repeat;
+  }
 }
 
 .download-hero-inner {
@@ -274,72 +237,29 @@ setupPageSeo('download')
   align-items: center;
   justify-content: center;
   padding: 0 15px;
-  border: 1px solid rgba(37, 99, 235, 0.56);
+  border: 1px solid var(--theme-info-border);
   border-radius: 999px;
-  color: rgba(93, 176, 255, 1);
-  background: rgba(22, 39, 76, 0.52);
+  color: var(--theme-info-blue-strong);
+  background: var(--theme-info-panel);
   font-size: 14px;
   line-height: 28px;
 }
 
+:root[data-theme="light"] .download-eyebrow {
+  color: rgba(96, 165, 250, 1);
+  background: rgba(59, 130, 246, 0.1);
+}
+
 .download-hero h1 {
   margin-top: 14px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 58px;
   font-weight: 800;
   line-height: 1.08;
 }
 
-.download-hero p {
-  margin-top: 13px;
-  color: rgba(149, 156, 168, 1);
-  font-size: 20px;
-  line-height: 30px;
-}
-
-.download-meta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px 28px;
-  margin-top: 15px;
-  color: rgba(149, 156, 168, 1);
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.download-meta div {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.download-meta-break {
-  flex-basis: 100%;
-  justify-content: center;
-  gap: 28px !important;
-}
-
-.download-meta dt,
-.download-meta dd {
-  display: inline;
-}
-
-.download-meta dd {
-  color: rgba(229, 238, 252, 1);
-}
-
-.download-policy-links {
-  gap: 18px !important;
-}
-
-.download-policy-links button,
-.download-policy-links a {
-  color: rgba(34, 211, 238, 1);
-  font-size: 12px;
-  line-height: 18px;
-  cursor: pointer;
+:root[data-theme="light"] .download-hero h1 {
+  color: rgba(40, 115, 253, 1);
 }
 
 .download-platform-section {
@@ -359,7 +279,7 @@ setupPageSeo('download')
 }
 
 .download-section-heading h2 {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: clamp(26px, 3vw, 36px);
   font-weight: 800;
   line-height: 1.2;
@@ -367,7 +287,7 @@ setupPageSeo('download')
 
 .download-section-heading p {
   margin-top: 12px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 14px;
   line-height: 22px;
 }
@@ -382,7 +302,7 @@ setupPageSeo('download')
 }
 
 .download-reasons h2 {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-download-reason-title, var(--theme-white));
   font-size: 24px;
   font-weight: 800;
   line-height: 34px;
@@ -410,7 +330,8 @@ setupPageSeo('download')
   min-height: 181px;
   padding: 36px 32px 24px;
   border-radius: 8px;
-  background: rgba(27, 36, 56, 1);
+  border: 1px solid var(--theme-download-reason-card-border, transparent);
+  background: var(--theme-download-reason-card-background, var(--theme-panel-card));
 }
 
 .download-reason-icon {
@@ -420,8 +341,24 @@ setupPageSeo('download')
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  color: rgba(34, 211, 238, 1);
-  background: rgba(42, 52, 76, 1);
+  color: var(--theme-accent);
+  background: var(--theme-download-reason-icon-background, var(--theme-extra-42-52-76-1));
+}
+
+:root[data-theme="light"] .download-reason-card:nth-child(1) .download-reason-icon {
+  background: rgba(224, 235, 255, 1);
+}
+
+:root[data-theme="light"] .download-reason-card:nth-child(2) .download-reason-icon {
+  background: rgba(246, 242, 255, 1);
+}
+
+:root[data-theme="light"] .download-reason-card:nth-child(3) .download-reason-icon {
+  background: rgba(232, 255, 241, 1);
+}
+
+:root[data-theme="light"] .download-reason-card:nth-child(4) .download-reason-icon {
+  background: rgba(255, 231, 214, 1);
 }
 
 .download-reason-icon img {
@@ -432,7 +369,7 @@ setupPageSeo('download')
 
 .download-reason-card h3 {
   margin-top: 18px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-download-reason-title, var(--theme-white));
   font-size: 24px;
   font-weight: 800;
   line-height: 34px;
@@ -440,56 +377,9 @@ setupPageSeo('download')
 
 .download-reason-card p {
   margin-top: 9px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-download-reason-text, var(--theme-text-muted-alt));
   font-size: 16px;
   line-height: 24px;
-}
-
-.download-desktop-help {
-  width: 100%;
-  aspect-ratio: 1155 / 228;
-  display: grid;
-  grid-template-columns: minmax(0, 520px) 128px minmax(220px, 1fr);
-  align-items: center;
-  gap: 40px;
-  margin-top: 30px;
-  padding: 0 72px;
-  overflow: hidden;
-  border-radius: 12px;
-  background: url("/images/xiazaikefu.png") center / cover no-repeat;
-}
-
-.download-desktop-help-copy {
-  max-width: 520px;
-}
-
-.download-desktop-help h2 {
-  color: rgba(255, 255, 255, 1);
-  font-size: 32px;
-  font-weight: 800;
-  line-height: 44px;
-  text-align: left;
-}
-
-.download-desktop-help p {
-  margin-top: 10px;
-  color: rgba(201, 211, 226, 1);
-  font-size: 16px;
-  line-height: 26px;
-}
-
-.download-desktop-help button {
-  width: 128px;
-  height: 44px;
-  grid-column: 2;
-  justify-self: end;
-  border-radius: 999px;
-  color: rgba(255, 255, 255, 1);
-  background: linear-gradient(124deg, rgba(8, 179, 213, 1), rgba(58, 131, 245, 1));
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 20px;
-  cursor: pointer;
 }
 
 .download-card {
@@ -512,7 +402,7 @@ setupPageSeo('download')
 }
 
 .download-card-title h3 {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 18px;
   font-weight: 800;
   line-height: 25px;
@@ -520,7 +410,7 @@ setupPageSeo('download')
 
 .download-card-title p {
   margin-top: 6px;
-  color: rgba(168, 178, 197, 1);
+  color: var(--theme-extra-168-178-197-1);
   font-size: 12px;
   line-height: 17px;
 }
@@ -535,8 +425,8 @@ setupPageSeo('download')
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  color: rgba(214, 230, 255, 1);
-  background: rgba(255, 255, 255, 0.14);
+  color: var(--theme-extra-214-230-255-1);
+  background: var(--theme-white-14);
   cursor: pointer;
 }
 
@@ -554,7 +444,7 @@ setupPageSeo('download')
   gap: 5px;
   padding: 12px 14px 11px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--theme-white-08);
 }
 
 .download-card-info div {
@@ -565,13 +455,13 @@ setupPageSeo('download')
 }
 
 .download-card-info dt {
-  color: rgba(207, 220, 241, 0.82);
+  color: var(--theme-text-faint);
   font-size: 11px;
   line-height: 16px;
 }
 
 .download-card-info dd {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 11px;
   font-weight: 800;
   line-height: 16px;
@@ -588,8 +478,8 @@ setupPageSeo('download')
   justify-content: center;
   gap: 10px;
   border-radius: 8px;
-  color: rgba(30, 25, 82, 1);
-  background: rgba(255, 255, 255, 1);
+  color: var(--theme-extra-30-25-82-1);
+  background: var(--theme-white);
   font-size: 12px;
   font-weight: 800;
   line-height: 18px;
@@ -607,15 +497,15 @@ setupPageSeo('download')
 }
 
 .download-card-android .download-primary-button {
-  color: rgba(20, 89, 80, 1);
+  color: var(--theme-extra-20-89-80-1);
 }
 
 .download-card-ios .download-primary-button {
-  color: rgba(39, 20, 89, 1);
+  color: var(--theme-extra-39-20-89-1);
 }
 
 .download-card-windows .download-primary-button {
-  color: rgba(2, 112, 254, 1);
+  color: var(--theme-extra-2-112-254-1);
 }
 
 .download-card-footnote {
@@ -623,7 +513,7 @@ setupPageSeo('download')
   left: 24px;
   right: 24px;
   bottom: 18px;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--theme-white-86);
   font-size: 11px;
   font-weight: 700;
   line-height: 16px;
@@ -632,14 +522,6 @@ setupPageSeo('download')
 
 .download-platform-icon {
   display: none;
-}
-
-.download-mobile-help {
-  display: none;
-}
-
-.download-desktop-help {
-  display: grid;
 }
 
 @media (min-width: 1180px) {
@@ -661,9 +543,13 @@ setupPageSeo('download')
   .download-page-main {
     min-height: 100vh;
     background:
-      radial-gradient(circle at 74% 0%, rgba(69, 45, 137, 0.48), transparent 35%),
-      radial-gradient(circle at 22% 0%, rgba(28, 93, 188, 0.28), transparent 34%),
-      rgba(8, 15, 29, 1);
+      radial-gradient(circle at 74% 0%, var(--theme-extra-69-45-137-048), transparent 35%),
+      radial-gradient(circle at 22% 0%, var(--theme-extra-28-93-188-028), transparent 34%),
+      var(--theme-extra-8-15-29-1);
+  }
+
+  :root[data-theme="light"] .download-page-main {
+    background: var(--theme-route-page-background, var(--page-route-background));
   }
 
   .download-hero {
@@ -693,20 +579,8 @@ setupPageSeo('download')
     line-height: 1.12;
   }
 
-  .download-hero p {
-    width: min(100%, 520px);
-    margin-top: 5px;
-    font-size: clamp(11px, 2.7778vw, 30px);
-    line-height: 1.35;
-  }
-
-  .download-meta,
   .download-section-heading,
   .download-reasons {
-    display: none;
-  }
-
-  .download-desktop-help {
     display: none;
   }
 
@@ -835,15 +709,15 @@ setupPageSeo('download')
   }
 
   .download-card-android .download-primary-button {
-    color: rgba(20, 89, 80, 1);
+    color: var(--theme-extra-20-89-80-1);
   }
 
   .download-card-ios .download-primary-button {
-    color: rgba(39, 20, 89, 1);
+    color: var(--theme-extra-39-20-89-1);
   }
 
   .download-card-windows .download-primary-button {
-    color: rgba(2, 112, 254, 1);
+    color: var(--theme-extra-2-112-254-1);
   }
 
   .download-card-icon-button {
@@ -881,7 +755,7 @@ setupPageSeo('download')
     align-self: start;
     justify-self: end;
     margin-bottom: 0;
-    color: rgba(255, 255, 255, 0.86);
+    color: var(--theme-white-86);
     text-align: center;
     font-weight: 400;
     overflow: visible;
@@ -899,66 +773,6 @@ setupPageSeo('download')
     height: 0;
   }
 
-  .download-mobile-help {
-    width: min(88.9815vw, 961px);
-    min-height: 0;
-    aspect-ratio: 961 / 204;
-    display: grid;
-    grid-template-columns: min(15.7407vw, 170px) minmax(0, 1fr) min(23.1481vw, 250px);
-    align-items: center;
-    gap: min(2.7778vw, 30px);
-    margin-top: min(19.4444vw, 210px);
-    padding: min(3.2407vw, 35px) min(4.2593vw, 46px);
-    border: none;
-    border-radius: min(2.2222vw, 24px);
-    background: url("/images/live/kefu.png") center / cover no-repeat;
-  }
-
-  .download-mobile-help-icon {
-    width: min(12.963vw, 140px);
-    height: min(12.963vw, 140px);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: min(2.2222vw, 24px);
-    color: rgba(125, 211, 252, 1);
-    background:
-      radial-gradient(circle at 35% 25%, rgba(34, 211, 238, 0.56), transparent 44%),
-      rgba(37, 99, 235, 0.32);
-  }
-
-  .download-mobile-help-icon svg {
-    width: min(6.1111vw, 66px);
-    height: min(6.1111vw, 66px);
-  }
-
-  .download-mobile-help h2 {
-    color: rgba(255, 255, 255, 1);
-    font-size: clamp(11px, 3.3333vw, 36px);
-    font-weight: 800;
-    line-height: 16px;
-  }
-
-  .download-mobile-help p {
-    margin-top: min(0.7407vw, 8px);
-    color: rgba(149, 156, 168, 1);
-    font-size: clamp(6px, 1.4815vw, 16px);
-    line-height: 1.3;
-  }
-
-  .download-mobile-help button {
-    width: min(21.2037vw, 229px);
-    height: auto;
-    aspect-ratio: 229 / 72;
-    justify-self: end;
-    border-radius: min(1.3889vw, 15px);
-    color: rgba(255, 255, 255, 1);
-    background: linear-gradient(124deg, rgba(8, 179, 213, 1), rgba(58, 131, 245, 1));
-    font-size: clamp(8px, 1.8519vw, 20px);
-    font-weight: 800;
-    line-height: 12px;
-    cursor: pointer;
-  }
 }
 
 @media (max-width: 520px) {

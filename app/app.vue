@@ -6,10 +6,6 @@
 </template>
 
 <script setup>
-import { createThemeContext } from './utils/theme'
-
-// 全局初始化皮肤，保证任何页面都能读取并应用用户上次选择的主题。
-const { initTheme } = createThemeContext()
 const siteName = 'VicastCam'
 const { locale, locales } = useI18n()
 
@@ -35,8 +31,4 @@ useHead(() => ({
   },
 }))
 
-// onMounted 只在浏览器运行，避免服务端渲染阶段访问 localStorage。
-onMounted(() => {
-  initTheme()
-})
 </script>

@@ -1,11 +1,10 @@
 // 皮肤本地缓存 key，用户刷新页面后继续使用上次选择的皮肤。
 export const themeStorageKey = 'site-theme'
 
-// 项目支持的皮肤列表，后续新增皮肤只需要在这里追加一项。
+// 主题列表只负责切换状态，浅色具体样式等设计稿确认后再补。
 export const themeOptions = [
   { code: 'light', icon: 'lucide:sun' },
   { code: 'dark', icon: 'lucide:moon' },
-  { code: 'green', icon: 'lucide:leaf' },
 ]
 
 // 判断传入的皮肤 code 是否存在，避免写入无效主题。
@@ -24,27 +23,27 @@ export const applyThemeToDocument = (code) => {
     return
   }
 
-  const themeCode = isValidThemeCode(code) ? code : 'light'
+  const themeCode = isValidThemeCode(code) ? code : 'dark'
 
   document.documentElement.setAttribute('data-theme', themeCode)
-  document.documentElement.style.colorScheme = themeCode === 'dark' ? 'dark' : 'light'
+  document.documentElement.style.colorScheme = themeCode === 'light' ? 'light' : 'dark'
 }
 
 // 从浏览器缓存读取用户上次选择的皮肤。
 export const readThemeFromStorage = () => {
   if (!process.client) {
-    return 'light'
+    return 'dark'
   }
 
   const storedTheme = window.localStorage.getItem(themeStorageKey)
 
-  return isValidThemeCode(storedTheme) ? storedTheme : 'light'
+  return isValidThemeCode(storedTheme) ? storedTheme : 'dark'
 }
 
 // 创建页面或组件可复用的换肤上下文。
 export const createThemeContext = () => {
   // useState 可以让当前皮肤在 Nuxt 页面和组件之间共享。
-  const currentTheme = useState('current-theme', () => 'light')
+  const currentTheme = useState('current-theme', () => readThemeFromStorage())
 
   // 初始化皮肤：优先读取本地缓存，再同步到 html 标签。
   const initTheme = () => {
@@ -54,7 +53,7 @@ export const createThemeContext = () => {
 
   // 切换皮肤：更新全局状态、html 标签和本地缓存。
   const setTheme = (code) => {
-    const themeCode = isValidThemeCode(code) ? code : 'light'
+    const themeCode = isValidThemeCode(code) ? code : 'dark'
 
     currentTheme.value = themeCode
     applyThemeToDocument(themeCode)

@@ -208,17 +208,18 @@ const activeQuestion = computed(() => {
   overflow: hidden;
   width: 305px;
   height: fit-content;
-  border: 1px solid rgba(37, 48, 70, 1);
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 1);
+  border: 1px solid var(--theme-route-card-border, var(--theme-border-soft));
+  border-radius: var(--theme-route-card-radius, 15px);
+  background: var(--theme-route-card-background, var(--theme-surface));
+  box-shadow: var(--theme-route-card-shadow, none);
 }
 
 .faq-group + .faq-group {
-  border-top: 1px solid rgba(37, 48, 70, 1);
+  border-top: 1px solid var(--theme-sdk-card-border, var(--theme-border-soft));
 }
 
 .faq-group:last-child {
-  border-bottom: 1px solid rgba(37, 48, 70, 1);
+  border-bottom: 1px solid var(--theme-sdk-card-border, var(--theme-border-soft));
 }
 
 .faq-group-button {
@@ -228,7 +229,7 @@ const activeQuestion = computed(() => {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  color: rgba(226, 232, 240, 1);
+  color: var(--theme-route-card-title, var(--theme-text-light));
   text-align: left;
   cursor: pointer;
 }
@@ -241,8 +242,8 @@ const activeQuestion = computed(() => {
   justify-content: center;
   flex: 0 0 28px;
   border-radius: 7px;
-  color: rgba(255, 255, 255, 1);
-  background: linear-gradient(135deg, rgba(99, 102, 241, 1), rgba(59, 130, 246, 1));
+  color: var(--theme-white);
+  background: linear-gradient(135deg, var(--theme-extra-99-102-241-1), var(--theme-primary));
 }
 
 .faq-group-icon svg {
@@ -270,7 +271,7 @@ const activeQuestion = computed(() => {
 }
 
 .faq-group-text small {
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   font-size: 11px;
   line-height: 14px;
 }
@@ -279,7 +280,7 @@ const activeQuestion = computed(() => {
   width: 14px;
   height: 14px;
   flex: 0 0 auto;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   transition: transform 0.24s ease;
 }
 
@@ -307,7 +308,7 @@ const activeQuestion = computed(() => {
   overflow: hidden;
   display: grid;
   padding: 0;
-  background: rgba(30, 41, 59, 0.58);
+  background: var(--theme-sdk-card-background, var(--theme-route-card-background, var(--theme-surface-soft-58)));
 }
 
 .faq-question-item {
@@ -318,20 +319,20 @@ const activeQuestion = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 0 12px 0 20px;
-  color: rgba(203, 213, 225, 1);
+  color: var(--theme-route-card-text, var(--theme-text-secondary));
   text-align: left;
   cursor: pointer;
 }
 
 .faq-question-item-active {
-  color: rgba(255, 255, 255, 1);
-  background: rgba(14, 116, 144, 0.55);
+  color: var(--theme-profile-field-action, var(--theme-white));
+  background: var(--theme-sdk-sidebar-active-background, var(--theme-extra-14-116-144-055));
 }
 
 .faq-question-item svg {
   width: 14px;
   height: 14px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
 }
 
 .faq-question-item > span {
@@ -346,10 +347,11 @@ const activeQuestion = computed(() => {
   width: 830px;
   height: 1138px;
   padding: 20px 28px 24px;
-  border: 1px solid rgba(59, 130, 246, 1);
-  border-radius: 8px;
-  color: rgba(226, 232, 240, 1);
-  background: rgba(30, 41, 59, 1);
+  border: 1px solid var(--theme-route-card-border, var(--theme-primary));
+  border-radius: var(--theme-route-card-radius, 15px);
+  color: var(--theme-route-card-title, var(--theme-text-light));
+  background: var(--theme-route-card-background, var(--theme-surface-soft));
+  box-shadow: var(--theme-route-card-shadow, none);
 }
 
 .faq-article-header {
@@ -364,7 +366,7 @@ const activeQuestion = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   font-size: 12px;
 }
 
@@ -388,13 +390,15 @@ const activeQuestion = computed(() => {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   cursor: pointer;
+  border-radius: 6px;
+  background: var(--theme-sdk-table-head-background, transparent);
 }
 
 .faq-article h2 {
   margin-top: 34px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-route-card-title, var(--theme-white));
   font-size: 26px;
   font-weight: 900;
   line-height: 34px;
@@ -406,7 +410,7 @@ const activeQuestion = computed(() => {
   align-items: center;
   gap: 18px;
   margin-top: 12px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   font-size: 12px;
 }
 
@@ -427,23 +431,24 @@ const activeQuestion = computed(() => {
   align-items: center;
   margin-top: 24px;
   padding: 0 18px;
+  border: 1px solid var(--theme-sdk-table-border, transparent);
   border-radius: 6px;
-  color: rgba(226, 232, 240, 1);
-  background: rgba(14, 116, 144, 0.5);
+  color: var(--theme-sdk-title, var(--theme-route-card-title, var(--theme-text-light)));
+  background: var(--theme-sdk-table-head-background, var(--theme-extra-14-116-144-05));
   font-size: 14px;
   font-weight: 700;
 }
 
 .faq-rich-content {
   margin-top: 18px;
-  color: rgba(203, 213, 225, 1);
+  color: var(--theme-route-card-text, var(--theme-text-secondary));
   font-size: 13px;
   line-height: 24px;
 }
 
 .faq-rich-content h3 {
   margin-top: 22px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-route-card-title, var(--theme-white));
   font-size: 16px;
   font-weight: 800;
   line-height: 24px;
@@ -468,7 +473,7 @@ const activeQuestion = computed(() => {
 }
 
 .faq-image-caption {
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   text-align: center;
 }
 

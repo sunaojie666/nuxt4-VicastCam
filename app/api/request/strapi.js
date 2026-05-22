@@ -16,9 +16,14 @@ const createStrapiRequest = () => {
   })
 }
 
+const homeRequestOptions = {
+  skipGlobalLoading: true,
+}
+
 // 首页内容接口，按当前语言读取 Strapi 中配置的首屏内容。
 export const getHomes = (locale) => {
   return createStrapiRequest().get('/homes', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: 'bgVideo',
@@ -48,6 +53,7 @@ export const getLogin = (locale) => {
 // 首页功能特色接口，对应 Strapi 里的 api::feature.feature。
 export const getFeature = (locale) => {
   return createStrapiRequest().get('/features', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',
@@ -58,6 +64,7 @@ export const getFeature = (locale) => {
 // 底部文案接口，对应 Strapi 里的 api::footer.footer。
 export const getFooter = (locale) => {
   return createStrapiRequest().get('/footers', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',
@@ -68,6 +75,7 @@ export const getFooter = (locale) => {
 // 首页常见问题接口，对应 Strapi 里的 api::faq.faq。
 export const getFaq = (locale) => {
   return createStrapiRequest().get('/faqs', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',
@@ -78,6 +86,7 @@ export const getFaq = (locale) => {
 // 首页多平台支持文案接口，对应 Strapi 里的 api::form.form。
 export const getForm = (locale) => {
   return createStrapiRequest().get('/forms', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',
@@ -88,6 +97,7 @@ export const getForm = (locale) => {
 // 首页虚拟相机文案接口，对应 Strapi 里的 api::virtual.virtual。
 export const getVirtual = (locale) => {
   return createStrapiRequest().get('/virtuals', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',
@@ -98,6 +108,7 @@ export const getVirtual = (locale) => {
 // 首页全球社区文案接口，对应 Strapi 里的 api::community.community，REST 路由为 /api/communitys。
 export const getCommunity = (locale) => {
   return createStrapiRequest().get('/communitys', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',
@@ -108,6 +119,7 @@ export const getCommunity = (locale) => {
 // 首页全球社区轮播主播接口，对应 Strapi 里的 api::streamer.streamer，REST 路由为 /api/streamers。
 export const getStreamers = (locale) => {
   return createStrapiRequest().get('/streamers', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: 'avatar',
@@ -118,6 +130,7 @@ export const getStreamers = (locale) => {
 // 首页教程中心文案接口，对应 Strapi 里的 api::tutorial.tutorial，REST 路由为 /api/tutorials。
 export const getTutorials = (locale) => {
   return createStrapiRequest().get('/tutorials', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',
@@ -128,6 +141,7 @@ export const getTutorials = (locale) => {
 // 首页教程中心卡片接口，对应 Strapi 里的 api::card.card，REST 路由为 /api/cards。
 export const getCards = (locale) => {
   return createStrapiRequest().get('/cards', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: 'coverImg',
@@ -138,6 +152,7 @@ export const getCards = (locale) => {
 // 首页订阅模块文案接口，对应 Strapi 里的 api::pricing.pricing，REST 路由为 /api/pricings。
 export const getPricings = (locale) => {
   return createStrapiRequest().get('/pricings', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',

@@ -189,8 +189,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: rgba(34, 211, 238, 1);
-  background: rgba(34, 211, 238, 0.14);
+  color: var(--theme-accent);
+  background: var(--theme-accent-soft);
 }
 
 .membership-current {
@@ -202,9 +202,9 @@ onMounted(() => {
   gap: 18px;
   margin-top: 18px;
   padding: 0 20px;
-  border: 1px solid rgba(57, 78, 122, 1);
+  border: none;
   border-radius: 10px;
-  background: linear-gradient(90deg, rgba(47, 166, 221, 1), rgba(49, 128, 235, 1));
+  background: linear-gradient(90deg, var(--theme-extra-47-166-221-1), var(--theme-extra-49-128-235-1));
 }
 
 .membership-current-main {
@@ -227,7 +227,7 @@ onMounted(() => {
 
 .membership-current strong {
   display: block;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 15px;
   font-weight: 700;
   line-height: 22px;
@@ -238,7 +238,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   margin-top: 2px;
-  color: rgba(223, 239, 255, 1);
+  color: var(--theme-extra-223-239-255-1);
   font-size: 13px;
   line-height: 19px;
 }
@@ -255,10 +255,10 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(111, 187, 255, 0.7);
+  border: 1px solid var(--theme-extra-111-187-255-07);
   border-radius: 999px;
-  color: rgba(218, 239, 255, 1);
-  background: rgba(31, 113, 226, 1);
+  color: var(--theme-extra-218-239-255-1);
+  background: var(--theme-extra-31-113-226-1);
   font-size: 13px;
   font-weight: 600;
   flex: 0 0 auto;
@@ -277,9 +277,9 @@ onMounted(() => {
   height: 426px;
   display: grid;
   grid-template-rows: 132px minmax(0, 1fr);
-  border: 1px solid rgba(50, 64, 96, 1);
+  border: 1px solid var(--theme-membership-card-border, var(--theme-border-card));
   border-radius: 8px;
-  background: rgba(15, 24, 42, 1);
+  background: var(--theme-membership-card-background, var(--theme-panel-code));
   overflow: hidden;
 }
 
@@ -295,7 +295,7 @@ onMounted(() => {
 
 .membership-card-top h3 {
   margin-top: 6px;
-  color: rgba(243, 247, 255, 1);
+  color: var(--theme-extra-243-247-255-1);
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
@@ -303,7 +303,7 @@ onMounted(() => {
 
 .membership-card-top p {
   margin-top: 4px;
-  color: rgba(226, 237, 255, 0.95);
+  color: var(--theme-extra-226-237-255-095);
   font-size: 12px;
   line-height: 18px;
 }
@@ -338,21 +338,21 @@ onMounted(() => {
 }
 
 .membership-price strong {
-  color: rgba(61, 180, 255, 1);
+  color: var(--theme-extra-61-180-255-1);
   font-size: 34px;
   font-weight: 800;
   line-height: 1;
 }
 
 .membership-price span {
-  color: rgba(130, 161, 193, 1);
+  color: var(--theme-extra-130-161-193-1);
   font-size: 16px;
   line-height: 22px;
 }
 
 .membership-original-price {
   margin-top: 6px;
-  color: rgba(100, 116, 139, 1);
+  color: var(--theme-text-subtle);
   font-size: 13px;
   line-height: 18px;
   text-align: center;
@@ -367,7 +367,7 @@ onMounted(() => {
   align-content: start;
   gap: 8px;
   overflow: hidden;
-  color: rgba(148, 164, 187, 1);
+  color: var(--theme-membership-card-body-text, var(--theme-extra-148-164-187-1));
   font-size: 13px;
   line-height: 18px;
 }
@@ -387,38 +387,38 @@ onMounted(() => {
   justify-self: center;
   margin-top: 30px;
   border-radius: 8px;
-  color: rgba(237, 248, 255, 1);
+  color: var(--theme-extra-237-248-255-1);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .theme-cyan {
-  background: linear-gradient(90deg, rgba(88, 161, 233, 1), rgba(53, 201, 233, 1));
+  background: linear-gradient(90deg, var(--theme-extra-88-161-233-1), var(--theme-extra-53-201-233-1));
 }
 
 .membership-action.theme-cyan {
-  background: linear-gradient(90deg, rgba(47, 196, 235, 1), rgba(93, 204, 235, 1));
+  background: linear-gradient(90deg, var(--theme-extra-47-196-235-1), var(--theme-extra-93-204-235-1));
 }
 
 .theme-blue {
-  background: linear-gradient(90deg, rgba(63, 151, 232, 1), rgba(54, 127, 226, 1));
+  background: linear-gradient(90deg, var(--theme-extra-63-151-232-1), var(--theme-extra-54-127-226-1));
 }
 
 .membership-action.theme-blue {
-  background: linear-gradient(90deg, rgba(46, 141, 234, 1), rgba(56, 116, 235, 1));
+  background: linear-gradient(90deg, var(--theme-extra-46-141-234-1), var(--theme-extra-56-116-235-1));
 }
 
 .theme-violet {
-  background: linear-gradient(90deg, rgba(191, 167, 243, 1), rgba(137, 72, 236, 1));
+  background: linear-gradient(90deg, var(--theme-extra-191-167-243-1), var(--theme-extra-137-72-236-1));
 }
 
 .membership-action.theme-violet {
-  background: linear-gradient(90deg, rgba(180, 166, 246, 1), rgba(121, 78, 237, 1));
+  background: linear-gradient(90deg, var(--theme-extra-180-166-246-1), var(--theme-extra-121-78-237-1));
 }
 
 .membership-card:nth-child(3) .membership-price strong {
-  color: rgba(182, 129, 255, 1);
+  color: var(--theme-purple-light);
 }
 
 .membership-compare-panel {
@@ -430,10 +430,10 @@ onMounted(() => {
 
 .membership-compare-table-wrap {
   margin-top: 20px;
-  border: 1px solid rgba(44, 56, 84, 1);
+  border: 1px solid var(--theme-profile-table-border, var(--theme-border-code));
   border-radius: 8px;
   overflow: hidden;
-  background: rgba(15, 24, 42, 1);
+  background: var(--theme-profile-table-background, var(--theme-panel-code));
 }
 
 .membership-compare-table {
@@ -446,23 +446,24 @@ onMounted(() => {
 .membership-compare-table td {
   height: 50px;
   padding: 0 10px;
-  border-bottom: 1px solid rgba(38, 50, 76, 1);
+  border-bottom: 1px solid var(--theme-profile-table-border, var(--theme-border-table));
+  color: var(--theme-profile-table-text, var(--theme-text-table));
   text-align: center;
   font-size: 13px;
 }
 
 .membership-compare-table thead th {
-  background: rgba(17, 25, 39, 1);
-  color: rgba(154, 172, 200, 1);
+  background: var(--theme-profile-table-head-background, var(--theme-extra-17-25-39-1));
+  color: var(--theme-profile-table-head-text, var(--theme-text-slate));
   font-weight: 600;
 }
 
 .membership-compare-table tbody tr:nth-child(odd) td {
-  background: rgba(26, 34, 53, 1);
+  background: var(--theme-profile-table-row-background, var(--theme-panel));
 }
 
 .membership-compare-table tbody tr:nth-child(even) td {
-  background: rgba(30, 38, 57, 1);
+  background: var(--theme-profile-table-row-alt-background, var(--theme-panel-row));
 }
 
 .membership-compare-table tbody tr:last-child td {
@@ -474,7 +475,7 @@ onMounted(() => {
   width: 24%;
   text-align: left;
   padding-left: 14px;
-  color: rgba(215, 226, 246, 1);
+  color: var(--theme-profile-table-text, var(--theme-text-table));
 }
 
 .compare-text {
@@ -484,11 +485,11 @@ onMounted(() => {
 
 .compare-month,
 .compare-year {
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-accent);
 }
 
 .compare-life {
-  color: rgba(208, 177, 255, 1);
+  color: var(--theme-extra-208-177-255-1);
 }
 
 .compare-icon {
@@ -503,15 +504,15 @@ onMounted(() => {
 }
 
 .compare-check {
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-accent);
 }
 
 .compare-life-check {
-  color: rgba(208, 177, 255, 1);
+  color: var(--theme-extra-208-177-255-1);
 }
 
 .compare-cross {
-  color: rgba(255, 95, 58, 1);
+  color: var(--theme-extra-255-95-58-1);
 }
 
 @media (max-width: 900px) {

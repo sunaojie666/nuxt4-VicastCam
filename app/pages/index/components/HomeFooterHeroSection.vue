@@ -25,7 +25,10 @@
           href="#"
           :class="['home-hero-download', button.buttonClass]"
         >
-          <img :src="button.icon" alt="" aria-hidden="true">
+          <span class="home-hero-download-icon-wrap" aria-hidden="true">
+            <img class="home-hero-download-icon-default" :src="button.icon" alt="">
+            <img class="home-hero-download-icon-active" :src="button.activeIcon" alt="">
+          </span>
           <span>{{ button.label }}</span>
         </a>
       </div>
@@ -54,19 +57,22 @@ const footerHeroButtons = computed(() => {
     {
       key: 'app-store',
       label: homeDownloads.value.appStoreUrl,
-      icon: '/images/apple.png',
+      icon: '/images/download-icons/apple-default.svg',
+      activeIcon: '/images/download-icons/apple-active.svg',
       buttonClass: 'home-hero-download-light',
     },
     {
       key: 'android',
       label: homeDownloads.value.googlePlayUrl,
-      icon: '/images/anzhuodown.png',
+      icon: '/images/download-icons/android-default.svg',
+      activeIcon: '/images/download-icons/android-active.svg',
       buttonClass: 'home-hero-download-light',
     },
     {
       key: 'windows',
       label: homeDownloads.value.desktopClientUrl,
-      icon: '/images/win.png',
+      icon: '/images/download-icons/windows-default.svg',
+      activeIcon: '/images/download-icons/windows-active.svg',
       buttonClass: 'home-hero-download-primary',
     },
   ].filter(button => String(button.label || '').trim())
@@ -153,7 +159,7 @@ watch(locale, () => {
   padding-top: 96px;
   padding-bottom: 76px;
   color: var(--theme-text);
-  background: rgba(17, 24, 39, 1);
+  background: var(--theme-footer-hero-background, var(--theme-surface-alt));
 }
 
 .home-footer-hero-section::before {
@@ -187,10 +193,10 @@ watch(locale, () => {
   justify-content: center;
   gap: 12px;
   padding: 0 18px;
-  border: 1px solid rgba(34, 211, 238, 0.38);
+  border: 1px solid var(--theme-footer-hero-eyebrow-border, var(--theme-accent-border));
   border-radius: 999px;
-  color: rgba(103, 232, 249, 1);
-  background-color: rgba(8, 145, 178, 0.18);
+  color: var(--theme-footer-hero-eyebrow-text, var(--theme-accent-text));
+  background-color: var(--theme-footer-hero-eyebrow-background, var(--theme-cyan-panel));
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
@@ -207,14 +213,15 @@ watch(locale, () => {
 }
 
 .home-footer-hero-title {
-  width: max-content;
-  max-width: 100%;
+  width: auto;
+  max-width: min(100%, 980px);
   margin-top: 22px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-footer-hero-title, var(--theme-white));
   font-size: 58px;
   font-weight: 900;
   line-height: 68px;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-footer-hero-title span {
@@ -222,12 +229,13 @@ watch(locale, () => {
 }
 
 .home-footer-hero-title > span:first-child {
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .home-footer-hero-title span:last-child {
   position: relative;
   display: inline-block;
+  max-width: 100%;
 }
 
 .home-footer-hero-line {
@@ -242,11 +250,71 @@ watch(locale, () => {
 .home-footer-hero-copy {
   max-width: 760px;
   margin-top: 28px;
-  color: rgba(229, 231, 235, 1);
+  color: var(--theme-footer-hero-copy, var(--theme-text-soft));
   font-size: 20px;
   font-weight: 400;
   line-height: 30px;
   overflow-wrap: anywhere;
+}
+
+.home-hero-download-primary {
+  color: var(--theme-text-on-white);
+  background: var(--theme-white);
+  box-shadow: none;
+}
+
+.home-hero-download {
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.home-hero-download-icon-wrap {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  color: var(--theme-primary);
+  background: transparent;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.home-hero-download-icon-wrap img {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  transition: opacity 0.2s ease;
+}
+
+.home-hero-download-icon-active {
+  opacity: 0;
+}
+
+.home-hero-download:hover .home-hero-download-icon-default,
+.home-hero-download:focus .home-hero-download-icon-default {
+  opacity: 0;
+}
+
+.home-hero-download:hover .home-hero-download-icon-active,
+.home-hero-download:focus .home-hero-download-icon-active {
+  opacity: 1;
+}
+
+.home-hero-download:hover,
+.home-hero-download:focus {
+  color: var(--theme-white);
+  background: linear-gradient(124.24deg, var(--theme-brand-accent) 0%, var(--theme-primary-end) 100%);
+  box-shadow: 0 0 18px var(--theme-extra-14-165-233-036);
+  transform: translateY(-1px);
+}
+
+.home-hero-download:hover .home-hero-download-icon-wrap,
+.home-hero-download:focus .home-hero-download-icon-wrap {
+  color: var(--theme-white);
+  transform: scale(1.06);
 }
 
 @media (max-width: 768px) {

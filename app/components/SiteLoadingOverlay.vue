@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(3, 7, 18, 0.46);
+  background: var(--theme-page-46);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -109,9 +109,9 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 0 18px;
   border-radius: 10px;
-  color: rgba(248, 250, 252, 1);
-  background: rgba(15, 23, 42, 0.94);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.36);
+  color: var(--theme-text);
+  background: var(--theme-surface-94);
+  box-shadow: 0 18px 42px var(--theme-black-36);
   font-size: 14px;
   line-height: 20px;
 }
@@ -125,8 +125,8 @@ onBeforeUnmount(() => {
 .site-loading-spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(148, 163, 184, 0.32);
-  border-top-color: rgba(34, 211, 238, 1);
+  border: 2px solid var(--theme-extra-148-163-184-032);
+  border-top-color: var(--theme-accent);
   border-radius: 50%;
   animation: site-loading-spin 0.78s linear infinite;
 }

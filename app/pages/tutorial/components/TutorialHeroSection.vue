@@ -26,11 +26,17 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-route-card-title, var(--theme-white));
   background:
-    radial-gradient(circle at 50% 42%, rgba(14, 165, 233, 0.18), transparent 34%),
-    linear-gradient(180deg, rgba(15, 23, 42, 1) 0%, rgba(13, 22, 39, 1) 100%);
-  border-bottom: 1px solid rgba(30, 41, 59, 1);
+    radial-gradient(circle at 50% 42%, var(--theme-extra-14-165-233-018), transparent 34%),
+    linear-gradient(180deg, var(--theme-surface) 0%, var(--theme-extra-13-22-39-1) 100%);
+  border-bottom: none;
+}
+
+@media (min-width: 901px) {
+  :root[data-theme="light"] .tutorial-hero-section {
+    background: url("/images/qiansebg.png") center / cover no-repeat;
+  }
 }
 
 .tutorial-hero-inner {
@@ -50,10 +56,10 @@
   align-items: center;
   justify-content: center;
   padding: 0 14px;
-  border: 1px solid rgba(59, 130, 246, 0.34);
+  border: 1px solid var(--theme-primary-border);
   border-radius: 999px;
-  color: rgba(96, 165, 250, 1);
-  background: rgba(30, 64, 175, 0.22);
+  color: var(--theme-primary-light);
+  background: var(--theme-primary-softer);
   font-size: 12px;
   line-height: 1;
 }
@@ -76,7 +82,7 @@
   flex-direction: column;
   align-items: center;
   margin-top: 14px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 16px;
   line-height: 24px;
   overflow-wrap: anywhere;
@@ -90,28 +96,28 @@
   gap: 12px;
   margin-top: 18px;
   padding: 0 18px;
-  border: 1px solid rgba(100, 116, 139, 1);
+  border: 1px solid var(--theme-route-card-border, var(--theme-text-subtle));
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.72);
+  background: var(--theme-route-card-background, var(--theme-surface-72));
 }
 
 .tutorial-search-icon {
   width: 18px;
   height: 18px;
   flex: 0 0 auto;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
 }
 
 .tutorial-search input {
   width: 100%;
   min-width: 0;
-  color: rgba(226, 232, 240, 1);
+  color: var(--theme-route-card-title, var(--theme-text-light));
   font-size: 14px;
   line-height: 20px;
 }
 
 .tutorial-search input::placeholder {
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
 }
 
 @media (max-width: 768px) {

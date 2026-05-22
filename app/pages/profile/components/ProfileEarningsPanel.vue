@@ -492,7 +492,7 @@ onBeforeUnmount(() => {
   width: 194px;
   height: 165px;
   position: relative;
-  border: 1px solid rgba(48, 63, 97, 1);
+  border: 1px solid var(--theme-extra-48-63-97-1);
   border-radius: 10px;
   padding: 0 12px 10px;
 }
@@ -516,7 +516,7 @@ onBeforeUnmount(() => {
 
 .earnings-card-title {
   margin-top: 13px;
-  color: rgba(128, 146, 174, 1);
+  color: var(--theme-earnings-card-title, var(--theme-extra-128-146-174-1));
   font-size: 12px;
   line-height: 16px;
 }
@@ -531,7 +531,7 @@ onBeforeUnmount(() => {
 
 .earnings-card-desc {
   margin-top: 6px;
-  color: rgba(106, 123, 149, 1);
+  color: var(--theme-earnings-card-desc, var(--theme-extra-106-123-149-1));
   font-size: 12px;
   line-height: 16px;
 }
@@ -543,63 +543,67 @@ onBeforeUnmount(() => {
   width: 70px;
   height: 28px;
   border-radius: 999px;
-  color: rgba(233, 248, 255, 1);
-  background: linear-gradient(90deg, rgba(59, 198, 239, 1), rgba(74, 144, 255, 1));
+  color: var(--theme-extra-233-248-255-1);
+  background: linear-gradient(90deg, var(--theme-extra-59-198-239-1), var(--theme-extra-74-144-255-1));
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .card-blue {
-  background: rgba(24, 47, 81, 0.45);
+  border-color: var(--theme-earnings-card-blue-border, var(--theme-extra-48-63-97-1));
+  background: var(--theme-earnings-card-blue-background, var(--theme-extra-24-47-81-045));
 }
 
 .card-blue .earnings-card-icon {
-  color: rgba(34, 211, 238, 1);
-  background: rgba(24, 126, 180, 0.22);
+  color: var(--theme-accent);
+  background: var(--theme-earnings-card-blue-icon-background, var(--theme-extra-24-126-180-022));
 }
 
 .card-blue .earnings-card-value {
-  color: rgba(58, 161, 255, 1);
+  color: var(--theme-extra-58-161-255-1);
 }
 
 .card-amber {
-  background: rgba(44, 38, 34, 0.45);
+  border-color: var(--theme-earnings-card-amber-border, var(--theme-extra-48-63-97-1));
+  background: var(--theme-earnings-card-amber-background, var(--theme-extra-44-38-34-045));
 }
 
 .card-amber .earnings-card-icon {
-  color: rgba(255, 169, 45, 1);
-  background: rgba(155, 97, 34, 0.28);
+  color: var(--theme-extra-255-169-45-1);
+  background: var(--theme-earnings-card-amber-icon-background, var(--theme-extra-155-97-34-028));
 }
 
 .card-amber .earnings-card-value {
-  color: rgba(255, 167, 53, 1);
+  color: var(--theme-extra-255-167-53-1);
 }
 
 .card-violet {
-  background: rgba(47, 35, 79, 0.45);
+  border-color: var(--theme-earnings-card-violet-border, var(--theme-extra-48-63-97-1));
+  background: var(--theme-earnings-card-violet-background, var(--theme-extra-47-35-79-045));
 }
 
 .card-violet .earnings-card-icon {
-  color: rgba(182, 129, 255, 1);
-  background: rgba(95, 58, 177, 0.3);
+  color: var(--theme-purple-light);
+  background: var(--theme-earnings-card-violet-icon-background, var(--theme-extra-95-58-177-03));
 }
 
 .card-violet .earnings-card-value {
-  color: rgba(157, 104, 255, 1);
+  color: var(--theme-extra-157-104-255-1);
 }
 
 .card-emerald {
-  background: rgba(30, 65, 51, 0.42);
+  border-color: var(--theme-earnings-card-emerald-border, var(--theme-extra-48-63-97-1));
+  background: var(--theme-earnings-card-emerald-background, var(--theme-extra-30-65-51-042));
 }
 
 .card-emerald .earnings-card-icon {
-  color: rgba(52, 222, 146, 1);
-  background: rgba(23, 130, 102, 0.32);
+  color: var(--theme-success-icon);
+  background: var(--theme-earnings-card-emerald-icon-background, var(--theme-extra-23-130-102-032));
 }
 
 .card-emerald .earnings-card-value {
-  color: rgba(45, 223, 174, 1);
+  color: var(--theme-extra-45-223-174-1);
 }
 
 .earnings-record-panel {
@@ -614,7 +618,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 18px;
-  border-bottom: 1px solid rgba(37, 48, 70, 1);
+  border-bottom: 1px solid var(--theme-profile-divider, var(--theme-border-soft));
 }
 
 .earnings-record-title {
@@ -630,11 +634,12 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   border-radius: 7px;
-  color: rgba(34, 211, 238, 1);
-  background: rgba(34, 211, 238, 0.14);
+  color: var(--theme-accent);
+  background: var(--theme-accent-soft);
 }
 
 .earnings-record-title h2 {
+  color: var(--theme-profile-section-title, var(--theme-text));
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
@@ -652,10 +657,10 @@ onBeforeUnmount(() => {
 .earnings-month-button {
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(45, 58, 86, 1);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-control-soft));
   border-radius: 9px;
-  color: rgba(148, 163, 184, 1);
-  background: rgba(31, 41, 61, 1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted));
+  background: var(--theme-profile-field-background, var(--theme-panel-medium));
   cursor: pointer;
 }
 
@@ -667,8 +672,8 @@ onBeforeUnmount(() => {
 .earnings-month-button:hover,
 .earnings-month-button:focus,
 .earnings-month-button-active {
-  color: rgba(209, 237, 255, 1);
-  border-color: rgba(62, 91, 135, 1);
+  color: var(--theme-text-info);
+  border-color: var(--theme-extra-62-91-135-1);
 }
 
 .earnings-month-popover {
@@ -678,10 +683,10 @@ onBeforeUnmount(() => {
   z-index: 30;
   width: 248px;
   padding: 12px;
-  border: 1px solid rgba(50, 64, 96, 1);
+  border: 1px solid var(--theme-border-card);
   border-radius: 10px;
-  background: rgba(15, 24, 42, 1);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  background: var(--theme-panel-code);
+  box-shadow: 0 18px 42px var(--theme-black-34);
 }
 
 .earnings-month-popover-header {
@@ -690,7 +695,7 @@ onBeforeUnmount(() => {
   grid-template-columns: 32px minmax(0, 1fr) 32px;
   align-items: center;
   gap: 8px;
-  color: rgba(232, 242, 255, 1);
+  color: var(--theme-text-title);
 }
 
 .earnings-month-popover-header strong {
@@ -702,10 +707,10 @@ onBeforeUnmount(() => {
 .earnings-month-year-button {
   width: 32px;
   height: 32px;
-  border: 1px solid rgba(45, 58, 86, 1);
+  border: 1px solid var(--theme-border-control-soft);
   border-radius: 8px;
-  color: rgba(148, 163, 184, 1);
-  background: rgba(18, 30, 51, 1);
+  color: var(--theme-text-muted);
+  background: var(--theme-extra-18-30-51-1);
   cursor: pointer;
 }
 
@@ -728,10 +733,10 @@ onBeforeUnmount(() => {
 
 .earnings-month-option {
   height: 34px;
-  border: 1px solid rgba(45, 58, 86, 1);
+  border: 1px solid var(--theme-border-control-soft);
   border-radius: 8px;
-  color: rgba(148, 163, 184, 1);
-  background: rgba(18, 30, 51, 1);
+  color: var(--theme-text-muted);
+  background: var(--theme-extra-18-30-51-1);
   font-size: 13px;
   line-height: 18px;
   cursor: pointer;
@@ -739,14 +744,14 @@ onBeforeUnmount(() => {
 
 .earnings-month-option:hover,
 .earnings-month-option:focus {
-  color: rgba(209, 237, 255, 1);
-  border-color: rgba(38, 130, 176, 1);
+  color: var(--theme-text-info);
+  border-color: var(--theme-cyan-hover);
 }
 
 .earnings-month-option-active {
-  color: rgba(221, 244, 255, 1);
-  border-color: rgba(38, 130, 176, 1);
-  background: rgba(20, 101, 145, 0.6);
+  color: var(--theme-text-button);
+  border-color: var(--theme-cyan-hover);
+  background: var(--theme-extra-20-101-145-06);
 }
 
 .earnings-month-option:disabled {
@@ -756,10 +761,10 @@ onBeforeUnmount(() => {
 
 .earnings-table-wrap {
   margin-top: 20px;
-  border: 1px solid rgba(44, 56, 84, 1);
+  border: 1px solid var(--theme-profile-table-border, var(--theme-border-code));
   border-radius: 8px;
   overflow: hidden;
-  background: rgba(15, 24, 42, 1);
+  background: var(--theme-profile-table-background, var(--theme-panel-code));
 }
 
 .earnings-table {
@@ -771,24 +776,24 @@ onBeforeUnmount(() => {
 .earnings-table td {
   height: 50px;
   padding: 0 10px;
-  border-bottom: 1px solid rgba(38, 50, 76, 1);
-  color: rgba(215, 226, 246, 1);
+  border-bottom: 1px solid var(--theme-profile-table-border, var(--theme-border-table));
+  color: var(--theme-profile-table-text, var(--theme-text-table));
   font-size: 13px;
   text-align: center;
 }
 
 .earnings-table thead th {
-  background: rgba(17, 25, 39, 1);
-  color: rgba(154, 172, 200, 1);
+  background: var(--theme-profile-table-head-background, var(--theme-extra-17-25-39-1));
+  color: var(--theme-profile-table-head-text, var(--theme-text-slate));
   font-weight: 600;
 }
 
 .earnings-table tbody tr:nth-child(odd) td {
-  background: rgba(26, 34, 53, 1);
+  background: var(--theme-profile-table-row-background, var(--theme-panel));
 }
 
 .earnings-table tbody tr:nth-child(even) td {
-  background: rgba(30, 38, 57, 1);
+  background: var(--theme-profile-table-row-alt-background, var(--theme-panel-row));
 }
 
 .earnings-table tbody tr:last-child td {
@@ -808,7 +813,7 @@ onBeforeUnmount(() => {
 
 .earnings-empty-cell {
   height: 120px !important;
-  color: rgba(149, 156, 168, 1) !important;
+  color: var(--theme-text-muted-alt) !important;
   text-align: center !important;
 }
 
@@ -825,7 +830,7 @@ onBeforeUnmount(() => {
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  color: rgba(130, 147, 175, 1);
+  color: var(--theme-extra-130-147-175-1);
   font-size: 14px;
   cursor: pointer;
 }
@@ -837,8 +842,8 @@ onBeforeUnmount(() => {
 }
 
 .earnings-page-number-active {
-  color: rgba(221, 244, 255, 1);
-  background: rgba(13, 113, 175, 1);
+  color: var(--theme-text-button);
+  background: var(--theme-profile-field-action, var(--theme-extra-13-113-175-1));
 }
 
 .earnings-withdraw-overlay {
@@ -849,7 +854,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(3, 7, 18, 0.65);
+  background: var(--theme-page-65);
   backdrop-filter: blur(6px);
 }
 
@@ -858,10 +863,10 @@ onBeforeUnmount(() => {
   height: 745px;
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(38, 49, 75, 1);
+  border: 1px solid var(--theme-extra-38-49-75-1);
   border-radius: 12px;
   padding: 12px;
-  background: rgba(27, 38, 62, 1);
+  background: var(--theme-extra-27-38-62-1);
   overflow: hidden;
 }
 
@@ -870,7 +875,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(40, 53, 81, 1);
+  border-bottom: 1px solid var(--theme-extra-40-53-81-1);
 }
 
 .earnings-withdraw-title {
@@ -886,15 +891,15 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  color: rgba(34, 211, 238, 1);
-  background: rgba(34, 211, 238, 0.14);
+  color: var(--theme-accent);
+  background: var(--theme-accent-soft);
 }
 
 .earnings-withdraw-title h2 {
   font-size: 16px;
   line-height: 22px;
   font-weight: 700;
-  color: rgba(239, 245, 255, 1);
+  color: var(--theme-extra-239-245-255-1);
 }
 
 .earnings-withdraw-close {
@@ -903,7 +908,7 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(147, 160, 183, 1);
+  color: var(--theme-extra-147-160-183-1);
   cursor: pointer;
 }
 
@@ -916,9 +921,9 @@ onBeforeUnmount(() => {
   height: 56px;
   margin-top: 14px;
   padding: 0 14px;
-  border: 1px solid rgba(48, 93, 78, 1);
+  border: 1px solid var(--theme-extra-48-93-78-1);
   border-radius: 10px;
-  background: rgba(30, 60, 58, 0.45);
+  background: var(--theme-extra-30-60-58-045);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -933,13 +938,13 @@ onBeforeUnmount(() => {
 .earnings-withdraw-balance > div :deep(svg) {
   width: 16px;
   height: 16px;
-  color: rgba(52, 222, 146, 1);
+  color: var(--theme-success-icon);
 }
 
 .earnings-withdraw-balance strong {
   font-size: 14px;
   line-height: 20px;
-  color: rgba(236, 244, 255, 1);
+  color: var(--theme-text-strong);
   font-weight: 700;
 }
 
@@ -949,7 +954,7 @@ onBeforeUnmount(() => {
 
 .earnings-withdraw-field label {
   display: block;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 12px;
   line-height: 18px;
   margin-bottom: 8px;
@@ -957,9 +962,9 @@ onBeforeUnmount(() => {
 
 .earnings-withdraw-amount-row {
   height: 46px;
-  border: 1px solid rgba(43, 56, 82, 1);
+  border: 1px solid var(--theme-extra-43-56-82-1);
   border-radius: 8px;
-  background: rgba(9, 21, 44, 1);
+  background: var(--theme-extra-9-21-44-1);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -967,16 +972,16 @@ onBeforeUnmount(() => {
 }
 
 .earnings-withdraw-amount-row input {
-  color: rgba(232, 241, 255, 1);
+  color: var(--theme-extra-232-241-255-1);
   font-size: 14px;
 }
 
 .earnings-withdraw-amount-row input::placeholder {
-  color: rgba(108, 125, 153, 1);
+  color: var(--theme-text-subtle-alt);
 }
 
 .earnings-withdraw-amount-row button {
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-accent);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -984,47 +989,47 @@ onBeforeUnmount(() => {
 
 .earnings-withdraw-field p {
   margin-top: 8px;
-  color: rgba(124, 139, 163, 1);
+  color: var(--theme-extra-124-139-163-1);
   font-size: 12px;
   line-height: 18px;
 }
 
 .earnings-withdraw-methods {
   height: 46px;
-  border: 1px solid rgba(43, 56, 82, 1);
+  border: 1px solid var(--theme-extra-43-56-82-1);
   border-radius: 8px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   overflow: hidden;
-  background: rgba(9, 21, 44, 1);
+  background: var(--theme-extra-9-21-44-1);
 }
 
 .earnings-withdraw-method {
-  color: rgba(146, 163, 191, 1);
+  color: var(--theme-extra-146-163-191-1);
   font-size: 14px;
   cursor: pointer;
 }
 
 .earnings-withdraw-method-active {
-  color: rgba(236, 246, 255, 1);
-  background: linear-gradient(90deg, rgba(58, 184, 238, 1), rgba(94, 204, 238, 1));
+  color: var(--theme-extra-236-246-255-1);
+  background: linear-gradient(90deg, var(--theme-extra-58-184-238-1), var(--theme-extra-94-204-238-1));
 }
 
 .earnings-withdraw-form-panel {
   margin-top: 12px;
   padding: 10px 12px 12px;
-  border: 1px solid rgba(43, 56, 82, 1);
+  border: 1px solid var(--theme-extra-43-56-82-1);
   border-radius: 10px;
-  background: rgba(15, 28, 52, 0.7);
+  background: var(--theme-extra-15-28-52-07);
 }
 
 .earnings-withdraw-form-panel input,
 .earnings-withdraw-form-panel textarea {
   width: 100%;
-  border: 1px solid rgba(82, 101, 129, 1);
+  border: 1px solid var(--theme-extra-82-101-129-1);
   border-radius: 8px;
-  background: rgba(10, 22, 42, 1);
-  color: rgba(230, 238, 250, 1);
+  background: var(--theme-extra-10-22-42-1);
+  color: var(--theme-extra-230-238-250-1);
   font-size: 14px;
   padding: 0 12px;
 }
@@ -1041,12 +1046,12 @@ onBeforeUnmount(() => {
 
 .earnings-withdraw-form-panel input::placeholder,
 .earnings-withdraw-form-panel textarea::placeholder {
-  color: rgba(108, 125, 153, 1);
+  color: var(--theme-text-subtle-alt);
 }
 
 .earnings-withdraw-note {
   margin-top: 12px;
-  color: rgba(121, 136, 159, 1);
+  color: var(--theme-extra-121-136-159-1);
   font-size: 12px;
   line-height: 18px;
   display: flex;
@@ -1078,13 +1083,13 @@ onBeforeUnmount(() => {
 }
 
 .earnings-withdraw-cancel {
-  color: rgba(220, 229, 244, 1);
-  background: rgba(35, 47, 73, 1);
+  color: var(--theme-extra-220-229-244-1);
+  background: var(--theme-extra-35-47-73-1);
 }
 
 .earnings-withdraw-submit {
-  color: rgba(255, 255, 255, 1);
-  background: linear-gradient(90deg, rgba(58, 199, 239, 1), rgba(75, 204, 233, 1));
+  color: var(--theme-white);
+  background: linear-gradient(90deg, var(--theme-extra-58-199-239-1), var(--theme-extra-75-204-233-1));
 }
 
 @media (max-width: 900px) {

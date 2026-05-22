@@ -233,14 +233,16 @@ watch(locale, () => {
 <style scoped>
 .profile-page-shell {
   --profile-page-background: var(--page-route-background);
-  --profile-panel-background: rgba(26, 34, 53, 1);
-  --profile-panel-soft: rgba(32, 41, 61, 1);
-  --profile-panel-strong: rgba(11, 18, 32, 1);
-  --profile-border: rgba(55, 65, 81, 0.86);
-  --profile-text: rgba(248, 250, 252, 1);
-  --profile-muted: rgba(149, 156, 168, 1);
-  --profile-active: rgba(12, 77, 105, 1);
-  --profile-cyan: rgba(34, 211, 238, 1);
+  --profile-panel-background: var(--theme-route-card-background, var(--theme-panel));
+  --profile-panel-soft: var(--theme-panel-soft);
+  --profile-panel-strong: var(--theme-panel-strong);
+  --profile-card-border: var(--theme-route-card-border, var(--theme-border-soft));
+  --profile-card-shadow: var(--theme-profile-card-shadow, var(--theme-route-card-shadow, none));
+  --profile-border: var(--theme-route-card-border, var(--theme-border-strong-86));
+  --profile-text: var(--theme-text);
+  --profile-muted: var(--theme-text-muted-alt);
+  --profile-active: var(--theme-extra-12-77-105-1);
+  --profile-cyan: var(--theme-accent);
   width: 100%;
   min-height: 100vh;
   display: flex;
@@ -277,9 +279,10 @@ watch(locale, () => {
 .profile-user-card,
 .profile-menu,
 :deep(.profile-panel) {
-  border: 1px solid rgba(37, 48, 70, 1);
+  border: 1px solid var(--profile-card-border);
   border-radius: 15px;
   background: var(--profile-panel-background);
+  box-shadow: var(--profile-card-shadow);
 }
 
 .profile-user-card {
@@ -308,7 +311,7 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: rgba(32, 41, 61, 1);
+  background: var(--theme-panel-soft);
   cursor: pointer;
   overflow: hidden;
 }
@@ -339,10 +342,10 @@ watch(locale, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(55, 65, 81, 1);
+  border: 1px solid var(--theme-border-strong);
   border-radius: 6px;
   color: var(--profile-muted);
-  background: rgba(31, 41, 55, 1);
+  background: var(--theme-panel-muted);
   cursor: pointer;
 }
 
@@ -391,8 +394,8 @@ watch(locale, () => {
   margin-top: 14px;
   padding: 0 14px;
   border-radius: 999px;
-  color: rgba(255, 255, 255, 1);
-  background: linear-gradient(90deg, rgba(34, 211, 238, 1), rgba(59, 130, 246, 1));
+  color: var(--theme-white);
+  background: linear-gradient(90deg, var(--theme-accent), var(--theme-primary));
   font-size: 14px;
   font-weight: 700;
 }
@@ -433,8 +436,8 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: rgba(149, 156, 168, 1);
-  background: rgba(32, 41, 61, 1);
+  color: var(--theme-profile-menu-icon-color, var(--theme-text-muted-alt));
+  background: var(--theme-profile-menu-icon-background, var(--theme-panel-soft));
   transition: color 0.2s ease, background-color 0.2s ease;
 }
 
@@ -446,13 +449,13 @@ watch(locale, () => {
 }
 
 .profile-menu-item-active {
-  color: rgba(34, 211, 238, 1);
-  background: rgba(24, 54, 80, 1);
+  color: var(--theme-profile-menu-active-color, var(--theme-accent));
+  background: var(--theme-profile-menu-active-background, var(--theme-extra-24-54-80-1));
 }
 
 .profile-menu-item-active .profile-menu-icon {
-  color: rgba(34, 211, 238, 1);
-  background: rgba(34, 211, 238, 0.14);
+  color: var(--theme-profile-menu-icon-active-color, var(--theme-accent));
+  background: var(--theme-profile-menu-icon-active-background, var(--theme-accent-soft));
 }
 
 :deep(.profile-content) {
@@ -475,7 +478,7 @@ watch(locale, () => {
   align-items: center;
   gap: 12px;
   padding-bottom: 23px;
-  border-bottom: 1px solid rgba(37, 48, 70, 1);
+  border-bottom: 1px solid var(--theme-profile-divider, var(--theme-border-soft));
 }
 
 :deep(.profile-panel-heading > span) {
@@ -486,7 +489,7 @@ watch(locale, () => {
   justify-content: center;
   border-radius: 7px;
   color: var(--profile-cyan);
-  background: rgba(34, 211, 238, 0.14);
+  background: var(--theme-accent-soft);
 }
 
 :deep(.profile-panel-heading svg) {
@@ -495,6 +498,7 @@ watch(locale, () => {
 }
 
 :deep(.profile-panel-heading h2) {
+  color: var(--theme-profile-section-title, var(--profile-text));
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
@@ -577,22 +581,22 @@ watch(locale, () => {
   gap: 16px;
   margin-top: 20px;
   padding: 0 18px;
-  border: 1px solid rgba(30, 41, 59, 1);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-surface-soft));
   border-radius: 8px;
-  color: rgba(229, 231, 235, 1);
-  background: var(--profile-panel-strong);
+  color: var(--theme-profile-field-text, var(--theme-text-soft));
+  background: var(--theme-profile-field-background, var(--profile-panel-strong));
 }
 
 :deep(.profile-invite-link > svg) {
   width: 17px;
   height: 17px;
-  color: var(--profile-muted);
+  color: var(--theme-profile-field-muted, var(--profile-muted));
 }
 
 :deep(.profile-invite-link span) {
   min-width: 0;
   overflow: hidden;
-  color: rgba(229, 231, 235, 1);
+  color: var(--theme-profile-field-text, var(--theme-text-soft));
   font-size: 14px;
   line-height: 20px;
   text-overflow: ellipsis;
@@ -606,8 +610,8 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  color: var(--profile-cyan);
-  background: rgba(34, 211, 238, 0.16);
+  color: var(--theme-profile-field-action, var(--profile-cyan));
+  background: var(--theme-accent-action);
   cursor: pointer;
 }
 

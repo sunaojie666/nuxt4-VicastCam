@@ -158,17 +158,18 @@ const activeLesson = computed(() => {
 .tutorial-sidebar {
   overflow: hidden;
   height: 508px;
-  border: 1px solid rgba(37, 48, 70, 1);
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 1);
+  border: 1px solid var(--theme-route-card-border, var(--theme-border-soft));
+  border-radius: var(--theme-route-card-radius, 15px);
+  background: var(--theme-route-card-background, var(--theme-surface));
+  box-shadow: var(--theme-route-card-shadow, none);
 }
 
 .tutorial-group + .tutorial-group {
-  border-top: 1px solid rgba(37, 48, 70, 1);
+  border-top: 1px solid var(--theme-sdk-card-border, var(--theme-border-soft));
 }
 
 .tutorial-group:last-child {
-  border-bottom: 1px solid rgba(37, 48, 70, 1);
+  border-bottom: 1px solid var(--theme-sdk-card-border, var(--theme-border-soft));
 }
 
 .tutorial-group-button {
@@ -178,7 +179,7 @@ const activeLesson = computed(() => {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  color: rgba(226, 232, 240, 1);
+  color: var(--theme-route-card-title, var(--theme-text-light));
   text-align: left;
   cursor: pointer;
 }
@@ -191,8 +192,8 @@ const activeLesson = computed(() => {
   justify-content: center;
   flex: 0 0 28px;
   border-radius: 7px;
-  color: rgba(255, 255, 255, 1);
-  background: linear-gradient(135deg, rgba(14, 165, 233, 1), rgba(59, 130, 246, 1));
+  color: var(--theme-white);
+  background: linear-gradient(135deg, var(--theme-extra-14-165-233-1), var(--theme-primary));
 }
 
 .tutorial-group-icon svg {
@@ -220,7 +221,7 @@ const activeLesson = computed(() => {
 }
 
 .tutorial-group-text small {
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   font-size: 11px;
   line-height: 14px;
 }
@@ -229,7 +230,7 @@ const activeLesson = computed(() => {
   width: 14px;
   height: 14px;
   flex: 0 0 auto;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   transition: transform 0.24s ease;
 }
 
@@ -257,7 +258,7 @@ const activeLesson = computed(() => {
   overflow: hidden;
   display: grid;
   padding: 0;
-  background: rgba(30, 41, 59, 0.58);
+  background: var(--theme-sdk-card-background, var(--theme-route-card-background, var(--theme-surface-soft-58)));
 }
 
 .tutorial-lesson {
@@ -268,14 +269,14 @@ const activeLesson = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 0 12px 0 20px;
-  color: rgba(203, 213, 225, 1);
+  color: var(--theme-route-card-text, var(--theme-text-secondary));
   text-align: left;
   cursor: pointer;
 }
 
 .tutorial-lesson-active {
-  color: rgba(255, 255, 255, 1);
-  background: rgba(14, 116, 144, 0.55);
+  color: var(--theme-profile-field-action, var(--theme-white));
+  background: var(--theme-sdk-sidebar-active-background, var(--theme-extra-14-116-144-055));
 }
 
 .tutorial-lesson-index {
@@ -285,7 +286,7 @@ const activeLesson = computed(() => {
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  background: rgba(3, 7, 18, 0.72);
+  background: var(--theme-sdk-table-head-background, var(--theme-route-card-background, var(--theme-page-72)));
   font-size: 10px;
 }
 
@@ -301,7 +302,7 @@ const activeLesson = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   font-size: 10px;
   white-space: nowrap;
 }
@@ -321,7 +322,7 @@ const activeLesson = computed(() => {
 }
 
 .tutorial-content-header h2 {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-sdk-title, var(--theme-white));
   font-size: 22px;
   font-weight: 900;
   line-height: 30px;
@@ -330,7 +331,7 @@ const activeLesson = computed(() => {
 
 .tutorial-content-header p {
   margin-top: 2px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-route-card-text, var(--theme-text-muted));
   font-size: 13px;
   line-height: 20px;
   overflow-wrap: anywhere;
@@ -342,7 +343,9 @@ const activeLesson = computed(() => {
   width: 774px;
   height: 391px;
   border-radius: 10px 10px 0 0;
-  background: rgba(15, 23, 42, 1);
+  background: var(--theme-route-card-background, var(--theme-surface));
+  border: 1px solid var(--theme-route-card-border, transparent);
+  box-shadow: var(--theme-route-card-shadow, none);
 }
 
 .tutorial-video-player {
@@ -361,7 +364,10 @@ const activeLesson = computed(() => {
   margin-top: 0;
   padding: 20px 18px;
   border-radius: 0 0 10px 10px;
-  background: rgba(30, 41, 59, 1);
+  background: var(--theme-route-card-background, var(--theme-surface-soft));
+  border: 1px solid var(--theme-route-card-border, transparent);
+  border-top: none;
+  box-shadow: var(--theme-route-card-shadow, none);
 }
 
 .tutorial-step-button {
@@ -373,15 +379,16 @@ const activeLesson = computed(() => {
   gap: 10px;
   padding: 0 18px;
   border-radius: 8px;
-  color: rgba(226, 232, 240, 1);
-  background: rgba(15, 23, 42, 1);
+  color: var(--theme-route-card-title, var(--theme-text-light));
+  border: 1px solid var(--theme-route-card-border, transparent);
+  background: var(--theme-sdk-table-head-background, var(--theme-route-card-background, var(--theme-surface)));
   text-align: left;
   cursor: pointer;
 }
 
 .tutorial-step-button-disabled {
-  color: rgba(100, 116, 139, 1);
-  background: rgba(15, 23, 42, 0.5);
+  color: var(--theme-route-card-text, var(--theme-text-subtle));
+  background: var(--theme-route-page-background, var(--theme-extra-15-23-42-05));
   cursor: default;
 }
 
@@ -407,7 +414,7 @@ const activeLesson = computed(() => {
 }
 
 .tutorial-step-button small {
-  color: rgba(100, 116, 139, 1);
+  color: var(--theme-route-card-text, var(--theme-text-subtle));
   font-size: 10px;
 }
 

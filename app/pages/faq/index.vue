@@ -31,12 +31,12 @@ setupPageSeo('faq')
   overflow-x: clip;
   padding-top: var(--page-header-height);
   color: var(--theme-text);
-  background: var(--page-route-background);
+  background: var(--theme-route-page-background, var(--page-route-background));
 }
 
 .faq-page-main {
   width: 100%;
   flex: 1;
-  background: var(--page-route-background);
+  background: var(--theme-route-page-background, var(--page-route-background));
 }
 </style>

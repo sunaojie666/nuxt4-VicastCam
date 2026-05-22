@@ -1,14 +1,14 @@
 <template>
   <section class="home-community-section" aria-labelledby="home-community-title">
     <div class="home-community-inner">
-      <span class="home-community-eyebrow" data-reveal>{{ communitySection.tag }}</span>
+      <span class="home-community-eyebrow home-section-eyebrow" data-reveal>{{ communitySection.tag }}</span>
 
-      <h2 id="home-community-title" class="home-community-title" data-reveal style="--reveal-delay: 80ms">
+      <h2 id="home-community-title" class="home-community-title home-section-title" data-reveal style="--reveal-delay: 80ms">
         <span>{{ communitySection.title_main }}</span>
         <span class="theme-gradient-text">{{ communitySection.title_highlight }}</span>
       </h2>
 
-      <p class="home-community-subtitle" data-reveal style="--reveal-delay: 160ms">
+      <p class="home-community-subtitle home-section-subtitle" data-reveal style="--reveal-delay: 160ms">
         <span>{{ communitySection.desc }}</span>
       </p>
     </div>
@@ -24,7 +24,7 @@
           <article
             v-for="(creator, index) in creators"
             :key="`${loopIndex}-${creator.id || creator.name}-${index}`"
-            :class="['home-community-card', { 'home-community-card-active': index === 2 }]"
+            class="home-community-card"
           >
             <img
               v-if="creator.avatar"
@@ -66,14 +66,14 @@
     </div>
 
     <div class="home-community-platforms" aria-labelledby="home-community-platforms-title" data-reveal style="--reveal-delay: 180ms">
-      <span class="home-community-platforms-eyebrow">{{ multiPlatformSection.tag }}</span>
+      <span class="home-community-platforms-eyebrow home-section-eyebrow">{{ multiPlatformSection.tag }}</span>
 
-      <h2 id="home-community-platforms-title" class="home-community-platforms-title">
+      <h2 id="home-community-platforms-title" class="home-community-platforms-title home-section-title">
         <span>{{ multiPlatformSection.title_main }}</span>
         <span class="theme-gradient-text">{{ multiPlatformSection.title_highlight }}</span>
       </h2>
 
-      <p class="home-community-platforms-subtitle">{{ multiPlatformSection.description }}</p>
+      <p class="home-community-platforms-subtitle home-section-subtitle">{{ multiPlatformSection.description }}</p>
 
       <div class="home-community-platforms-marquee" aria-label="支持的直播平台">
         <div
@@ -345,9 +345,9 @@ watch(locale, () => {
   width: 100%;
   overflow: hidden;
   padding-top: 80px;
-  padding-bottom: 199px;
+  padding-bottom: 0;
   color: var(--theme-text);
-  background-color: rgba(17, 24, 39, 1);
+  background-color: var(--theme-community-background, var(--theme-surface-alt));
 }
 
 .home-community-inner {
@@ -368,10 +368,10 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   padding: 0 17px;
-  border: 1px solid rgba(59, 130, 246, 0.35);
+  border: 1px solid var(--theme-primary-border-muted);
   border-radius: 999px;
-  color: rgba(99, 179, 255, 1);
-  background-color: rgba(30, 64, 175, 0.22);
+  color: var(--theme-info-blue);
+  background-color: var(--theme-primary-softer);
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
@@ -383,12 +383,13 @@ watch(locale, () => {
 .home-community-title {
   max-width: 100%;
   margin-top: 21px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 40px;
   font-weight: 800;
   line-height: 52px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-community-title span {
@@ -401,12 +402,13 @@ watch(locale, () => {
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-community-carousel {
@@ -457,37 +459,16 @@ watch(locale, () => {
   flex: 0 0 auto;
   border: 1px solid transparent;
   border-radius: 8px;
-  background-color: rgba(3, 7, 18, 1);
+  background-color: var(--theme-page);
   cursor: pointer;
-  opacity: 0.78;
-  transition: border-color 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
-}
-
-.home-community-card-active {
-  border-color: rgba(59, 130, 246, 1);
   opacity: 1;
-}
-
-.home-community-card:hover,
-.home-community-card:focus-within {
-  opacity: 1;
+  transition: transform 0.25s ease;
 }
 
 .home-community-image {
   width: 100%;
   height: 382px;
   object-fit: cover;
-}
-
-.home-community-card::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 118px;
-  height: 108px;
-  background: linear-gradient(180deg, rgba(3, 7, 18, 0) 0%, rgba(3, 7, 18, 0.92) 100%);
-  pointer-events: none;
 }
 
 .home-community-live {
@@ -501,8 +482,8 @@ watch(locale, () => {
   gap: 6px;
   padding: 0 9px;
   border-radius: 999px;
-  color: rgba(255, 255, 255, 1);
-  background-color: rgba(239, 68, 68, 1);
+  color: var(--theme-white);
+  background-color: var(--theme-error-strong);
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
@@ -516,7 +497,7 @@ watch(locale, () => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 1);
+  background-color: var(--theme-white);
 }
 
 .home-community-card-body {
@@ -528,7 +509,7 @@ watch(locale, () => {
   justify-content: space-between;
   gap: 16px;
   padding: 24px 22px 20px;
-  background-color: rgba(3, 7, 18, 1);
+  background-color: var(--theme-page);
   direction: ltr;
 }
 
@@ -537,12 +518,13 @@ watch(locale, () => {
 }
 
 .home-community-card-name {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 15px;
   font-weight: 800;
   line-height: 20px;
   overflow: hidden;
   overflow-wrap: anywhere;
+  hyphens: auto;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -550,7 +532,7 @@ watch(locale, () => {
 
 .home-community-handle {
   margin-top: 4px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 12px;
   font-weight: 400;
   line-height: 18px;
@@ -565,7 +547,7 @@ watch(locale, () => {
   gap: 7px;
   min-width: 0;
   margin-top: 10px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 12px;
   font-weight: 400;
   line-height: 18px;
@@ -585,13 +567,13 @@ watch(locale, () => {
   flex-direction: column;
   align-items: flex-end;
   min-width: 0;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 12px;
   line-height: 18px;
 }
 
 .home-community-fans strong {
-  color: rgba(20, 198, 239, 1);
+  color: var(--theme-accent-brand);
   font-size: 16px;
   font-weight: 800;
   line-height: 20px;
@@ -606,7 +588,7 @@ watch(locale, () => {
   margin: 100px auto 0;
   overflow: hidden;
   border-radius: 8px;
-  background-color: rgba(3, 7, 18, 1);
+  background-color: var(--theme-community-stats-background, var(--theme-page));
 }
 
 .home-community-stat {
@@ -614,7 +596,7 @@ watch(locale, () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid rgba(30, 41, 59, 0.72);
+  border-right: 1px solid var(--theme-community-stats-divider, var(--theme-surface-soft-72));
 }
 
 .home-community-stat:last-child {
@@ -622,7 +604,7 @@ watch(locale, () => {
 }
 
 .home-community-stat strong {
-  color: rgba(20, 198, 239, 1);
+  color: var(--theme-community-stats-number, var(--theme-accent-brand));
   font-size: 28px;
   font-weight: 800;
   line-height: 34px;
@@ -630,20 +612,24 @@ watch(locale, () => {
 
 .home-community-stat span {
   margin-top: 6px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-community-stats-text, var(--theme-text-muted));
   font-size: 14px;
   font-weight: 400;
   line-height: 18px;
   max-width: 90%;
   overflow: hidden;
   overflow-wrap: anywhere;
+  hyphens: auto;
   text-align: center;
 }
 
 .home-community-platforms {
   width: 100%;
   margin-top: 160px;
+  padding-top: 80px;
+  padding-bottom: 199px;
   text-align: center;
+  background-color: var(--theme-platforms-background, transparent);
 }
 
 .home-community-platforms-eyebrow {
@@ -654,10 +640,10 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   padding: 0 12px;
-  border: 1px solid rgba(59, 130, 246, 0.35);
+  border: 1px solid var(--theme-primary-border-muted);
   border-radius: 999px;
-  color: rgba(99, 179, 255, 1);
-  background-color: rgba(30, 64, 175, 0.22);
+  color: var(--theme-info-blue);
+  background-color: var(--theme-primary-softer);
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
@@ -669,11 +655,12 @@ watch(locale, () => {
 .home-community-platforms-title {
   max-width: 100%;
   margin-top: 21px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 40px;
   font-weight: 800;
   line-height: 52px;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-community-platforms-title span {
@@ -683,11 +670,12 @@ watch(locale, () => {
 .home-community-platforms-subtitle {
   max-width: 100%;
   margin-top: 20px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-community-platforms-marquee {
@@ -737,9 +725,9 @@ watch(locale, () => {
   align-items: center;
   gap: 13px;
   padding: 0 16px;
-  border: 1px solid rgba(46, 59, 86, 1);
+  border: 1px solid var(--theme-platform-card-border, var(--theme-extra-46-59-86-1));
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--theme-white-05);
   flex: 0 0 auto;
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -749,9 +737,9 @@ watch(locale, () => {
 .home-community-platform-card:hover,
 .home-community-platform-card:focus-within {
   z-index: 2;
-  border-color: rgba(50, 191, 241, 0.9);
-  background: rgba(34, 211, 238, 0.12);
-  box-shadow: 0 10px 22px rgba(18, 122, 185, 0.24);
+  border-color: var(--theme-extra-50-191-241-09);
+  background: var(--theme-accent-softer);
+  box-shadow: 0 10px 22px var(--theme-extra-18-122-185-024);
   transform: translateY(-1px);
 }
 
@@ -768,7 +756,7 @@ watch(locale, () => {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: rgba(152, 162, 181, 1);
+  color: var(--theme-extra-152-162-181-1);
   font-size: 16px;
   line-height: 22px;
   font-weight: 400;
@@ -799,7 +787,7 @@ watch(locale, () => {
 
   .home-community-section {
     padding-top: 54px;
-    padding-bottom: 54px;
+    padding-bottom: 0;
   }
 
   .home-community-title {
@@ -836,10 +824,6 @@ watch(locale, () => {
     height: 286px;
   }
 
-  .home-community-card::after {
-    bottom: 96px;
-  }
-
   .home-community-card-body {
     height: 96px;
     padding: 16px 14px 14px;
@@ -873,11 +857,13 @@ watch(locale, () => {
   }
 
   .home-community-stat:nth-child(-n + 2) {
-    border-bottom: 1px solid rgba(30, 41, 59, 0.72);
+    border-bottom: 1px solid var(--theme-community-stats-divider, var(--theme-surface-soft-72));
   }
 
   .home-community-platforms {
     margin-top: 80px;
+    padding-top: 54px;
+    padding-bottom: 54px;
   }
 
   .home-community-platforms-title {

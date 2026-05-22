@@ -388,9 +388,9 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   margin-top: 20px;
   padding: 0 14px;
-  border: 1px solid rgba(46, 58, 84, 1);
+  border: 1px solid var(--theme-team-referrer-border, var(--theme-extra-46-58-84-1));
   border-radius: 10px;
-  background: rgba(31, 44, 67, 0.55);
+  background: var(--theme-team-referrer-background, var(--theme-extra-31-44-67-055));
 }
 
 .team-referrer-main {
@@ -407,14 +407,14 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  color: rgba(237, 247, 255, 1);
-  background: rgba(52, 189, 255, 1);
+  color: var(--theme-extra-237-247-255-1);
+  background: var(--theme-extra-52-189-255-1);
   font-size: 16px;
   font-weight: 700;
 }
 
 .team-referrer-main p {
-  color: rgba(145, 161, 189, 1);
+  color: var(--theme-team-referrer-label, var(--theme-extra-145-161-189-1));
   font-size: 12px;
   line-height: 16px;
 }
@@ -422,7 +422,7 @@ onBeforeUnmount(() => {
 .team-referrer-main strong {
   display: block;
   margin-top: 2px;
-  color: rgba(236, 244, 255, 1);
+  color: var(--theme-team-referrer-name, var(--theme-text-strong));
   font-size: 16px;
   line-height: 22px;
   font-weight: 700;
@@ -432,8 +432,8 @@ onBeforeUnmount(() => {
   width: 84px;
   height: 34px;
   border-radius: 999px;
-  color: rgba(27, 213, 244, 1);
-  background: rgba(25, 126, 159, 0.35);
+  color: var(--theme-text-button, var(--theme-extra-27-213-244-1));
+  background: var(--theme-profile-field-action, var(--theme-extra-25-126-159-035));
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -459,10 +459,10 @@ onBeforeUnmount(() => {
   min-width: 94px;
   height: 34px;
   padding: 0 12px;
-  border: 1px solid rgba(45, 58, 86, 1);
+  border: 1px solid var(--theme-team-tab-border, var(--theme-border-control-soft));
   border-radius: 10px;
-  color: rgba(146, 162, 189, 1);
-  background: rgba(18, 30, 51, 1);
+  color: var(--theme-team-tab-text, var(--theme-extra-146-162-189-1));
+  background: var(--theme-team-tab-background, var(--theme-extra-18-30-51-1));
   font-size: 14px;
   line-height: 20px;
   display: inline-flex;
@@ -472,17 +472,17 @@ onBeforeUnmount(() => {
 }
 
 .team-level-tab span {
-  color: rgba(132, 149, 178, 1);
+  color: var(--theme-extra-132-149-178-1);
 }
 
 .team-level-tab-active {
-  color: rgba(209, 237, 255, 1);
-  border-color: rgba(38, 130, 176, 1);
-  background: rgba(20, 101, 145, 0.35);
+  color: var(--theme-team-tab-active-text, var(--theme-text-info));
+  border-color: var(--theme-team-tab-active-border, var(--theme-cyan-hover));
+  background: var(--theme-team-tab-active-background, var(--theme-extra-20-101-145-035));
 }
 
 .team-level-tab-active span {
-  color: rgba(38, 196, 245, 1);
+  color: var(--theme-team-tab-active-text, var(--theme-extra-38-196-245-1));
 }
 
 .team-month-filter {
@@ -497,10 +497,10 @@ onBeforeUnmount(() => {
 .team-month-button {
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(45, 58, 86, 1);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-control-soft));
   border-radius: 9px;
-  color: rgba(148, 163, 184, 1);
-  background: rgba(31, 41, 61, 1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted));
+  background: var(--theme-profile-field-background, var(--theme-panel-medium));
   cursor: pointer;
 }
 
@@ -512,8 +512,8 @@ onBeforeUnmount(() => {
 .team-month-button:hover,
 .team-month-button:focus,
 .team-month-button-active {
-  color: rgba(209, 237, 255, 1);
-  border-color: rgba(62, 91, 135, 1);
+  color: var(--theme-text-info);
+  border-color: var(--theme-extra-62-91-135-1);
 }
 
 .team-month-popover {
@@ -523,10 +523,10 @@ onBeforeUnmount(() => {
   z-index: 30;
   width: 248px;
   padding: 12px;
-  border: 1px solid rgba(50, 64, 96, 1);
+  border: 1px solid var(--theme-border-card);
   border-radius: 10px;
-  background: rgba(15, 24, 42, 1);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  background: var(--theme-panel-code);
+  box-shadow: 0 18px 42px var(--theme-black-34);
 }
 
 .team-month-popover-header {
@@ -535,7 +535,7 @@ onBeforeUnmount(() => {
   grid-template-columns: 32px minmax(0, 1fr) 32px;
   align-items: center;
   gap: 8px;
-  color: rgba(232, 242, 255, 1);
+  color: var(--theme-text-title);
 }
 
 .team-month-popover-header strong {
@@ -547,10 +547,10 @@ onBeforeUnmount(() => {
 .team-month-year-button {
   width: 32px;
   height: 32px;
-  border: 1px solid rgba(45, 58, 86, 1);
+  border: 1px solid var(--theme-border-control-soft);
   border-radius: 8px;
-  color: rgba(148, 163, 184, 1);
-  background: rgba(18, 30, 51, 1);
+  color: var(--theme-text-muted);
+  background: var(--theme-extra-18-30-51-1);
   cursor: pointer;
 }
 
@@ -573,10 +573,10 @@ onBeforeUnmount(() => {
 
 .team-month-option {
   height: 34px;
-  border: 1px solid rgba(45, 58, 86, 1);
+  border: 1px solid var(--theme-border-control-soft);
   border-radius: 8px;
-  color: rgba(148, 163, 184, 1);
-  background: rgba(18, 30, 51, 1);
+  color: var(--theme-text-muted);
+  background: var(--theme-extra-18-30-51-1);
   font-size: 13px;
   line-height: 18px;
   cursor: pointer;
@@ -584,14 +584,14 @@ onBeforeUnmount(() => {
 
 .team-month-option:hover,
 .team-month-option:focus {
-  color: rgba(209, 237, 255, 1);
-  border-color: rgba(38, 130, 176, 1);
+  color: var(--theme-text-info);
+  border-color: var(--theme-cyan-hover);
 }
 
 .team-month-option-active {
-  color: rgba(221, 244, 255, 1);
-  border-color: rgba(38, 130, 176, 1);
-  background: rgba(20, 101, 145, 0.6);
+  color: var(--theme-text-button);
+  border-color: var(--theme-cyan-hover);
+  background: var(--theme-extra-20-101-145-06);
 }
 
 .team-month-option:disabled {
@@ -602,10 +602,10 @@ onBeforeUnmount(() => {
 .team-table-wrap {
   margin-top: 20px;
   align-self: start;
-  border: 1px solid rgba(44, 56, 84, 1);
+  border: 1px solid var(--theme-profile-table-border, var(--theme-border-code));
   border-radius: 8px;
   overflow: hidden;
-  background: rgba(15, 24, 42, 1);
+  background: var(--theme-profile-table-background, var(--theme-panel-code));
 }
 
 .team-table {
@@ -617,25 +617,25 @@ onBeforeUnmount(() => {
 .team-table td {
   height: 50px;
   padding: 0 10px;
-  border-bottom: 1px solid rgba(38, 50, 76, 1);
-  color: rgba(215, 226, 246, 1);
+  border-bottom: 1px solid var(--theme-profile-table-border, var(--theme-border-table));
+  color: var(--theme-profile-table-text, var(--theme-text-table));
   font-size: 14px;
   text-align: center;
 }
 
 .team-table thead th {
-  background: rgba(17, 25, 39, 1);
-  color: rgba(154, 172, 200, 1);
+  background: var(--theme-profile-table-head-background, var(--theme-extra-17-25-39-1));
+  color: var(--theme-profile-table-head-text, var(--theme-text-slate));
   font-size: 14px;
   font-weight: 600;
 }
 
 .team-table tbody tr:nth-child(odd) td {
-  background: rgba(26, 34, 53, 1);
+  background: var(--theme-profile-table-row-background, var(--theme-panel));
 }
 
 .team-table tbody tr:nth-child(even) td {
-  background: rgba(30, 38, 57, 1);
+  background: var(--theme-profile-table-row-alt-background, var(--theme-panel-row));
 }
 
 .team-table tbody tr:last-child td {
@@ -649,7 +649,7 @@ onBeforeUnmount(() => {
 }
 
 .team-member-name {
-  color: rgba(242, 247, 255, 1) !important;
+  color: var(--theme-team-member-name, var(--theme-extra-242-247-255-1)) !important;
   font-size: 16px !important;
   line-height: 22px;
   font-weight: 700;
@@ -662,12 +662,12 @@ onBeforeUnmount(() => {
 }
 
 .team-table tbody td:nth-child(3) {
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
 }
 
 .team-empty-cell {
   height: 120px !important;
-  color: rgba(149, 156, 168, 1) !important;
+  color: var(--theme-text-muted-alt) !important;
   text-align: center !important;
 }
 
@@ -678,20 +678,21 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  color: rgba(154, 167, 189, 1);
-  background: rgba(50, 62, 88, 1);
+  color: var(--theme-team-status-free-text, var(--theme-extra-154-167-189-1));
+  background: var(--theme-team-status-free-background, var(--theme-extra-50-62-88-1));
+  border: 1px solid var(--theme-profile-field-border, transparent);
 }
 
 .status-life {
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-accent);
 }
 
 .status-month {
-  color: rgba(72, 156, 255, 1);
+  color: var(--theme-extra-72-156-255-1);
 }
 
 .status-year {
-  color: rgba(234, 221, 70, 1);
+  color: var(--theme-extra-234-221-70-1);
 }
 
 .team-pagination {
@@ -707,7 +708,7 @@ onBeforeUnmount(() => {
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  color: rgba(130, 147, 175, 1);
+  color: var(--theme-extra-130-147-175-1);
   font-size: 14px;
   cursor: pointer;
 }
@@ -718,8 +719,8 @@ onBeforeUnmount(() => {
 }
 
 .team-page-number-active {
-  color: rgba(221, 244, 255, 1);
-  background: rgba(13, 113, 175, 1);
+  color: var(--theme-text-button);
+  background: var(--theme-profile-field-action, var(--theme-extra-13-113-175-1));
 }
 
 @media (max-width: 900px) {

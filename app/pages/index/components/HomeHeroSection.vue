@@ -36,17 +36,26 @@
 
       <div class="home-hero-actions" aria-label="下载VicastCam">
         <a href="#" class="home-hero-download home-hero-download-light">
-          <img src="/images/apple.png" alt="" aria-hidden="true">
+          <span class="home-hero-download-icon-wrap" aria-hidden="true">
+            <img class="home-hero-download-icon-default" src="/images/download-icons/apple-default.svg" alt="">
+            <img class="home-hero-download-icon-active" src="/images/download-icons/apple-active.svg" alt="">
+          </span>
           <span>{{ appStoreUrl }}</span>
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-light">
-          <img src="/images/anzhuodown.png" alt="" aria-hidden="true">
+          <span class="home-hero-download-icon-wrap" aria-hidden="true">
+            <img class="home-hero-download-icon-default" src="/images/download-icons/android-default.svg" alt="">
+            <img class="home-hero-download-icon-active" src="/images/download-icons/android-active.svg" alt="">
+          </span>
           <span>{{ googlePlayUrl }}</span>
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-primary">
-          <img src="/images/win.png" alt="" aria-hidden="true">
+          <span class="home-hero-download-icon-wrap" aria-hidden="true">
+            <img class="home-hero-download-icon-default" src="/images/download-icons/windows-default.svg" alt="">
+            <img class="home-hero-download-icon-active" src="/images/download-icons/windows-active.svg" alt="">
+          </span>
           <span>{{ desktopClientUrl }}</span>
         </a>
       </div>
@@ -186,10 +195,10 @@ watch(locale, () => {
   display: flex;
   justify-content: center;
   overflow: hidden;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   background:
-    linear-gradient(180deg, rgba(10, 17, 31, 1) 0%, rgba(3, 7, 18, 1) 100%),
-    radial-gradient(circle at 50% 20%, rgba(30, 64, 175, 0.22), transparent 58%);
+    linear-gradient(180deg, var(--theme-surface-start) 0%, var(--theme-page) 100%),
+    radial-gradient(circle at 50% 20%, var(--theme-primary-softer), transparent 58%);
 }
 .home-hero-video {
   position: absolute;
@@ -203,8 +212,8 @@ watch(locale, () => {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(3, 7, 18, 0.36) 0%, rgba(3, 7, 18, 0.62) 58%, rgba(3, 7, 18, 0.96) 100%),
-    radial-gradient(circle at 50% 26%, rgba(15, 23, 42, 0.04) 0%, rgba(3, 7, 18, 0.72) 72%);
+    linear-gradient(180deg, var(--theme-page-36) 0%, var(--theme-page-62) 58%, var(--theme-page-96) 100%),
+    radial-gradient(circle at 50% 26%, var(--theme-extra-15-23-42-004) 0%, var(--theme-page-72) 72%);
 }
 .home-hero-inner {
   position: relative;
@@ -227,11 +236,11 @@ watch(locale, () => {
   justify-content: center;
   gap: 12px;
   padding: 4px 18px;
-  border: 1px solid rgba(34, 211, 238, 0.38);
+  border: 1px solid var(--theme-accent-border);
   border-radius: 999px;
-  color: rgba(103, 232, 249, 1);
-  background-color: rgba(8, 145, 178, 0.18);
-  box-shadow: inset 0 0 18px rgba(34, 211, 238, 0.14);
+  color: var(--theme-accent-text);
+  background-color: var(--theme-cyan-panel);
+  box-shadow: inset 0 0 18px var(--theme-accent-soft);
   font-size: 14px;
   font-weight: 700;
   line-height: 20px;
@@ -252,21 +261,24 @@ watch(locale, () => {
   overflow-wrap: anywhere;
 }
 .home-hero-title {
-  max-width: 100%;
+  max-width: min(100%, 980px);
   margin-top: 22px;
   font-size: clamp(44px, 4.35vw, 58px);
   font-weight: 900;
   line-height: 1.17;
   text-align: center;
+  overflow-wrap: anywhere;
+  hyphens: auto;
   animation: home-hero-enter 0.75s ease 0.08s both;
 }
 .home-hero-title span {
   display: block;
-  white-space: nowrap;
+  white-space: normal;
 }
 .home-hero-title span:last-child {
   position: relative;
   display: inline-block;
+  max-width: 100%;
 }
 .home-hero-title-line {
   position: absolute;
@@ -282,7 +294,7 @@ watch(locale, () => {
   flex-direction: column;
   align-items: center;
   margin-top: 28px;
-  color: rgba(229, 231, 235, 1);
+  color: var(--theme-text-soft);
   font-size: 20px;
   font-weight: 400;
   line-height: 30px;
@@ -302,7 +314,7 @@ watch(locale, () => {
 .home-hero-download {
   width: auto;
   min-width: 172px;
-  max-width: min(100%, 260px);
+  max-width: min(100%, 300px);
   height: 64px;
   display: inline-flex;
   align-items: center;
@@ -315,32 +327,89 @@ watch(locale, () => {
   line-height: 20px;
   text-align: center;
   overflow: hidden;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .home-hero-download span {
   min-width: 0;
   overflow: hidden;
   overflow-wrap: anywhere;
+  hyphens: auto;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-.home-hero-download img {
+.home-hero-download > img {
   width: 20px;
   height: 20px;
   flex: 0 0 auto;
   object-fit: contain;
 }
+
+.home-hero-download-icon-wrap {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  color: var(--theme-primary);
+  background: transparent;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.home-hero-download-icon-wrap img {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  transition: opacity 0.2s ease;
+}
+
+.home-hero-download-icon-active {
+  opacity: 0;
+}
+
+.home-hero-download:hover .home-hero-download-icon-default,
+.home-hero-download:focus .home-hero-download-icon-default {
+  opacity: 0;
+}
+
+.home-hero-download:hover .home-hero-download-icon-active,
+.home-hero-download:focus .home-hero-download-icon-active {
+  opacity: 1;
+}
 .home-hero-download-light {
-  color: rgba(89, 94, 104, 1);
-  background-color: rgba(255, 255, 255, 1);
+  color: var(--theme-text-on-white);
+  background-color: var(--theme-white);
 }
 .home-hero-download-light strong {
-  color: rgba(0, 0, 0, 1);
+  color: var(--theme-black);
 }
 .home-hero-download-primary {
-  color: rgba(255, 255, 255, 1);
-  background: linear-gradient(124.24deg, rgba(8, 179, 213, 1) 0%, rgba(58, 131, 245, 1) 100%);
-  box-shadow: 0 0 18px rgba(14, 165, 233, 0.36);
+  color: var(--theme-text-on-white);
+  background: var(--theme-white);
+  box-shadow: none;
+}
+
+.home-hero-download:hover,
+.home-hero-download:focus {
+  color: var(--theme-white);
+  background: linear-gradient(124.24deg, var(--theme-brand-accent) 0%, var(--theme-primary-end) 100%);
+  box-shadow: 0 0 18px var(--theme-extra-14-165-233-036);
+  transform: translateY(-1px);
+}
+
+.home-hero-download:hover strong,
+.home-hero-download:focus strong {
+  color: var(--theme-white);
+}
+
+.home-hero-download:hover .home-hero-download-icon-wrap,
+.home-hero-download:focus .home-hero-download-icon-wrap {
+  color: var(--theme-white);
+  transform: scale(1.06);
 }
 .home-hero-metrics {
   max-width: 100%;
@@ -349,7 +418,7 @@ watch(locale, () => {
   justify-content: center;
   gap: 86px;
   margin-top: 45px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 16px;
   line-height: 24px;
   animation: home-hero-enter 0.75s ease 0.32s both;
@@ -363,7 +432,7 @@ watch(locale, () => {
   width: 112px;
   height: 112px;
   margin-top: 94px;
-  color: rgba(226, 232, 240, 0.78);
+  color: var(--theme-extra-226-232-240-078);
   line-height: 1;
   animation: home-hero-enter 0.75s ease 0.42s both;
 }
@@ -373,7 +442,7 @@ watch(locale, () => {
   display: grid;
   justify-items: center;
   gap: 0;
-  color: rgba(103, 232, 249, 1);
+  color: var(--theme-accent-text);
 }
 .home-hero-scroll-arrow {
   width: 112px;
@@ -381,8 +450,8 @@ watch(locale, () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(103, 232, 249, 1);
-  filter: drop-shadow(0 0 34px rgba(34, 211, 238, 0.86));
+  color: var(--theme-accent-text);
+  filter: drop-shadow(0 0 34px var(--theme-extra-34-211-238-086));
   transform-origin: center;
   animation: home-hero-scroll-arrow 1.9s ease-in-out infinite;
 }
@@ -447,7 +516,7 @@ watch(locale, () => {
   text-overflow: ellipsis;
 }
 .home-hero-metric strong {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 16px;
   font-weight: 900;
 }
@@ -481,20 +550,20 @@ watch(locale, () => {
   top: 0;
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(15, 23, 42, 1);
+  border: 2px solid var(--theme-surface);
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(253, 186, 116, 1), rgba(59, 130, 246, 1));
+  background: linear-gradient(135deg, var(--theme-extra-253-186-116-1), var(--theme-primary));
 }
 .home-hero-avatars span:nth-child(1) {
   left: 0;
 }
 .home-hero-avatars span:nth-child(2) {
   left: 7px;
-  background: linear-gradient(135deg, rgba(165, 180, 252, 1), rgba(14, 165, 233, 1));
+  background: linear-gradient(135deg, var(--theme-extra-165-180-252-1), var(--theme-extra-14-165-233-1));
 }
 .home-hero-avatars span:nth-child(3) {
   left: 14px;
-  background: linear-gradient(135deg, rgba(254, 240, 138, 1), rgba(244, 114, 182, 1));
+  background: linear-gradient(135deg, var(--theme-extra-254-240-138-1), var(--theme-extra-244-114-182-1));
 }
 @media (max-width: 768px) {
 
@@ -545,7 +614,7 @@ watch(locale, () => {
   .home-hero-download {
     width: auto;
     min-width: 172px;
-    max-width: min(100%, 260px);
+    max-width: min(100%, 300px);
   }
 
   .home-hero-metrics {

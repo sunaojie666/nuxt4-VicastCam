@@ -206,7 +206,7 @@ watch(locale, () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(3, 7, 18, 1);
+  background: var(--theme-footer-background, var(--theme-page));
 }
 
 .site-footer-inner {
@@ -248,7 +248,7 @@ watch(locale, () => {
   white-space: nowrap;
 }
 .site-footer-brand-accent {
-  color: var(--theme-brand-accent);
+  color: var(--theme-footer-brand-accent, var(--theme-brand-accent));
 }
 
 .site-footer-description {
@@ -336,13 +336,19 @@ watch(locale, () => {
   color: var(--theme-footer-link-hover);
 }
 @media (max-width: 768px) {
+  .site-footer {
+    height: auto;
+    min-height: var(--page-footer-height);
+  }
 
   .site-footer-inner {
+    height: auto;
     min-height: auto;
     flex-direction: column;
     gap: 36px;
     padding-top: 44px;
     padding-bottom: 44px;
+    overflow: visible;
   }
 
   .site-footer-brand {

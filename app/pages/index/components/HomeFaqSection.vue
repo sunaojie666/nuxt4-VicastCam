@@ -1,14 +1,14 @@
 <template>
   <section id="home-faq" class="home-faq-section" aria-labelledby="home-faq-title">
     <div class="home-faq-inner">
-      <span id="home-faq-anchor" class="home-faq-eyebrow" data-reveal>{{ faqSection.tag }}</span>
+      <span id="home-faq-anchor" class="home-faq-eyebrow home-section-eyebrow" data-reveal>{{ faqSection.tag }}</span>
 
-      <h2 id="home-faq-title" class="home-faq-title" data-reveal style="--reveal-delay: 80ms">
+      <h2 id="home-faq-title" class="home-faq-title home-section-title" data-reveal style="--reveal-delay: 80ms">
         <span>{{ faqSection.title_main }}</span>
         <span class="theme-gradient-text">{{ faqSection.title_highlight }}</span>
       </h2>
 
-      <p class="home-faq-subtitle" data-reveal style="--reveal-delay: 160ms">
+      <p class="home-faq-subtitle home-section-subtitle" data-reveal style="--reveal-delay: 160ms">
         <span>{{ faqSection.description }}</span>
       </p>
 
@@ -132,7 +132,7 @@ watch(locale, () => {
   padding-top: 80px;
   padding-bottom: 80px;
   color: var(--theme-text);
-  background-color: rgba(17, 24, 39, 1);
+  background-color: var(--theme-faq-background, var(--theme-surface-alt));
 }
 
 .home-faq-inner {
@@ -153,10 +153,10 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   padding: 0 14px;
-  border: 1px solid rgba(59, 130, 246, 0.28);
+  border: 1px solid var(--theme-primary-border-soft);
   border-radius: 999px;
-  color: rgba(99, 179, 255, 1);
-  background-color: rgba(30, 64, 175, 0.22);
+  color: var(--theme-info-blue);
+  background-color: var(--theme-primary-softer);
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
@@ -168,12 +168,13 @@ watch(locale, () => {
 .home-faq-title {
   max-width: 100%;
   margin-top: 22px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-faq-title, var(--theme-white));
   font-size: 40px;
   font-weight: 800;
   line-height: 48px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-faq-title span {
@@ -186,16 +187,17 @@ watch(locale, () => {
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-faq-subtitle, var(--theme-text-muted-alt));
   font-size: 16px;
   font-weight: 400;
   line-height: 22px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-faq-contact {
-  color: rgba(20, 198, 239, 1);
+  color: var(--theme-accent-brand);
 }
 
 .home-faq-list {
@@ -207,15 +209,15 @@ watch(locale, () => {
 
 .home-faq-item {
   overflow: hidden;
-  border: 1px solid transparent;
+  border: 1px solid var(--theme-faq-item-border, transparent);
   border-radius: 15px;
-  background-color: rgba(3, 7, 18, 1);
+  background-color: var(--theme-faq-item-background, var(--theme-page));
   transition: border-color 0.22s ease, background-color 0.22s ease;
 }
 
 .home-faq-item-open {
-  border-color: rgba(8, 179, 213, 0.55);
-  background-color: rgba(7, 13, 28, 1);
+  border-color: var(--theme-faq-item-active-border, var(--theme-brand-accent-55));
+  background-color: var(--theme-faq-item-active-background, var(--theme-surface-deep));
 }
 
 .home-faq-question {
@@ -226,7 +228,7 @@ watch(locale, () => {
   justify-content: space-between;
   gap: 20px;
   padding: 0 22px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-faq-question, var(--theme-white));
   font-size: 16px;
   font-weight: 800;
   line-height: 20px;
@@ -236,27 +238,28 @@ watch(locale, () => {
   min-width: 0;
   overflow: hidden;
   overflow-wrap: anywhere;
+  hyphens: auto;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
 .home-faq-toggle {
-  width: 22px;
-  height: 22px;
+  width: var(--theme-faq-toggle-size, 22px);
+  height: var(--theme-faq-toggle-size, 22px);
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  color: rgba(148, 163, 184, 1);
-  background-color: rgba(30, 41, 59, 0.74);
+  color: var(--theme-text-muted);
+  background-color: var(--theme-faq-toggle-background, var(--theme-surface-soft-74));
   transition: color 0.22s ease, background-color 0.22s ease, transform 0.22s ease;
 }
 
 .home-faq-item-open .home-faq-toggle {
-  color: rgba(255, 255, 255, 1);
-  background-color: rgba(8, 179, 213, 0.62);
+  color: var(--theme-white);
+  background-color: var(--theme-faq-toggle-active-background, var(--theme-brand-accent-62));
   transform: rotate(180deg);
 }
 
@@ -277,11 +280,12 @@ watch(locale, () => {
 .home-faq-answer {
   min-height: 0;
   overflow: hidden;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 12px;
   font-weight: 400;
   line-height: 22px;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-faq-item-open .home-faq-answer-wrap {

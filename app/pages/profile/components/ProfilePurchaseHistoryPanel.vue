@@ -9,13 +9,25 @@
       </header>
 
       <div class="purchase-tabs">
-        <div class="purchase-tab purchase-tab-active">
+        <button
+          type="button"
+          :class="['purchase-tab', { 'purchase-tab-active': activeRecordTab === 'purchase' }]"
+          @click="activeRecordTab = 'purchase'"
+        >
           <span>{{ purchaseText.tabTitle }}</span>
           <strong>{{ purchaseCount }}</strong>
-        </div>
+        </button>
+        <button
+          type="button"
+          :class="['purchase-tab', { 'purchase-tab-active': activeRecordTab === 'exchange' }]"
+          @click="activeRecordTab = 'exchange'"
+        >
+          <span>{{ purchaseText.exchangeTabTitle || '兑换记录' }}</span>
+          <strong>{{ exchangeCount }}</strong>
+        </button>
       </div>
 
-      <ul class="purchase-record-list">
+      <ul v-if="activeRecordTab === 'purchase'" class="purchase-record-list">
         <li v-for="record in currentRecords" :key="record.id" class="purchase-record-item">
           <div class="purchase-record-main">
             <Icon name="lucide:clipboard-check" aria-hidden="true" />
@@ -35,7 +47,7 @@
         </li>
       </ul>
       <div v-if="!currentRecords.length" class="purchase-empty-state">
-        {{ purchaseText.emptyText }}
+        {{ activeRecordTab === 'exchange' ? purchaseText.exchangeEmptyText || purchaseText.emptyText : purchaseText.emptyText }}
       </div>
 
       <div class="purchase-pagination" :aria-label="commonText.paginationLabel">
@@ -78,8 +90,10 @@
 import { getBuyRecords } from '../../../api/request/auth'
 
 const currentPage = ref(1)
+const activeRecordTab = ref('purchase')
 const pageSize = 5
 const purchaseTotal = ref(0)
+const exchangeTotal = ref(0)
 const isLoading = ref(false)
 const purchaseRecords = ref([])
 const { authUser } = useAuth()
@@ -88,8 +102,10 @@ const { profileBox } = useProfileText()
 const commonText = computed(() => profileBox.value?.common || {})
 const purchaseText = computed(() => profileBox.value?.purchaseHistory || {})
 const purchaseCount = computed(() => purchaseTotal.value)
+const exchangeCount = computed(() => exchangeTotal.value)
 
-const totalPages = computed(() => Math.max(1, Math.ceil(purchaseTotal.value / pageSize)))
+const activeTotal = computed(() => activeRecordTab.value === 'exchange' ? exchangeTotal.value : purchaseTotal.value)
+const totalPages = computed(() => Math.max(1, Math.ceil(activeTotal.value / pageSize)))
 const pages = computed(() => {
   const pageWindowSize = 5
   const halfWindow = Math.floor(pageWindowSize / 2)
@@ -100,6 +116,10 @@ const pages = computed(() => {
 })
 
 const currentRecords = computed(() => {
+  if (activeRecordTab.value === 'exchange') {
+    return []
+  }
+
   return purchaseRecords.value
 })
 
@@ -196,7 +216,15 @@ const goToPage = (page) => {
 }
 
 watch(currentPage, () => {
+  if (activeRecordTab.value !== 'purchase') {
+    return
+  }
+
   loadPurchaseRecords()
+})
+
+watch(activeRecordTab, () => {
+  currentPage.value = 1
 })
 
 onMounted(() => {
@@ -226,8 +254,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: rgba(34, 211, 238, 1);
-  background: rgba(34, 211, 238, 0.14);
+  color: var(--theme-accent);
+  background: var(--theme-accent-soft);
 }
 
 .purchase-tabs {
@@ -245,10 +273,10 @@ onMounted(() => {
   justify-content: center;
   gap: 8px;
   padding: 0 14px;
-  border: 1px solid rgba(33, 47, 74, 1);
+  border: 1px solid var(--theme-profile-tab-border, var(--theme-extra-33-47-74-1));
   border-radius: 10px;
-  color: rgba(141, 154, 176, 1);
-  background: rgba(10, 18, 37, 1);
+  color: var(--theme-profile-tab-text, var(--theme-extra-141-154-176-1));
+  background: var(--theme-profile-tab-background, var(--theme-extra-10-18-37-1));
   font-size: 14px;
   cursor: pointer;
 }
@@ -266,22 +294,22 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: rgba(128, 141, 165, 1);
-  background: rgba(24, 34, 57, 1);
+  color: var(--theme-profile-tab-count-text, var(--theme-extra-128-141-165-1));
+  background: var(--theme-profile-tab-count-background, var(--theme-extra-24-34-57-1));
   font-size: 13px;
   line-height: 18px;
   font-weight: 500;
 }
 
 .purchase-tab-active {
-  border-color: rgba(43, 111, 175, 1);
-  color: rgba(35, 201, 239, 1);
-  background: rgba(16, 53, 90, 1);
+  border-color: var(--theme-profile-tab-active-border, var(--theme-extra-43-111-175-1));
+  color: var(--theme-profile-tab-active-text, var(--theme-extra-35-201-239-1));
+  background: var(--theme-profile-tab-active-background, var(--theme-extra-16-53-90-1));
 }
 
 .purchase-tab-active strong {
-  color: rgba(112, 224, 247, 1);
-  background: rgba(26, 92, 140, 1);
+  color: var(--theme-profile-tab-count-active-text, var(--theme-extra-112-224-247-1));
+  background: var(--theme-profile-tab-count-active-background, var(--theme-extra-26-92-140-1));
 }
 
 .purchase-record-list {
@@ -295,7 +323,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(118, 136, 163, 1);
+  color: var(--theme-extra-118-136-163-1);
   font-size: 14px;
 }
 
@@ -306,9 +334,9 @@ onMounted(() => {
   justify-content: space-between;
   gap: 16px;
   padding: 12px 13px;
-  border: 1px solid rgba(32, 47, 78, 1);
+  border: 1px solid var(--theme-extra-32-47-78-1);
   border-radius: 10px;
-  background: rgba(8, 19, 39, 1);
+  background: var(--theme-extra-8-19-39-1);
 }
 
 .purchase-record-main {
@@ -321,13 +349,13 @@ onMounted(() => {
 .purchase-record-main > svg {
   width: 16px;
   height: 16px;
-  color: rgba(156, 174, 201, 1);
+  color: var(--theme-extra-156-174-201-1);
   flex: 0 0 auto;
 }
 
 .purchase-record-main strong {
   display: block;
-  color: rgba(244, 248, 255, 1);
+  color: var(--theme-extra-244-248-255-1);
   font-size: 16px;
   line-height: 22px;
   font-weight: 700;
@@ -338,7 +366,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgba(118, 136, 163, 1);
+  color: var(--theme-extra-118-136-163-1);
   font-size: 14px;
   line-height: 20px;
 }
@@ -355,7 +383,7 @@ onMounted(() => {
 
 .purchase-record-side strong {
   display: block;
-  color: rgba(241, 247, 255, 1);
+  color: var(--theme-extra-241-247-255-1);
   font-size: 16px;
   line-height: 22px;
   font-weight: 700;
@@ -374,13 +402,13 @@ onMounted(() => {
 }
 
 .record-status-active {
-  color: rgba(219, 241, 255, 1);
-  background: rgba(30, 115, 228, 1);
+  color: var(--theme-extra-219-241-255-1);
+  background: var(--theme-extra-30-115-228-1);
 }
 
 .record-status-expired {
-  color: rgba(145, 159, 182, 1);
-  background: rgba(36, 51, 80, 1);
+  color: var(--theme-extra-145-159-182-1);
+  background: var(--theme-extra-36-51-80-1);
 }
 
 .purchase-pagination {
@@ -394,7 +422,7 @@ onMounted(() => {
 .purchase-page-arrow {
   width: 16px;
   height: 16px;
-  color: rgba(117, 135, 163, 1);
+  color: var(--theme-extra-117-135-163-1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -414,10 +442,10 @@ onMounted(() => {
 .purchase-page-button {
   width: 40px;
   height: 36px;
-  border: 1px solid rgba(31, 59, 107, 1);
+  border: 1px solid var(--theme-extra-31-59-107-1);
   border-radius: 10px;
-  color: rgba(123, 142, 170, 1);
-  background: rgba(13, 37, 76, 0.85);
+  color: var(--theme-extra-123-142-170-1);
+  background: var(--theme-extra-13-37-76-085);
   font-size: 16px;
   line-height: 20px;
   font-weight: 600;
@@ -425,9 +453,9 @@ onMounted(() => {
 }
 
 .purchase-page-button-active {
-  color: rgba(242, 250, 255, 1);
-  border-color: rgba(97, 219, 246, 0.8);
-  background: linear-gradient(112.91deg, rgba(36, 207, 237, 1) 0%, rgba(88, 171, 248, 1) 53.06%, rgba(103, 231, 249, 1) 100%);
+  color: var(--theme-extra-242-250-255-1);
+  border-color: var(--theme-extra-97-219-246-08);
+  background: linear-gradient(112.91deg, var(--theme-cyan-alt) 0%, var(--theme-gradient-mid) 53.06%, var(--theme-gradient-end) 100%);
 }
 
 @media (max-width: 900px) {

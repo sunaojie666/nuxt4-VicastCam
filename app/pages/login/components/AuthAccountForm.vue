@@ -278,16 +278,16 @@ onBeforeUnmount(() => {
   gap: 14px;
   min-width: 0;
   padding: 0 19px;
-  border: 1px solid rgba(71, 85, 105, 1);
+  border: 1px solid var(--theme-extra-71-85-105-1);
   border-radius: 7px;
-  background-color: rgba(31, 41, 55, 0.86);
+  background-color: var(--theme-extra-31-41-55-086);
 }
 
 .auth-input-wrap svg {
   width: 18px;
   height: 18px;
   flex: 0 0 auto;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
 }
 
 .auth-input-wrap .auth-input-trailing-icon {
@@ -302,25 +302,25 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   cursor: pointer;
 }
 
 .auth-input-wrap input {
   min-width: 0;
   flex: 1;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 16px;
 }
 
 .auth-input-wrap input::placeholder {
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
 }
 
 .auth-code-button {
   flex: 0 0 auto;
   max-width: 112px;
-  color: rgba(20, 198, 239, 1);
+  color: var(--theme-accent-brand);
   font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -329,7 +329,7 @@ onBeforeUnmount(() => {
 }
 
 .auth-code-button:disabled {
-  color: rgba(148, 163, 184, 0.82);
+  color: var(--theme-extra-148-163-184-082);
   cursor: not-allowed;
 }
 
@@ -337,7 +337,7 @@ onBeforeUnmount(() => {
   width: fit-content;
   max-width: 100%;
   margin-top: 8px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 14px;
   line-height: 20px;
   text-align: left;
@@ -353,7 +353,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 10px;
   min-width: 0;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 14px;
   line-height: 20px;
 }
@@ -363,7 +363,7 @@ onBeforeUnmount(() => {
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
-  accent-color: rgba(20, 198, 239, 1);
+  accent-color: var(--theme-accent-brand);
 }
 
 .auth-agreement-copy {
@@ -373,7 +373,7 @@ onBeforeUnmount(() => {
 }
 
 .auth-agreement-action {
-  color: rgba(20, 198, 239, 1);
+  color: var(--theme-accent-brand);
 }
 
 .auth-submit-button {
@@ -381,8 +381,8 @@ onBeforeUnmount(() => {
   margin-top: 17px;
   padding: 0 18px;
   border-radius: 9px;
-  color: rgba(255, 255, 255, 1);
-  background: linear-gradient(90deg, rgba(14, 181, 213, 1), rgba(14, 145, 233, 1));
+  color: var(--theme-white);
+  background: linear-gradient(90deg, var(--theme-extra-14-181-213-1), var(--theme-extra-14-145-233-1));
   font-size: 16px;
   font-weight: 400;
   overflow: hidden;

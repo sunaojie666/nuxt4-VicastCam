@@ -1,20 +1,20 @@
 <template>
   <section id="home-pricing" class="home-pricing-section" aria-labelledby="home-pricing-title">
     <div class="home-pricing-inner">
-      <span id="home-pricing-anchor" class="home-pricing-eyebrow" data-reveal>{{ pricingContent.sectionTag }}</span>
+      <span id="home-pricing-anchor" class="home-pricing-eyebrow home-section-eyebrow" data-reveal>{{ pricingContent.sectionTag }}</span>
 
-      <h2 id="home-pricing-title" class="home-pricing-title" data-reveal style="--reveal-delay: 80ms">
+      <h2 id="home-pricing-title" class="home-pricing-title home-section-title" data-reveal style="--reveal-delay: 80ms">
         <span>{{ pricingContent.titleMain }}</span>
         <span class="theme-gradient-text">{{ pricingContent.titleHighlight }}</span>
       </h2>
 
-      <p class="home-pricing-subtitle" data-reveal style="--reveal-delay: 160ms">{{ pricingContent.description }}</p>
+      <p class="home-pricing-subtitle home-section-subtitle" data-reveal style="--reveal-delay: 160ms">{{ pricingContent.description }}</p>
 
       <div class="home-pricing-grid">
         <article
           v-for="plan in pricingPlans"
           :key="plan.id"
-          :class="['home-pricing-card', { 'home-pricing-card-featured': plan.featured }]"
+          class="home-pricing-card"
           data-reveal="scale"
           :style="{ '--reveal-delay': `${plan.delay}ms` }"
         >
@@ -111,6 +111,7 @@ watch(locale, () => {
 
 <style>
 .home-pricing-section {
+  --home-pricing-overlap: 385px;
   position: relative;
   z-index: 3;
   width: 100%;
@@ -122,7 +123,14 @@ watch(locale, () => {
   padding-top: 300px;
   padding-bottom: 80px;
   color: var(--theme-text);
-  background-color: transparent;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent var(--home-pricing-overlap),
+      var(--theme-pricing-background, transparent) var(--home-pricing-overlap),
+      var(--theme-pricing-background, transparent) 100%
+    );
 }
 
 .home-pricing-inner {
@@ -143,10 +151,10 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   padding: 0 14px;
-  border: 1px solid rgba(59, 130, 246, 0.28);
+  border: 1px solid var(--theme-primary-border-soft);
   border-radius: 999px;
-  color: rgba(99, 179, 255, 1);
-  background-color: rgba(30, 64, 175, 0.22);
+  color: var(--theme-info-blue);
+  background-color: var(--theme-primary-softer);
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
@@ -156,15 +164,16 @@ watch(locale, () => {
 }
 
 .home-pricing-title {
-  width: max-content;
-  max-width: 100%;
+  width: auto;
+  max-width: min(100%, 860px);
   margin-top: 22px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 40px;
   font-weight: 800;
   line-height: 48px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-pricing-title span {
@@ -172,18 +181,19 @@ watch(locale, () => {
 }
 
 .home-pricing-title span:first-child {
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .home-pricing-subtitle {
   max-width: 100%;
   margin-top: 20px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 16px;
   font-weight: 400;
   line-height: 22px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-pricing-grid {
@@ -203,16 +213,31 @@ watch(locale, () => {
   flex-direction: column;
   overflow: visible;
   padding: 34px 32px 33px;
-  border: 1px solid rgba(30, 41, 59, 1);
+  border: 1px solid var(--theme-pricing-card-border);
   border-radius: 8px;
-  color: rgba(248, 250, 252, 1);
-  background-color: rgba(15, 23, 42, 1);
+  color: var(--theme-text);
+  background-color: var(--theme-pricing-card-background);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
-.home-pricing-card-featured {
-  border-color: rgba(8, 179, 213, 0.72);
-  background: linear-gradient(180deg, rgba(8, 55, 75, 0.72) 0%, rgba(8, 38, 58, 0.94) 100%);
-  box-shadow: 0 0 0 1px rgba(8, 179, 213, 0.2);
+.home-pricing-card:hover,
+.home-pricing-card:focus-within {
+  border-color: var(--theme-pricing-card-hover-border);
+  background-color: var(--theme-pricing-card-hover-background);
+  box-shadow: 0 18px 36px var(--theme-pricing-card-hover-shadow);
+  transform: translateY(-2px);
+}
+
+.home-pricing-card:hover .home-pricing-button,
+.home-pricing-card:focus-within .home-pricing-button {
+  border-color: var(--theme-pricing-button-hover-border);
+  color: var(--theme-pricing-button-hover-text);
+  background: var(--theme-pricing-button-hover-background);
+  box-shadow: 0 9px 18px var(--theme-brand-accent-30);
 }
 
 .home-pricing-badge {
@@ -228,9 +253,9 @@ watch(locale, () => {
   padding: 0 14px;
   transform: translateX(-50%);
   border-radius: 999px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   background: var(--theme-login-background);
-  box-shadow: 0 8px 20px rgba(8, 179, 213, 0.35);
+  box-shadow: 0 8px 20px var(--theme-brand-accent-35);
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
@@ -240,12 +265,13 @@ watch(locale, () => {
 }
 
 .home-pricing-card-title {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-pricing-card-title);
   font-size: 18px;
   font-weight: 800;
   line-height: 26px;
   overflow: hidden;
   overflow-wrap: anywhere;
+  hyphens: auto;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -253,12 +279,13 @@ watch(locale, () => {
 
 .home-pricing-card-description {
   margin-top: 10px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-pricing-card-description);
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
   overflow: hidden;
   overflow-wrap: anywhere;
+  hyphens: auto;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -280,21 +307,21 @@ watch(locale, () => {
 }
 
 .home-pricing-price strong {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-pricing-price);
   font-size: 42px;
   font-weight: 800;
   line-height: 44px;
 }
 
 .home-pricing-price span {
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-pricing-price-unit);
   font-size: 16px;
   font-weight: 600;
   line-height: 22px;
 }
 
 .home-pricing-price del {
-  color: rgba(100, 116, 139, 1);
+  color: var(--theme-pricing-price-original);
   font-size: 14px;
   line-height: 20px;
 }
@@ -310,7 +337,7 @@ watch(locale, () => {
   align-items: center;
   gap: 10px;
   min-width: 0;
-  color: rgba(203, 213, 225, 1);
+  color: var(--theme-pricing-feature-text);
   font-size: 12px;
   font-weight: 400;
   line-height: 18px;
@@ -319,6 +346,7 @@ watch(locale, () => {
   min-width: 0;
   overflow: hidden;
   overflow-wrap: anywhere;
+  hyphens: auto;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -338,10 +366,10 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   margin-top: auto;
-  border: 1px solid rgba(51, 65, 85, 1);
+  border: 1px solid var(--theme-pricing-button-border);
   border-radius: 6px;
-  color: rgba(255, 255, 255, 1);
-  background-color: rgba(15, 23, 42, 1);
+  color: var(--theme-pricing-button-text);
+  background-color: var(--theme-pricing-button-background);
   font-size: 13px;
   font-weight: 800;
   line-height: 1;
@@ -355,18 +383,12 @@ watch(locale, () => {
 
 .home-pricing-button:hover,
 .home-pricing-button:focus {
-  border-color: rgba(8, 179, 213, 0.8);
   transform: translateY(-1px);
-}
-
-.home-pricing-card-featured .home-pricing-button {
-  border-color: transparent;
-  background: var(--theme-login-background);
-  box-shadow: 0 9px 18px rgba(8, 179, 213, 0.3);
 }
 
 @media (max-width: 1153px) {
   .home-pricing-section {
+    --home-pricing-overlap: 320px;
     min-height: auto;
     margin-top: -320px;
     padding-top: 160px;
@@ -377,18 +399,15 @@ watch(locale, () => {
     grid-template-columns: repeat(2, 370px);
   }
 
-  .home-pricing-card-featured {
-    order: -1;
-  }
 }
 
 @media (max-width: 768px) {
 
   .home-pricing-section {
+    --home-pricing-overlap: 0px;
     margin-top: 0;
     padding-top: 80px;
     padding-bottom: 56px;
-    background-color: var(--theme-page);
   }
 
   .home-pricing-title {

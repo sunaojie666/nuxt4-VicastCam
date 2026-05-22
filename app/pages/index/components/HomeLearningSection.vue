@@ -1,14 +1,14 @@
 <template>
   <section id="home-sdk" class="home-learning-section" aria-labelledby="home-learning-title">
     <div class="home-learning-inner">
-      <span class="home-learning-eyebrow" data-reveal>{{ tutorialContent.sectionTag }}</span>
+      <span class="home-learning-eyebrow home-section-eyebrow" data-reveal>{{ tutorialContent.sectionTag }}</span>
 
-      <h2 id="home-learning-title" class="home-learning-title" data-reveal style="--reveal-delay: 80ms">
+      <h2 id="home-learning-title" class="home-learning-title home-section-title" data-reveal style="--reveal-delay: 80ms">
         <span>{{ tutorialContent.titleMain }}</span>
         <span class="theme-gradient-text">{{ tutorialContent.titleHighlight }}</span>
       </h2>
 
-      <p class="home-learning-subtitle" data-reveal style="--reveal-delay: 160ms">
+      <p class="home-learning-subtitle home-section-subtitle" data-reveal style="--reveal-delay: 160ms">
         <span>{{ tutorialContent.description }}</span>
       </p>
 
@@ -193,7 +193,7 @@ watch(locale, () => {
   padding-top: 100px;
   padding-bottom: 110px;
   color: var(--theme-text);
-  background-color: rgba(17, 24, 39, 1);
+  background-color: var(--theme-learning-background, var(--theme-surface-alt));
 }
 
 .home-learning-inner {
@@ -214,10 +214,10 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   padding: 0 14px;
-  border: 1px solid rgba(59, 130, 246, 0.28);
+  border: 1px solid var(--theme-primary-border-soft);
   border-radius: 999px;
-  color: rgba(99, 179, 255, 1);
-  background-color: rgba(30, 64, 175, 0.22);
+  color: var(--theme-info-blue);
+  background-color: var(--theme-primary-softer);
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
@@ -229,12 +229,13 @@ watch(locale, () => {
 .home-learning-title {
   max-width: 100%;
   margin-top: 22px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 40px;
   font-weight: 800;
   line-height: 48px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-learning-title span {
@@ -247,12 +248,13 @@ watch(locale, () => {
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
-  color: rgba(149, 156, 168, 1);
+  color: var(--theme-text-muted-alt);
   font-size: 16px;
   font-weight: 400;
   line-height: 22px;
   text-align: center;
   overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .home-learning-grid {
@@ -270,8 +272,13 @@ watch(locale, () => {
   width: 368px;
   height: 310px;
   border-radius: 8px;
-  background-color: rgba(3, 7, 18, 1);
+  background-color: var(--theme-learning-card-background, var(--theme-page));
+  border: 1px solid var(--theme-learning-card-border, transparent);
   direction: ltr;
+}
+
+:root[data-theme="light"] .home-learning-card {
+  border-radius: 10px;
 }
 
 .home-learning-image {
@@ -288,12 +295,13 @@ watch(locale, () => {
 .home-learning-tags {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
 }
 
 .home-learning-tag {
-  max-width: 120px;
+  max-width: 100%;
   height: 18px;
   display: inline-flex;
   align-items: center;
@@ -309,23 +317,24 @@ watch(locale, () => {
 }
 
 .home-learning-tag-muted {
-  color: rgba(148, 163, 184, 1);
-  background-color: rgba(31, 41, 55, 1);
+  color: var(--theme-learning-tag-muted-text, var(--theme-text-muted));
+  background-color: var(--theme-learning-tag-muted-background, var(--theme-panel-muted));
 }
 
 .home-learning-tag-primary {
-  color: rgba(110, 231, 183, 1);
-  background-color: rgba(6, 78, 59, 0.72);
+  color: var(--theme-learning-tag-primary-text, var(--theme-success-light));
+  background-color: var(--theme-learning-tag-primary-background, var(--theme-extra-6-78-59-072));
 }
 
 .home-learning-card-title {
   margin-top: 12px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-learning-card-title, var(--theme-white));
   font-size: 14px;
   font-weight: 800;
   line-height: 20px;
   overflow: hidden;
   overflow-wrap: anywhere;
+  hyphens: auto;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

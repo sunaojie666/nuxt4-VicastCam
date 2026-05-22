@@ -92,7 +92,7 @@ watch(() => props.loginData, (loginData) => {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 24px;
   font-weight: 900;
   min-width: 0;
@@ -105,7 +105,7 @@ watch(() => props.loginData, (loginData) => {
 }
 
 .auth-logo span span {
-  color: rgba(20, 198, 239, 1);
+  color: var(--theme-accent-brand);
 }
 
 .auth-logo > span {
@@ -140,7 +140,7 @@ watch(() => props.loginData, (loginData) => {
   bottom: -13px;
   width: 198px;
   height: 10px;
-  border-bottom: 2px solid rgba(103, 232, 249, 1);
+  border-bottom: 2px solid var(--theme-accent-text);
   border-radius: 50%;
 }
 
@@ -148,7 +148,7 @@ watch(() => props.loginData, (loginData) => {
   display: flex;
   flex-direction: column;
   margin-top: 40px;
-  color: rgba(226, 232, 240, 1);
+  color: var(--theme-text-light);
   font-size: 20px;
   line-height: 30px;
   overflow-wrap: anywhere;
@@ -169,7 +169,7 @@ watch(() => props.loginData, (loginData) => {
   min-width: 0;
   display: grid;
   justify-items: start;
-  color: rgba(203, 213, 225, 1);
+  color: var(--theme-text-secondary);
   text-align: left;
 }
 
@@ -179,10 +179,10 @@ watch(() => props.loginData, (loginData) => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(20, 198, 239, 0.36);
+  border: 1px solid var(--theme-extra-20-198-239-036);
   border-radius: 50%;
-  color: rgba(20, 198, 239, 1);
-  background-color: rgba(15, 23, 42, 0.76);
+  color: var(--theme-accent-brand);
+  background-color: var(--theme-extra-15-23-42-076);
 }
 
 .auth-feature img {
@@ -195,7 +195,7 @@ watch(() => props.loginData, (loginData) => {
 .auth-feature strong {
   max-width: 100%;
   margin-top: 16px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
@@ -205,7 +205,7 @@ watch(() => props.loginData, (loginData) => {
 .auth-feature small {
   max-width: 100%;
   margin-top: 0;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 14px;
   line-height: 20px;
   overflow-wrap: anywhere;

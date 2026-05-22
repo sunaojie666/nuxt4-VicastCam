@@ -161,13 +161,13 @@ setupPageSeo('privacy')
   overflow-x: clip;
   padding-top: var(--page-header-height);
   color: var(--theme-text);
-  background: var(--page-route-background);
+  background: var(--theme-route-page-background, var(--page-route-background));
 }
 
 .privacy-page-main {
   width: 100%;
   flex: 1;
-  background: var(--page-route-background);
+  background: var(--theme-route-page-background, var(--page-route-background));
 }
 
 .privacy-layout {
@@ -186,10 +186,10 @@ setupPageSeo('privacy')
   display: grid;
   gap: 0;
   padding: 8px;
-  border: 1px solid rgba(42, 55, 82, 0.86);
-  border-radius: 12px;
-  background: rgba(30, 41, 59, 0.9);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--theme-route-card-border, var(--theme-border-panel));
+  border-radius: var(--theme-route-card-radius, 15px);
+  background: var(--theme-route-card-background, var(--theme-surface-soft-90));
+  box-shadow: var(--theme-route-card-shadow, 0 20px 48px var(--theme-black-18));
 }
 
 .privacy-menu-item {
@@ -201,7 +201,7 @@ setupPageSeo('privacy')
   gap: 10px;
   padding: 0 10px;
   border-radius: 8px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 14px;
   line-height: 20px;
   text-align: left;
@@ -221,16 +221,16 @@ setupPageSeo('privacy')
 }
 
 .privacy-menu-chevron {
-  color: rgba(148, 163, 184, 0.8);
+  color: var(--theme-text-muted-soft);
 }
 
 .privacy-menu-item-active {
-  color: rgba(34, 211, 238, 1);
-  background: rgba(14, 116, 144, 0.45);
+  color: var(--theme-accent);
+  background: var(--theme-extra-14-116-144-045);
 }
 
 .privacy-menu-item-active .privacy-menu-chevron {
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-accent);
 }
 
 .privacy-content-card {
@@ -238,10 +238,10 @@ setupPageSeo('privacy')
   min-width: 0;
   min-height: 844px;
   padding: 22px 24px 38px;
-  border: 1px solid rgba(42, 55, 82, 0.82);
-  border-radius: 12px;
-  background: rgba(30, 41, 59, 0.88);
-  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--theme-route-card-border, var(--theme-border-panel-soft));
+  border-radius: var(--theme-route-card-radius, 15px);
+  background: var(--theme-route-card-background, var(--theme-surface-soft-88));
+  box-shadow: var(--theme-route-card-shadow, 0 24px 56px var(--theme-black-18));
 }
 
 .privacy-content-header {
@@ -250,7 +250,7 @@ setupPageSeo('privacy')
   justify-content: space-between;
   gap: 18px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(51, 65, 85, 0.7);
+  border-bottom: 1px solid var(--theme-border-muted-70);
 }
 
 .privacy-breadcrumb {
@@ -258,7 +258,7 @@ setupPageSeo('privacy')
   display: flex;
   align-items: center;
   gap: 7px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 14px;
   line-height: 20px;
 }
@@ -277,7 +277,7 @@ setupPageSeo('privacy')
 }
 
 .privacy-breadcrumb strong {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--theme-white-90);
   font-weight: 600;
 }
 
@@ -289,7 +289,7 @@ setupPageSeo('privacy')
   justify-content: center;
   flex: 0 0 auto;
   border-radius: 6px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   cursor: pointer;
 }
 
@@ -300,11 +300,11 @@ setupPageSeo('privacy')
 
 .privacy-article {
   padding-top: 28px;
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
 }
 
 .privacy-article h1 {
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 30px;
   font-weight: 900;
   line-height: 42px;
@@ -316,7 +316,7 @@ setupPageSeo('privacy')
 
 .privacy-section h2 {
   margin-bottom: 8px;
-  color: rgba(255, 255, 255, 1);
+  color: var(--theme-white);
   font-size: 18px;
   font-weight: 800;
   line-height: 28px;
@@ -327,7 +327,7 @@ setupPageSeo('privacy')
 }
 
 .privacy-section p {
-  color: rgba(148, 163, 184, 1);
+  color: var(--theme-text-muted);
   font-size: 14px;
   line-height: 24px;
 }

@@ -112,13 +112,13 @@ const handleActiveCard = () => {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: rgba(34, 211, 238, 1);
-  background: rgba(34, 211, 238, 0.14);
+  color: var(--theme-accent);
+  background: var(--theme-accent-soft);
 }
 
 .membership-activation-tip {
   margin-top: 20px;
-  color: rgba(132, 148, 173, 1);
+  color: var(--theme-profile-field-muted, var(--theme-extra-132-148-173-1));
   font-size: 14px;
   line-height: 20px;
 }
@@ -133,15 +133,15 @@ const handleActiveCard = () => {
 .membership-activation-input {
   height: 60px;
   padding: 0 14px;
-  border: 1px solid rgba(35, 47, 75, 1);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-extra-35-47-75-1));
   border-radius: 8px;
-  color: rgba(232, 242, 255, 1);
-  background: rgba(8, 19, 39, 1);
+  color: var(--theme-profile-field-text, var(--theme-text-title));
+  background: var(--theme-profile-field-background, var(--theme-extra-8-19-39-1));
   font-size: 14px;
 }
 
 .membership-activation-input::placeholder {
-  color: rgba(108, 125, 153, 1);
+  color: var(--theme-profile-field-placeholder, var(--theme-text-subtle-alt));
 }
 
 .membership-activation-input:disabled {
@@ -152,8 +152,8 @@ const handleActiveCard = () => {
 .membership-activation-button {
   height: 60px;
   border-radius: 8px;
-  color: rgba(235, 246, 255, 1);
-  background: linear-gradient(90deg, rgba(64, 184, 239, 1), rgba(56, 118, 233, 1));
+  color: var(--theme-extra-235-246-255-1);
+  background: var(--theme-profile-field-action, linear-gradient(90deg, var(--theme-extra-64-184-239-1), var(--theme-extra-56-118-233-1)));
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -166,13 +166,13 @@ const handleActiveCard = () => {
 
 .membership-activation-agreement {
   margin-top: 20px;
-  color: rgba(97, 113, 140, 1);
+  color: var(--theme-profile-field-muted, var(--theme-extra-97-113-140-1));
   font-size: 12px;
   line-height: 18px;
 }
 
 .membership-activation-agreement a {
-  color: rgba(34, 211, 238, 1);
+  color: var(--theme-profile-field-action, var(--theme-accent));
 }
 
 @media (max-width: 900px) {
