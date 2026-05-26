@@ -1,7 +1,7 @@
 <template>
   <section class="auth-brand-panel" aria-labelledby="auth-brand-title">
     <NuxtLink :to="localePath('/')" class="auth-logo">
-      <img src="/images/logo.png" alt="" aria-hidden="true">
+      <img src="/images/common/logo.png" alt="" aria-hidden="true">
       <span>Vicast<span>Cam</span></span>
     </NuxtLink>
 
@@ -46,9 +46,9 @@ const loginCopy = reactive({
 })
 
 const features = reactive([
-  { key: 'feature-1', icon: '/images/loginIcon1.png', title: '', description: '' },
-  { key: 'feature-2', icon: '/images/loginIcon2.png', title: '', description: '' },
-  { key: 'feature-3', icon: '/images/loginIcon3.png', title: '', description: '' },
+  { key: 'feature-1', icon: '/images/login/feature-ai-cutout.png', title: '', description: '' },
+  { key: 'feature-2', icon: '/images/login/feature-multiplatform.png', title: '', description: '' },
+  { key: 'feature-3', icon: '/images/login/feature-virtual-camera.png', title: '', description: '' },
 ])
 
 const visibleFeatures = computed(() => {

@@ -4,7 +4,7 @@
       <AuthBrandPanel :login-data="loginContent" />
 
       <NuxtLink :to="localePath('/')" class="auth-mobile-logo">
-        <img src="/images/logo.png" alt="" aria-hidden="true">
+        <img src="/images/common/logo.png" alt="" aria-hidden="true">
         <span>Vicast<span>Cam</span></span>
       </NuxtLink>
 
@@ -91,8 +91,8 @@ const authCardTitle = computed(() => {
 
   return loginBoxCopy.loginPageTitle
 })
-const headingIcon = computed(() => loginView.value === 'scan' ? '/images/scanCode.png' : '/images/Email.png')
-const cornerIcon = computed(() => loginView.value === 'scan' ? '/images/Lock.png' : '/images/QR.png')
+const headingIcon = computed(() => loginView.value === 'scan' ? '/images/login/scan-code-icon.png' : '/images/login/email-icon.png')
+const cornerIcon = computed(() => loginView.value === 'scan' ? '/images/login/lock-icon.png' : '/images/login/qr-toggle-icon.png')
 const cornerLabel = computed(() => {
   return loginView.value === 'scan' ? loginBoxCopy.loginPageTitle : loginBoxCopy.qrLoginTab
 })
@@ -237,7 +237,7 @@ watch(locale, () => {
   color: var(--theme-white);
   background:
     linear-gradient(90deg, var(--theme-page-08) 0%, var(--theme-page-12) 45%, var(--theme-page-28) 100%),
-    url("/images/loginbg.png") center / cover no-repeat,
+    url("/images/login/background.png") center / cover no-repeat,
     var(--page-route-background);
 }
 
@@ -315,7 +315,7 @@ watch(locale, () => {
   overflow: hidden;
   clip-path: polygon(0 0, 100% 0, 100% 100%);
   background:
-    url("/images/qrbg.png") center / 100% 100% no-repeat,
+    url("/images/login/qr-panel-bg.png") center / 100% 100% no-repeat,
     var(--theme-surface-alt);
   cursor: pointer;
 }

@@ -6,7 +6,7 @@
         <NuxtLink :to="localePath('/')" class="site-brand">
           <img
             class="site-brand-image"
-            src="/images/logo.png"
+            src="/images/common/logo.png"
             alt=""
             aria-hidden="true"
           >
@@ -46,7 +46,7 @@
             @click="handleLocaleButtonClick"
             @focus="openLocaleMenu"
           >
-            <Icon class="locale-flag-icon" :name="activeLocale.flagIcon" aria-hidden="true" />
+            <Icon class="locale-flag-icon" :name="activeLocale.flagIcon || 'circle-flags:xx'" aria-hidden="true" />
             <span>{{ activeLocale.name }}</span>
             <Icon class="locale-chevron-icon" name="lucide:chevron-down" aria-hidden="true" />
           </button>
@@ -63,10 +63,10 @@
                 <button
                   type="button"
                   class="site-select-option-button"
-                  :dir="activeLocale.dir"
+                  :dir="item.dir || 'ltr'"
                   @click="switchLanguage(item.code)"
                 >
-                  <Icon class="locale-flag-icon" :name="item.flagIcon" aria-hidden="true" />
+                  <Icon class="locale-flag-icon" :name="item.flagIcon || 'circle-flags:xx'" aria-hidden="true" />
                   <span class="site-select-option-copy">
                     <span>{{ item.name }}</span>
                     <small v-if="item.translatedName">{{ item.translatedName }}</small>
@@ -76,19 +76,6 @@
             </ul>
           </Transition>
         </div>
-
-        <button
-          type="button"
-          class="site-theme-button"
-          :aria-label="themeSwitchLabel"
-          @click="toggleTheme"
-        >
-          <span class="site-theme-track" aria-hidden="true">
-            <span class="site-theme-thumb">
-              <Icon :name="themeSwitchIcon" />
-            </span>
-          </span>
-        </button>
 
         <NuxtLink
           v-if="!isLoggedIn"
@@ -168,7 +155,6 @@
 
 <script setup>
 import { getNavigation } from '../api/request/strapi'
-import { createThemeContext } from '../utils/theme'
 
 const { locale, locales } = useI18n()
 
@@ -182,7 +168,6 @@ const switchLocalePath = useSwitchLocalePath()
 const route = useRoute()
 const { authUser, clearAuth } = useAuth()
 const { profileBox, loadProfileText } = useProfileText()
-const { currentTheme, setTheme } = createThemeContext()
 
 // 顶部导航模板只读取普通 ref，避免在模板中直接写翻译逻辑。
 const availableLocales = ref([])
@@ -209,8 +194,6 @@ const profileLinkLabel = computed(() => {
   return `${profileName.value}${profileBox.value?.headerUserMenu?.profileAriaSuffix || ''}`
 })
 const profileMenuText = computed(() => profileBox.value?.headerUserMenu || {})
-const themeSwitchIcon = computed(() => currentTheme.value === 'dark' ? 'lucide:sun' : 'lucide:moon')
-const themeSwitchLabel = computed(() => currentTheme.value === 'dark' ? '切换浅色模式' : '切换深色模式')
 
 const createSiteHeaderText = () => {
   return {
@@ -418,13 +401,6 @@ const handleLocaleButtonClick = () => {
   }
 
   localeMenuOpen.value = !localeMenuOpen.value
-  closeMobileMenu()
-}
-
-const toggleTheme = () => {
-  setTheme(currentTheme.value === 'dark' ? 'light' : 'dark')
-  localeMenuOpen.value = false
-  closeProfileMenu()
   closeMobileMenu()
 }
 
@@ -976,68 +952,6 @@ onBeforeUnmount(() => {
   background-color: transparent;
 }
 
-.site-theme-button {
-  width: 58px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 58px;
-  margin-left: 10px;
-  border: 0;
-  border-radius: 999px;
-  color: var(--theme-header-text);
-  background-color: transparent;
-  cursor: pointer;
-}
-
-.site-theme-button:hover,
-.site-theme-button:focus {
-  background-color: transparent;
-}
-
-.site-theme-track {
-  position: relative;
-  width: 52px;
-  height: 28px;
-  display: block;
-  border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
-  border-radius: 999px;
-  background: var(--theme-header-theme-track-background, var(--theme-panel-medium));
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.site-theme-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: var(--theme-header-theme-thumb-color, var(--theme-page));
-  background: var(--theme-header-theme-thumb-background, var(--theme-white));
-  box-shadow: 0 2px 8px var(--theme-black-22);
-  transition: transform 0.22s ease, color 0.2s ease, background-color 0.2s ease;
-}
-
-.site-theme-thumb svg {
-  width: 13px;
-  height: 13px;
-}
-
-:root[data-theme="light"] .site-theme-track {
-  background: var(--theme-header-theme-track-background, var(--theme-extra-203-232-255-085));
-}
-
-:root[data-theme="light"] .site-theme-thumb {
-  color: var(--theme-header-theme-thumb-color, var(--theme-white));
-  background: var(--theme-header-theme-thumb-background, var(--theme-primary));
-  transform: translateX(24px);
-}
-
 .site-auth-button {
   min-width: 112px;
   max-width: 210px;
@@ -1388,10 +1302,6 @@ onBeforeUnmount(() => {
     max-width: 126px;
   }
 
-  .site-theme-button {
-    margin-left: 8px;
-  }
-
   .site-profile-link {
     margin-left: 8px;
   }
@@ -1457,29 +1367,6 @@ onBeforeUnmount(() => {
   .site-locale-select {
     flex: 0 0 auto;
     margin-left: 0;
-  }
-
-  .site-theme-button {
-    width: 46px;
-    height: 32px;
-    flex: 0 0 46px;
-    margin-left: 0;
-  }
-
-  .site-theme-track {
-    width: 44px;
-    height: 24px;
-  }
-
-  .site-theme-thumb {
-    top: 2px;
-    left: 2px;
-    width: 18px;
-    height: 18px;
-  }
-
-  :root[data-theme="light"] .site-theme-thumb {
-    transform: translateX(20px);
   }
 
   .site-select-button {

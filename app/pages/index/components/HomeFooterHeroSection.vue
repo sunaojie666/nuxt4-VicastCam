@@ -2,7 +2,7 @@
   <section v-if="hasHeroContent" class="home-footer-hero-section" aria-labelledby="home-footer-hero-title">
     <div class="page-container home-footer-hero-inner">
       <span v-if="footerHero.tag" class="home-footer-hero-eyebrow">
-        <img src="/images/star.png" alt="" aria-hidden="true">
+        <img src="/images/common/badge-star.png" alt="" aria-hidden="true">
         {{ footerHero.tag }}
       </span>
 
@@ -10,7 +10,7 @@
         <span>{{ footerHero.title_main }}</span>
         <span class="theme-gradient-text">
           {{ footerHero.title_highlight }}
-          <img class="home-footer-hero-line" src="/images/path.png" alt="" aria-hidden="true">
+          <img class="home-footer-hero-line" src="/images/common/title-underline.png" alt="" aria-hidden="true">
         </span>
       </h2>
 
@@ -57,22 +57,22 @@ const footerHeroButtons = computed(() => {
     {
       key: 'app-store',
       label: homeDownloads.value.appStoreUrl,
-      icon: '/images/download-icons/apple-default.svg',
-      activeIcon: '/images/download-icons/apple-active.svg',
+      icon: '/images/home/download-buttons/apple-default.svg',
+      activeIcon: '/images/home/download-buttons/apple-active.svg',
       buttonClass: 'home-hero-download-light',
     },
     {
       key: 'android',
       label: homeDownloads.value.googlePlayUrl,
-      icon: '/images/download-icons/android-default.svg',
-      activeIcon: '/images/download-icons/android-active.svg',
+      icon: '/images/home/download-buttons/android-default.svg',
+      activeIcon: '/images/home/download-buttons/android-active.svg',
       buttonClass: 'home-hero-download-light',
     },
     {
       key: 'windows',
       label: homeDownloads.value.desktopClientUrl,
-      icon: '/images/download-icons/windows-default.svg',
-      activeIcon: '/images/download-icons/windows-active.svg',
+      icon: '/images/home/download-buttons/windows-default.svg',
+      activeIcon: '/images/home/download-buttons/windows-active.svg',
       buttonClass: 'home-hero-download-primary',
     },
   ].filter(button => String(button.label || '').trim())
@@ -170,7 +170,7 @@ watch(locale, () => {
   z-index: 0;
   width: 1350px;
   height: 840px;
-  background: url("/images/Circle.png") center / contain no-repeat;
+  background: url("/images/home/footer-hero-rings.png") center / contain no-repeat;
   transform: translateX(-50%);
   pointer-events: none;
 }

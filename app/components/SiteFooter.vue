@@ -6,7 +6,7 @@
         <div class="site-footer-logo-row">
           <img
             class="site-footer-logo"
-            src="/images/logo.png"
+            src="/images/common/logo.png"
             alt=""
             aria-hidden="true"
           >
@@ -14,6 +14,18 @@
             <span>{{ footerText.brandMain }}</span>
             <span class="site-footer-brand-accent">{{ footerText.brandAccent }}</span>
           </span>
+          <button
+            type="button"
+            class="site-footer-theme-button"
+            :aria-label="themeSwitchLabel"
+            @click="toggleTheme"
+          >
+            <span class="site-footer-theme-track" aria-hidden="true">
+              <span class="site-footer-theme-thumb">
+                <Icon :name="themeSwitchIcon" />
+              </span>
+            </span>
+          </button>
         </div>
 
         <p class="site-footer-description">
@@ -58,24 +70,79 @@
 
 <script setup>
 import { getFooter } from '../api/request/strapi'
+import { createThemeContext } from '../utils/theme'
 
 const localePath = useLocalePath()
 const { locale } = useI18n()
+const route = useRoute()
+const { currentTheme, initTheme, setTheme } = createThemeContext()
 
-const footerLinkActions = {
-  功能特色: { sectionId: 'home-features-anchor' },
-  Features: { sectionId: 'home-features-anchor' },
-  价格: { sectionId: 'home-pricing-anchor' },
-  Pricing: { sectionId: 'home-pricing-anchor' },
-  下载: { path: '/download' },
-  Download: { path: '/download' },
-  教程: { path: '/tutorial' },
-  Tutorials: { path: '/tutorial' },
-  SDK: { path: '/sdk' },
-  常见问题: { path: '/faq' },
-  FAQ: { path: '/faq' },
-  隐私政策: { path: '/privacy' },
-  'Privacy Policy': { path: '/privacy' },
+const footerLinkActionsByKey = {
+  features: { sectionId: 'home-features-anchor' },
+  pricing: { sectionId: 'home-pricing-anchor' },
+  download: { path: '/download' },
+  changelog: { path: '/tutorial' },
+  tutorial: { path: '/tutorial' },
+  sdk: { path: '/sdk' },
+  apiDocs: { path: '/sdk' },
+  faq: { path: '/faq' },
+  privacy: { path: '/privacy' },
+  about: { path: '/about' },
+  terms: { path: '/privacy' },
+  salesPolicy: { path: '/privacy' },
+  docs: { path: '/tutorial' },
+  contact: { path: '/about' },
+}
+
+const footerColumnActionOrder = [
+  ['features', 'pricing', 'download', 'changelog'],
+  ['sdk', 'apiDocs'],
+  ['about', 'privacy', 'terms', 'salesPolicy'],
+  ['docs', 'tutorial', 'faq', 'contact'],
+]
+
+const footerLinkTextActionMap = {
+  '功能特色': 'features',
+  'features': 'features',
+  'feature': 'features',
+  '价格': 'pricing',
+  'price': 'pricing',
+  'pricing': 'pricing',
+  '下载': 'download',
+  'download': 'download',
+  '更新日志': 'changelog',
+  'updatelog': 'changelog',
+  'changelog': 'changelog',
+  'sdk': 'sdk',
+  'api文档': 'apiDocs',
+  'sdk文档': 'apiDocs',
+  'apidocumentation': 'apiDocs',
+  'apidoc': 'apiDocs',
+  'apidocs': 'apiDocs',
+  '关于我们': 'about',
+  '关于': 'about',
+  'aboutus': 'about',
+  'about': 'about',
+  '隐私政策': 'privacy',
+  '隐私': 'privacy',
+  'privacypolicy': 'privacy',
+  'privacy': 'privacy',
+  '服务条款': 'terms',
+  'termsofservice': 'terms',
+  'termsofuse': 'terms',
+  '销售政策': 'salesPolicy',
+  'salespolicy': 'salesPolicy',
+  '文档': 'docs',
+  'documentation': 'docs',
+  'docs': 'docs',
+  '教程': 'tutorial',
+  'tutorial': 'tutorial',
+  'tutorials': 'tutorial',
+  '常见问题': 'faq',
+  'faq': 'faq',
+  '联系我们': 'contact',
+  'contactus': 'contact',
+  'contact': 'contact',
 }
 
 const footerColumns = ref([])
@@ -99,6 +166,34 @@ const footerText = computed(() => {
     socials: [],
   }
 })
+const themeSwitchIcon = computed(() => currentTheme.value === 'dark' ? 'lucide:sun' : 'lucide:moon')
+const themeSwitchLabel = computed(() => currentTheme.value === 'dark' ? '切换浅色模式' : '切换深色模式')
+
+const toggleTheme = () => {
+  setTheme(currentTheme.value === 'dark' ? 'light' : 'dark')
+}
+
+const normalizePath = path => {
+  if (!path || path === '/') {
+    return '/'
+  }
+
+  return path.replace(/\/+$/, '')
+}
+
+const isHomeRoute = () => {
+  return normalizePath(route.path) === normalizePath(localePath('/'))
+}
+
+const normalizeFooterActionText = value => {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFKC')
+    .replace(/[^\p{L}\p{N}]+/gu, '')
+}
+
+const isExternalFooterPath = path => /^(https?:)?\/\//.test(path) || /^(mailto|tel):/i.test(path)
 
 const scrollToSection = (sectionId) => {
   const sectionElement = document.getElementById(sectionId)
@@ -118,11 +213,21 @@ const scrollToSection = (sectionId) => {
 
 const handleFooterLinkClick = (item) => {
   if (item.path) {
+    if (isExternalFooterPath(item.path)) {
+      navigateTo(item.path, { external: true })
+      return
+    }
+
     navigateTo(localePath(item.path))
     return
   }
 
   if (!item.sectionId || !process.client) {
+    return
+  }
+
+  if (isHomeRoute()) {
+    scrollToSection(item.sectionId)
     return
   }
 
@@ -145,12 +250,20 @@ const getFooterContentData = (response) => {
 
 const createFooterLink = (link = {}, columnIndex, linkIndex) => {
   const text = String(link.text || '').trim()
-  const action = footerLinkActions[text] || {}
+  const directPath = String(link.path || link.href || link.url || '').trim()
+  const explicitActionKey = [
+    link.key,
+    link.action,
+    link.slug,
+  ].map(normalizeFooterActionText).find(key => footerLinkActionsByKey[key])
+  const textActionKey = footerLinkTextActionMap[normalizeFooterActionText(text)]
+  const actionKey = explicitActionKey || textActionKey || footerColumnActionOrder[columnIndex]?.[linkIndex] || ''
+  const action = footerLinkActionsByKey[actionKey] || {}
 
   return {
     key: `${columnIndex}-${linkIndex}-${text}`,
     label: text,
-    path: action.path || '',
+    path: directPath || action.path || '',
     sectionId: action.sectionId || '',
   }
 }
@@ -189,6 +302,7 @@ const loadFooterContent = () => {
 }
 
 onMounted(() => {
+  initTheme()
   loadFooterContent()
 })
 
@@ -228,7 +342,7 @@ watch(locale, () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   min-width: 0;
 }
 .site-footer-logo {
@@ -249,6 +363,68 @@ watch(locale, () => {
 }
 .site-footer-brand-accent {
   color: var(--theme-footer-brand-accent, var(--theme-brand-accent));
+}
+
+.site-footer-theme-button {
+  width: 58px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 58px;
+  margin-left: 8px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--theme-footer-title);
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.site-footer-theme-button:hover,
+.site-footer-theme-button:focus {
+  background-color: transparent;
+}
+
+.site-footer-theme-track {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  display: block;
+  border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
+  border-radius: 999px;
+  background: var(--theme-header-theme-track-background, var(--theme-panel-medium));
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.site-footer-theme-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--theme-header-theme-thumb-color, var(--theme-page));
+  background: var(--theme-header-theme-thumb-background, var(--theme-white));
+  box-shadow: 0 2px 8px var(--theme-black-22);
+  transition: transform 0.22s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.site-footer-theme-thumb svg {
+  width: 13px;
+  height: 13px;
+}
+
+:root[data-theme="light"] .site-footer-theme-track {
+  background: var(--theme-header-theme-track-background, var(--theme-extra-203-232-255-085));
+}
+
+:root[data-theme="light"] .site-footer-theme-thumb {
+  color: var(--theme-header-theme-thumb-color, var(--theme-white));
+  background: var(--theme-header-theme-thumb-background, var(--theme-primary));
+  transform: translateX(24px);
 }
 
 .site-footer-description {

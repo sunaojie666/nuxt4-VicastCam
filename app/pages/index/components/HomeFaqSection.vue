@@ -27,8 +27,8 @@
           >
             <span>{{ item.question }}</span>
             <span class="home-faq-toggle" aria-hidden="true">
-              <Icon v-if="activeFaqIndex === index" name="lucide:minus" />
-              <Icon v-else name="lucide:plus" />
+              <Icon v-if="activeFaqIndex === index" name="lucide:chevron-up" />
+              <Icon v-else name="lucide:chevron-down" />
             </span>
           </button>
 
@@ -44,7 +44,7 @@
 
       <NuxtLink :to="localePath('/faq')" class="home-faq-more theme-more-link">
         <span>{{ viewMoreText }}</span>
-        <img src="/images/Right.png" alt="" aria-hidden="true">
+        <img src="/images/common/arrow-right.png" alt="" aria-hidden="true">
       </NuxtLink>
     </div>
   </section>
@@ -215,6 +215,8 @@ watch(locale, () => {
   transition: border-color 0.22s ease, background-color 0.22s ease;
 }
 
+.home-faq-item:hover,
+.home-faq-item:focus-within,
 .home-faq-item-open {
   border-color: var(--theme-faq-item-active-border, var(--theme-brand-accent-55));
   background-color: var(--theme-faq-item-active-background, var(--theme-surface-deep));
@@ -252,15 +254,16 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  color: var(--theme-text-muted);
+  color: var(--theme-faq-toggle-color, var(--theme-text-muted));
   background-color: var(--theme-faq-toggle-background, var(--theme-surface-soft-74));
   transition: color 0.22s ease, background-color 0.22s ease, transform 0.22s ease;
 }
 
+.home-faq-item:hover .home-faq-toggle,
+.home-faq-item:focus-within .home-faq-toggle,
 .home-faq-item-open .home-faq-toggle {
-  color: var(--theme-white);
+  color: var(--theme-faq-toggle-active-color, var(--theme-white));
   background-color: var(--theme-faq-toggle-active-background, var(--theme-brand-accent-62));
-  transform: rotate(180deg);
 }
 
 .home-faq-toggle svg {

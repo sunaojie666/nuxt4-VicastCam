@@ -214,10 +214,10 @@ import { setupPageSeo } from '../../utils/seo'
 const { showRequestSuccessToast, showRequestFailToast } = useSiteToast()
 
 const heroFeatures = [
-  { title: '全面兼容', text: '支持多平台多场景', icon: '/images/downIcon1.png' },
-  { title: '专业支持', text: '7*24小时技术支持', icon: '/images/downIcon2.png' },
-  { title: '简单易用', text: '提供丰富的API接口', icon: '/images/downIcon3.png' },
-  { title: '安全稳定', text: '高性能传输与隐私保护', icon: '/images/downIcon4.png' },
+  { title: '全面兼容', text: '支持多平台多场景', icon: '/images/sdk/feature-compatible.png' },
+  { title: '专业支持', text: '7*24小时技术支持', icon: '/images/sdk/feature-support.png' },
+  { title: '简单易用', text: '提供丰富的API接口', icon: '/images/sdk/feature-api.png' },
+  { title: '安全稳定', text: '高性能传输与隐私保护', icon: '/images/sdk/feature-secure.png' },
 ]
 
 const sdkGroups = [
@@ -282,7 +282,7 @@ const demoDownloads = [
     title: '投屏Demo下载',
     description: '包含无线投屏、高清投屏、多屏互动等功能示例，适用于手机投屏、会议投屏、直播投屏等场景。',
     tags: ['Windows', 'C++/C#', '86MB'],
-    image: '/images/downlod1.png',
+    image: '/images/sdk/demo-basic.png',
     theme: 'blue',
   },
   {
@@ -290,7 +290,7 @@ const demoDownloads = [
     title: '虚拟相机Demo下载',
     description: '包含虚拟摄像头创建、画面渲染、背景替换、特效展示等功能示例，适用于视频会议、直播等场景。',
     tags: ['Windows', 'C++/C#', '86MB'],
-    image: '/images/downlod2.png',
+    image: '/images/sdk/demo-camera.png',
     theme: 'purple',
   },
   {
@@ -298,7 +298,7 @@ const demoDownloads = [
     title: '虚拟相机Demo下载',
     description: '包含虚拟音频设备创建、音频混流、背景音效、等功能示例，适用于录播会议、直播场景等场景。',
     tags: ['Windows', 'C++/C#', '86MB'],
-    image: '/images/downlod3.png',
+    image: '/images/sdk/demo-stream.png',
     theme: 'cyan',
   },
 ]
@@ -367,7 +367,6 @@ const handleDemoDownload = (demo) => {
     return
   }
 
-  console.log(`sdk-demo-download:${demo.key}`)
 }
 
 const copyCode = async (code) => {

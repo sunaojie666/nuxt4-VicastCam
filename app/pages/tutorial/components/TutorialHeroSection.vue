@@ -35,7 +35,7 @@
 
 @media (min-width: 901px) {
   :root[data-theme="light"] .tutorial-hero-section {
-    background: url("/images/qiansebg.png") center / cover no-repeat;
+    background: url("/images/common/light-page-hero-bg.png") center / cover no-repeat;
   }
 }
 

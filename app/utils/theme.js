@@ -42,12 +42,17 @@ export const readThemeFromStorage = () => {
 
 // 创建页面或组件可复用的换肤上下文。
 export const createThemeContext = () => {
+  const themeCookie = useCookie(themeStorageKey, {
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 365,
+  })
   // useState 可以让当前皮肤在 Nuxt 页面和组件之间共享。
-  const currentTheme = useState('current-theme', () => readThemeFromStorage())
+  const currentTheme = useState('current-theme', () => isValidThemeCode(themeCookie.value) ? themeCookie.value : 'dark')
 
   // 初始化皮肤：优先读取本地缓存，再同步到 html 标签。
   const initTheme = () => {
     currentTheme.value = readThemeFromStorage()
+    themeCookie.value = currentTheme.value
     applyThemeToDocument(currentTheme.value)
   }
 
@@ -56,6 +61,7 @@ export const createThemeContext = () => {
     const themeCode = isValidThemeCode(code) ? code : 'dark'
 
     currentTheme.value = themeCode
+    themeCookie.value = themeCode
     applyThemeToDocument(themeCode)
 
     if (process.client) {

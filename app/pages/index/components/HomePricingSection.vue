@@ -26,8 +26,12 @@
           </div>
 
           <div class="home-pricing-price">
-            <img v-if="plan.priceImage" :src="plan.priceImage" :alt="`${plan.name} 价格`">
-            <template v-else>
+            <img v-if="plan.priceImage" class="home-pricing-price-image" :src="plan.priceImage" :alt="`${plan.name} 价格`">
+            <span v-if="plan.priceImage" class="home-pricing-price-text">
+              <strong>{{ plan.price }}</strong>
+              <span v-if="plan.unit">{{ plan.unit }}</span>
+            </span>
+            <template v-if="!plan.priceImage">
               <strong>{{ plan.price }}</strong>
               <span v-if="plan.unit">{{ plan.unit }}</span>
             </template>
@@ -40,7 +44,7 @@
               :key="feature"
               class="home-pricing-feature"
             >
-              <img class="home-pricing-check" src="/images/tick.png" alt="" aria-hidden="true">
+              <img class="home-pricing-check" src="/images/common/check-tick.png" alt="" aria-hidden="true">
               <span>{{ feature }}</span>
             </li>
           </ul>
@@ -207,6 +211,7 @@ watch(locale, () => {
 
 .home-pricing-card {
   position: relative;
+  isolation: isolate;
   width: 370px;
   height: 514px;
   display: flex;
@@ -218,18 +223,47 @@ watch(locale, () => {
   color: var(--theme-text);
   background-color: var(--theme-pricing-card-background);
   transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+    border-color 0.32s ease,
+    background-color 0.32s ease,
+    box-shadow 0.34s ease,
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-pricing-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 0%, var(--theme-brand-accent-20), transparent 58%),
+    var(--theme-pricing-card-hover-background);
+  transition: opacity 0.34s ease;
+}
+
+.home-pricing-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .home-pricing-card:hover,
 .home-pricing-card:focus-within {
   border-color: var(--theme-pricing-card-hover-border);
-  background-color: var(--theme-pricing-card-hover-background);
-  box-shadow: 0 18px 36px var(--theme-pricing-card-hover-shadow);
-  transform: translateY(-2px);
+  background-color: var(--theme-pricing-card-background);
+  box-shadow: 0 16px 34px var(--theme-pricing-card-hover-shadow);
+  transform: translateY(-6px) scale(1.012);
+}
+
+.home-pricing-card:hover::before,
+.home-pricing-card:focus-within::before {
+  opacity: 1;
+}
+
+.reveal-ready .home-pricing-card.is-revealed:hover,
+.reveal-ready .home-pricing-card.is-revealed:focus-within {
+  transform: translateY(-6px) scale(1.012);
 }
 
 .home-pricing-card:hover .home-pricing-button,
@@ -300,10 +334,16 @@ watch(locale, () => {
   flex-wrap: wrap;
 }
 
-.home-pricing-price img {
+.home-pricing-price-image {
   width: auto;
   max-height: 44px;
   object-fit: contain;
+}
+
+.home-pricing-price-text {
+  display: none;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .home-pricing-price strong {
@@ -324,6 +364,14 @@ watch(locale, () => {
   color: var(--theme-pricing-price-original);
   font-size: 14px;
   line-height: 20px;
+}
+
+:root[data-theme="light"] .home-pricing-price-image {
+  display: none;
+}
+
+:root[data-theme="light"] .home-pricing-price-text {
+  display: inline-flex;
 }
 
 .home-pricing-features {
@@ -378,7 +426,12 @@ watch(locale, () => {
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.28s ease,
+    background 0.32s ease,
+    color 0.28s ease,
+    box-shadow 0.32s ease,
+    transform 0.2s ease;
 }
 
 .home-pricing-button:hover,

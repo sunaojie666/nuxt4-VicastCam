@@ -54,9 +54,9 @@ export default defineNuxtConfig({
         { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/images/logo.png' },
-        { rel: 'shortcut icon', type: 'image/png', href: '/images/logo.png' },
-        { rel: 'apple-touch-icon', href: '/images/logo.png' },
+        { rel: 'icon', type: 'image/png', href: '/images/common/logo.png' },
+        { rel: 'shortcut icon', type: 'image/png', href: '/images/common/logo.png' },
+        { rel: 'apple-touch-icon', href: '/images/common/logo.png' },
       ],
     },
   },

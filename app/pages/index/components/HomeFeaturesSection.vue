@@ -21,12 +21,12 @@
           :style="{ '--reveal-delay': `${feature.delay}ms`, '--feature-icon-bg': feature.gradient }"
         >
           <span class="home-features-icon">
-            <img v-if="index === 0" src="/images/live/1.png" alt="" aria-hidden="true">
-            <img v-else-if="index === 1" src="/images/live/2.png" alt="" aria-hidden="true">
-            <img v-else-if="index === 2" src="/images/live/3.png" alt="" aria-hidden="true">
-            <img v-else-if="index === 3" src="/images/live/4.png" alt="" aria-hidden="true">
-            <img v-else-if="index === 4" src="/images/live/5.png" alt="" aria-hidden="true">
-            <img v-else src="/images/live/6.png" alt="" aria-hidden="true">
+            <img v-if="index === 0" src="/images/home/features/feature-1.png" alt="" aria-hidden="true">
+            <img v-else-if="index === 1" src="/images/home/features/feature-2.png" alt="" aria-hidden="true">
+            <img v-else-if="index === 2" src="/images/home/features/feature-3.png" alt="" aria-hidden="true">
+            <img v-else-if="index === 3" src="/images/home/features/feature-4.png" alt="" aria-hidden="true">
+            <img v-else-if="index === 4" src="/images/home/features/feature-5.png" alt="" aria-hidden="true">
+            <img v-else src="/images/home/features/feature-6.png" alt="" aria-hidden="true">
           </span>
 
           <h3>{{ feature.title }}</h3>
@@ -211,20 +211,32 @@ watch(locale, () => {
   width: 370px;
   min-height: 263px;
   height: auto;
+  position: relative;
   overflow: visible;
   padding: 28px 29px;
   border: 1px solid var(--theme-feature-card-border, transparent);
   border-radius: 8px;
-  background: var(--theme-feature-card-background, url("/images/live/bg.png") center / cover no-repeat);
+  background: var(--theme-feature-card-background, url("/images/home/features/card-bg.png") center / cover no-repeat);
+  transform-origin: center center;
   transition:
-    transform 0.28s ease,
-    background-color 0.28s ease,
-    box-shadow 0.28s ease;
+    border-color 0.22s ease,
+    background-color 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.22s ease;
 }
 
-.home-features-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 18px 36px var(--theme-black-22);
+.home-features-card:hover,
+.home-features-card:focus-within {
+  border-color: var(--theme-learning-card-hover-border, var(--theme-brand-accent-55));
+  background-color: var(--theme-learning-card-hover-background, var(--theme-surface-deep));
+  box-shadow: 0 18px 36px var(--theme-learning-card-hover-shadow, var(--theme-brand-accent-20));
+  transform: translateY(-4px) scale(1.05);
+  z-index: 2;
+}
+
+.reveal-ready .home-features-card.is-revealed:hover,
+.reveal-ready .home-features-card.is-revealed:focus-within {
+  transform: translateY(-4px) scale(1.05);
 }
 
 .home-features-icon {

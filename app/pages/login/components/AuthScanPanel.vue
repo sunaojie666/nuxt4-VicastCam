@@ -19,7 +19,7 @@
     </div>
 
     <p class="auth-scan-tip">
-      <img src="/images/scanCode.png" alt="" aria-hidden="true">
+      <img src="/images/login/scan-code-icon.png" alt="" aria-hidden="true">
       <span>{{ loginBox.qrLoginTip }}</span>
     </p>
 
@@ -274,15 +274,15 @@ onBeforeUnmount(() => {
 }
 
 .auth-scan-code img {
-  width: 191px;
-  height: 191px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
 .auth-scan-placeholder,
 .auth-scan-retry {
-  width: 191px;
-  height: 191px;
+  width: 100%;
+  height: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;

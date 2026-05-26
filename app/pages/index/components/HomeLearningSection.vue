@@ -41,7 +41,7 @@
 
       <NuxtLink :to="localePath('/tutorial')" class="home-learning-more theme-more-link">
         <span>{{ tutorialContent.buttonText }}</span>
-        <img src="/images/Right.png" alt="" aria-hidden="true">
+        <img src="/images/common/arrow-right.png" alt="" aria-hidden="true">
       </NuxtLink>
 
     </div>
@@ -268,6 +268,7 @@ watch(locale, () => {
 }
 
 .home-learning-card {
+  position: relative;
   overflow: hidden;
   width: 368px;
   height: 310px;
@@ -275,6 +276,21 @@ watch(locale, () => {
   background-color: var(--theme-learning-card-background, var(--theme-page));
   border: 1px solid var(--theme-learning-card-border, transparent);
   direction: ltr;
+  transition: border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+}
+
+.home-learning-card:hover,
+.home-learning-card:focus-within {
+  border-color: var(--theme-learning-card-hover-border, var(--theme-brand-accent-55));
+  background-color: var(--theme-learning-card-hover-background, var(--theme-surface-deep));
+  box-shadow: 0 18px 36px var(--theme-learning-card-hover-shadow, var(--theme-brand-accent-20));
+  transform: translateY(-4px) scale(1.05);
+  z-index: 2;
+}
+
+.reveal-ready .home-learning-card.is-revealed:hover,
+.reveal-ready .home-learning-card.is-revealed:focus-within {
+  transform: translateY(-4px) scale(1.05);
 }
 
 :root[data-theme="light"] .home-learning-card {

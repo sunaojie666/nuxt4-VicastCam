@@ -21,7 +21,11 @@
             <article
               v-for="platform in platforms"
               :key="platform.key"
-              :class="['download-card', `download-card-${platform.key}`]"
+              :class="[
+                'download-card',
+                `download-card-${platform.key}`,
+                { 'download-card-qr-open': activeQrPlatform === platform.key },
+              ]"
               :style="{
                 '--download-desktop-bg': `url(${platform.image})`,
                 '--download-mobile-bg': `url(${platform.mobileBackground})`,
@@ -71,6 +75,26 @@
               </button>
 
               <p class="download-card-footnote">{{ platform.system }}</p>
+
+              <Transition name="download-qr-pop">
+                <div v-if="activeQrPlatform === platform.key" class="download-qr-panel">
+                  <button
+                    type="button"
+                    class="download-qr-close"
+                    :aria-label="`关闭${platform.name}下载二维码`"
+                    @click="closeDownloadQr"
+                  >
+                    <Icon name="lucide:x" aria-hidden="true" />
+                  </button>
+
+                  <div class="download-qr-code" aria-hidden="true">
+                    <img :src="platform.qrImage" alt="">
+                  </div>
+
+                  <strong>{{ platform.qrTitle }}</strong>
+                  <span>{{ platform.qrDescription }}</span>
+                </div>
+              </Transition>
             </article>
           </div>
 
@@ -116,10 +140,13 @@ const platforms = [
     system: '支持Android 8.0及以上系统',
     image: '/images/download/win.png',
     actionLabel: '立即下载',
-    actionIcon: '/images/xiazai.png',
-    desktopActionIcon: '/images/saomagreen.png',
-    mobileBackground: '/images/live/anzhuobg.png',
-    mobileIcon: '/images/live/anzhuoshouji.png',
+    actionIcon: '/images/download/action-download.png',
+    desktopActionIcon: '/images/download/action-qr-green.png',
+    mobileBackground: '/images/download/mobile-android-bg.png',
+    mobileIcon: '/images/download/mobile-android-icon.png',
+    qrImage: '/images/download/action-qr-green.png',
+    qrTitle: '扫码下载 Android 版',
+    qrDescription: '请使用手机扫码下载安装',
   },
   {
     key: 'ios',
@@ -131,10 +158,13 @@ const platforms = [
     system: '支持iOS 13.0及以上系统',
     image: '/images/download/ios.png',
     actionLabel: 'App Store',
-    actionIcon: '/images/xiazai.png',
-    desktopActionIcon: '/images/saomagzi.png',
-    mobileBackground: '/images/live/iosbg.png',
-    mobileIcon: '/images/live/iosshouji.png',
+    actionIcon: '/images/download/action-download.png',
+    desktopActionIcon: '/images/download/action-qr-purple.png',
+    mobileBackground: '/images/download/mobile-ios-bg.png',
+    mobileIcon: '/images/download/mobile-ios-icon.png',
+    qrImage: '/images/download/action-qr-purple.png',
+    qrTitle: '扫码前往 App Store',
+    qrDescription: '请使用手机扫码下载 iOS 版',
   },
   {
     key: 'windows',
@@ -146,10 +176,13 @@ const platforms = [
     system: '适用 Windows 10及以上系统',
     image: '/images/download/android.png',
     actionLabel: '立即下载',
-    actionIcon: '/images/xiazai.png',
-    desktopActionIcon: '/images/xiazai.png',
-    mobileBackground: '/images/live/winbg.png',
-    mobileIcon: '/images/live/winshouji.png',
+    actionIcon: '/images/download/action-download.png',
+    desktopActionIcon: '/images/download/action-download.png',
+    mobileBackground: '/images/download/mobile-windows-bg.png',
+    mobileIcon: '/images/download/mobile-windows-icon.png',
+    qrImage: '',
+    qrTitle: '',
+    qrDescription: '',
   },
 ]
 
@@ -157,22 +190,22 @@ const reasonCards = [
   {
     title: '安全可靠',
     text: '多重安全防护机制，保障您的数据与账号安全',
-    image: '/images/download/dsc1.png',
+    image: '/images/download/reason-fast.png',
   },
   {
     title: '持续更新',
     text: '我们持续优化产品，为您带来更稳定的使用体验',
-    image: '/images/download/dsc2.png',
+    image: '/images/download/reason-secure.png',
   },
   {
     title: '专业支持',
     text: '7×24 小时技术支持，快速响应您的问题',
-    image: '/images/download/dsc3.png',
+    image: '/images/download/reason-cross-platform.png',
   },
   {
     title: '使用教程',
     text: '详细的视频教程与功能说明，帮助您快速上手',
-    image: '/images/download/dsc4.png',
+    image: '/images/download/reason-support.png',
   },
 ]
 
@@ -181,7 +214,15 @@ const handleDownload = (platform) => {
     return
   }
 
-  console.log(`download:${platform.key}`)
+  if (platform.key === 'android' || platform.key === 'ios') {
+    activeQrPlatform.value = activeQrPlatform.value === platform.key ? '' : platform.key
+  }
+}
+
+const activeQrPlatform = ref('')
+
+const closeDownloadQr = () => {
+  activeQrPlatform.value = ''
 }
 
 setupPageSeo('download')
@@ -218,7 +259,7 @@ setupPageSeo('download')
 
 @media (min-width: 901px) {
   :root[data-theme="light"] .download-hero {
-    background: url("/images/qiansebg.png") center / cover no-repeat;
+    background: url("/images/common/light-page-hero-bg.png") center / cover no-repeat;
   }
 }
 
@@ -279,7 +320,7 @@ setupPageSeo('download')
 }
 
 .download-section-heading h2 {
-  color: var(--theme-white);
+  color: var(--theme-download-reason-title, var(--theme-white));
   font-size: clamp(26px, 3vw, 36px);
   font-weight: 800;
   line-height: 1.2;
@@ -287,7 +328,7 @@ setupPageSeo('download')
 
 .download-section-heading p {
   margin-top: 12px;
-  color: var(--theme-text-muted-alt);
+  color: var(--theme-download-reason-text, var(--theme-text-muted-alt));
   font-size: 14px;
   line-height: 22px;
 }
@@ -394,11 +435,27 @@ setupPageSeo('download')
   background-repeat: no-repeat;
 }
 
+.download-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  background: linear-gradient(180deg, var(--theme-black-36), rgba(0, 0, 0, 0.64));
+  pointer-events: none;
+  transition: opacity 0.26s ease;
+}
+
+.download-card-qr-open::before {
+  opacity: 1;
+}
+
 .download-card-title {
   position: absolute;
   top: 80px;
   left: 197px;
   width: 118px;
+  z-index: 2;
 }
 
 .download-card-title h3 {
@@ -419,6 +476,7 @@ setupPageSeo('download')
   position: absolute;
   top: 19px;
   right: 19px;
+  z-index: 2;
   width: 36px;
   height: 36px;
   display: inline-flex;
@@ -440,6 +498,7 @@ setupPageSeo('download')
   left: 24px;
   right: 24px;
   bottom: 111px;
+  z-index: 2;
   display: grid;
   gap: 5px;
   padding: 12px 14px 11px;
@@ -472,6 +531,7 @@ setupPageSeo('download')
   left: 24px;
   right: 24px;
   bottom: 49px;
+  z-index: 2;
   height: 47px;
   display: inline-flex;
   align-items: center;
@@ -513,6 +573,7 @@ setupPageSeo('download')
   left: 24px;
   right: 24px;
   bottom: 18px;
+  z-index: 2;
   color: var(--theme-white-86);
   font-size: 11px;
   font-weight: 700;
@@ -522,6 +583,101 @@ setupPageSeo('download')
 
 .download-platform-icon {
   display: none;
+}
+
+.download-qr-panel {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  z-index: 5;
+  min-height: 240px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  padding: 26px 18px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  color: var(--theme-white);
+  background: rgba(15, 23, 42, 0.92);
+  box-shadow: 0 22px 48px var(--theme-black-36);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.download-qr-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--theme-white-86);
+  background: var(--theme-white-10);
+  cursor: pointer;
+}
+
+.download-qr-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.download-qr-code {
+  width: 118px;
+  height: 118px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border-radius: 14px;
+  background: var(--theme-white);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.download-qr-code img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.download-qr-panel strong {
+  margin-top: 18px;
+  color: var(--theme-white);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+}
+
+.download-qr-panel span {
+  margin-top: 6px;
+  color: var(--theme-text-muted);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.download-qr-pop-enter-active,
+.download-qr-pop-leave-active {
+  transition: opacity 0.24s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), filter 0.24s ease;
+  transform-origin: center bottom;
+}
+
+.download-qr-pop-enter-from,
+.download-qr-pop-leave-to {
+  opacity: 0;
+  filter: blur(5px);
+  transform: translateY(28px) scale(0.72);
+}
+
+.download-qr-pop-enter-to,
+.download-qr-pop-leave-from {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
 }
 
 @media (min-width: 1180px) {
@@ -638,6 +794,7 @@ setupPageSeo('download')
     align-items: center;
     justify-content: center;
     border-radius: min(2.2222vw, 24px);
+    z-index: 2;
   }
 
   .download-platform-icon img {
@@ -649,6 +806,63 @@ setupPageSeo('download')
   .download-card-title h3 {
     font-size: clamp(12px, 3.3333vw, 36px);
     line-height: 1.25;
+  }
+
+  .download-qr-panel {
+    left: auto;
+    right: min(3.7037vw, 40px);
+    bottom: 50%;
+    width: min(23.3333vw, 252px);
+    min-height: min(17.7778vw, 192px);
+    padding: min(2.2222vw, 24px) min(1.6667vw, 18px);
+    border-radius: min(1.3889vw, 15px);
+    transform: translateY(50%);
+  }
+
+  .download-qr-code {
+    width: min(10.3704vw, 112px);
+    height: min(10.3704vw, 112px);
+    padding: min(2.2222vw, 24px);
+    border-radius: min(1.2963vw, 14px);
+  }
+
+  .download-qr-close {
+    top: min(0.9259vw, 10px);
+    right: min(0.9259vw, 10px);
+    width: min(2.5926vw, 28px);
+    height: min(2.5926vw, 28px);
+  }
+
+  .download-qr-close svg {
+    width: min(1.3889vw, 15px);
+    height: min(1.3889vw, 15px);
+  }
+
+  .download-qr-panel strong {
+    margin-top: min(1.1111vw, 12px);
+    font-size: clamp(6px, 1.6667vw, 18px);
+    line-height: 1.2;
+  }
+
+  .download-qr-panel span {
+    margin-top: min(0.5556vw, 6px);
+    font-size: clamp(5px, 1.2037vw, 13px);
+    line-height: 1.2;
+  }
+
+  .download-qr-pop-enter-active,
+  .download-qr-pop-leave-active {
+    transform-origin: right center;
+  }
+
+  .download-qr-pop-enter-from,
+  .download-qr-pop-leave-to {
+    transform: translateY(50%) scale(0.72);
+  }
+
+  .download-qr-pop-enter-to,
+  .download-qr-pop-leave-from {
+    transform: translateY(50%) scale(1);
   }
 
   .download-card-title p {

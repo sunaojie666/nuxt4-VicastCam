@@ -18,6 +18,7 @@ const createStrapiRequest = () => {
 
 const homeRequestOptions = {
   skipGlobalLoading: true,
+  skipAuthExpiredRedirect: true,
 }
 
 // 首页内容接口，按当前语言读取 Strapi 中配置的首屏内容。
@@ -31,9 +32,21 @@ export const getHomes = (locale) => {
   })
 }
 
+// 关于我们页面文案接口，对应 Strapi 里的 api::about.about。
+export const getAbouts = (locale) => {
+  return createStrapiRequest().get('/abouts', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 // 导航栏接口，对应 Strapi 里的 api::navigation.navigation，REST 路由为 /api/navigations。
 export const getNavigation = (locale) => {
   return createStrapiRequest().get('/navigations', {
+    ...homeRequestOptions,
     params: {
       locale,
     },
@@ -43,6 +56,7 @@ export const getNavigation = (locale) => {
 // 登录页文案接口，对应 Strapi 里的 api::login.login，按当前语言读取。
 export const getLogin = (locale) => {
   return createStrapiRequest().get('/logins', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',
@@ -163,6 +177,7 @@ export const getPricings = (locale) => {
 // 个人中心文案接口，对应 Strapi 里的 api::profile.profile。
 export const getProfiles = (locale) => {
   return createStrapiRequest().get('/profiles', {
+    ...homeRequestOptions,
     params: {
       locale,
       populate: '*',

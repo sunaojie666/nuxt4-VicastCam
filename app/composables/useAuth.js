@@ -142,10 +142,6 @@ export const useAuth = () => {
     authUser.value = user
     authUserCookie.value = user
 
-    if (import.meta.client) {
-      console.log('登录用户资料:', user)
-    }
-
     return user
   }
 

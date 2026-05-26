@@ -325,6 +325,9 @@
   --theme-learning-background: var(--theme-surface-alt);
   --theme-learning-card-background: var(--theme-page);
   --theme-learning-card-border: transparent;
+  --theme-learning-card-hover-background: rgba(6, 30, 50, 1);
+  --theme-learning-card-hover-border: var(--theme-brand-accent-72);
+  --theme-learning-card-hover-shadow: var(--theme-brand-accent-20);
   --theme-learning-card-title: var(--theme-white);
   --theme-learning-tag-muted-background: var(--theme-panel-muted);
   --theme-learning-tag-muted-text: var(--theme-text-muted);
@@ -619,6 +622,9 @@
   --theme-learning-background: rgba(255, 255, 255, 1);
   --theme-learning-card-background: rgba(255, 255, 255, 1);
   --theme-learning-card-border: rgba(229, 229, 229, 1);
+  --theme-learning-card-hover-background: rgba(239, 252, 255, 1);
+  --theme-learning-card-hover-border: rgba(6, 182, 212, 0.3);
+  --theme-learning-card-hover-shadow: rgba(6, 182, 212, 0.16);
   --theme-learning-card-title: rgba(24, 24, 24, 1);
   --theme-learning-tag-muted-background: rgba(191, 219, 254, 1);
   --theme-learning-tag-muted-text: rgba(59, 130, 246, 1);
@@ -698,7 +704,7 @@
   --theme-profile-tab-count-active-background: rgba(219, 234, 254, 1);
   --theme-profile-tab-count-active-text: rgba(40, 115, 253, 1);
   --theme-sdk-hero-background:
-    url("/images/qiansebg.png") center / cover no-repeat;
+    url("/images/common/light-page-hero-bg.png") center / cover no-repeat;
   --theme-sdk-hero-title: rgba(40, 115, 253, 1);
   --theme-sdk-hero-text: rgba(21, 49, 112, 1);
   --theme-sdk-card-background: rgba(255, 255, 255, 1);

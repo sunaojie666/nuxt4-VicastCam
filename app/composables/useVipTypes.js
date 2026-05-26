@@ -8,9 +8,9 @@ const badgeImages = [
 ]
 const themes = ['theme-cyan', 'theme-blue', 'theme-violet']
 const homePriceImages = {
-  '9.99': '/images/9.99.png',
-  '69.99': '/images/69.99.png',
-  '99.99': '/images/99.99.png',
+  '9.99': '/images/pricing/price-9-99.png',
+  '69.99': '/images/pricing/price-69-99.png',
+  '99.99': '/images/pricing/price-99-99.png',
 }
 
 let vipTypesRequest = null
@@ -22,7 +22,7 @@ const fallbackPlans = [
     description: '适合想体验软件功能的用户',
     subtitle: '低门槛随心用，全功能按月畅享',
     price: '¥9.99',
-    priceImage: '/images/9.99.png',
+    priceImage: '/images/pricing/price-9-99.png',
     originalPrice: '',
     unit: '/月',
     cta: '购买',
@@ -39,7 +39,7 @@ const fallbackPlans = [
     description: '适合想体验软件功能的用户',
     subtitle: '超值特惠，性价比拉满更省钱',
     price: '¥69.99',
-    priceImage: '/images/69.99.png',
+    priceImage: '/images/pricing/price-69-99.png',
     originalPrice: '',
     unit: '/年',
     cta: '购买',
@@ -56,7 +56,7 @@ const fallbackPlans = [
     description: '适合想体验软件功能的用户',
     subtitle: '一次付费永久畅用，免费更新',
     price: '¥99.99',
-    priceImage: '/images/99.99.png',
+    priceImage: '/images/pricing/price-99-99.png',
     originalPrice: '',
     unit: '',
     cta: '购买',

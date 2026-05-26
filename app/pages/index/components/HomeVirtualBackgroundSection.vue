@@ -195,7 +195,7 @@ watch(locale, () => {
   overflow: hidden;
   width: 100%;
   aspect-ratio: 887 / 582;
-  background: url("/images/Layer.png") center / 100% 100% no-repeat;
+  background: url("/images/home/virtual/camera-frame.png") center / 100% 100% no-repeat;
 }
 
 .home-virtual-video {
@@ -216,7 +216,7 @@ watch(locale, () => {
   width: 100%;
   aspect-ratio: 887 / 385;
   margin: 0 auto;
-  background: url("/images/layer2.png") center top / 100% 100% no-repeat;
+  background: url("/images/home/virtual/camera-reflection-frame.png") center top / 100% 100% no-repeat;
 }
 
 .home-virtual-reflection-video {

@@ -70,12 +70,12 @@
           <h3>第一步：打开VicastCam手机App，进入直播间</h3>
           <p>点击软件中的直播入口，按照提示进入直播预览界面，并确认摄像头和麦克风权限已经开启。</p>
 
-          <img class="faq-article-image faq-article-image-small" src="/images/loginbg.png" alt="VicastCam手机端直播界面">
+          <img class="faq-article-image faq-article-image-small" src="/images/login/background.png" alt="VicastCam手机端直播界面">
 
           <h3>第二步：打开VicastCam手机App，进入直播间</h3>
           <p>点击软件中的直播入口进入直播间后，选择合适的背景效果和画面比例。你也可以在直播过程中随时调整画面参数。</p>
 
-          <img class="faq-article-image" src="/images/layer2.png" alt="VicastCam桌面端界面">
+          <img class="faq-article-image" src="/images/home/virtual/camera-reflection-frame.png" alt="VicastCam桌面端界面">
 
           <p class="faq-image-caption">图片备注：丰富的预设背景与自定义导入</p>
         </div>

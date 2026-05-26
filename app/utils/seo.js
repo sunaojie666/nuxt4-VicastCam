@@ -915,11 +915,11 @@ export const setupPageSeo = (pageKey, options = {}) => {
     ogTitle: () => pageSeo.value.title,
     ogDescription: () => pageSeo.value.description,
     ogType: 'website',
-    ogImage: () => pageSeo.value.image || '/images/logo.png',
+    ogImage: () => pageSeo.value.image || '/images/common/logo.png',
     twitterCard: 'summary_large_image',
     twitterTitle: () => pageSeo.value.title,
     twitterDescription: () => pageSeo.value.description,
-    twitterImage: () => pageSeo.value.image || '/images/logo.png',
+    twitterImage: () => pageSeo.value.image || '/images/common/logo.png',
   })
 }
 

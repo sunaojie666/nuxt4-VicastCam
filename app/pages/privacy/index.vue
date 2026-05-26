@@ -3,14 +3,29 @@
     <SiteHeader />
 
     <main class="privacy-page-main">
+      <section class="privacy-hero-section" aria-labelledby="privacy-hero-title">
+        <div class="privacy-hero-inner">
+          <span class="privacy-hero-eyebrow">隐私政策</span>
+
+          <h1 id="privacy-hero-title" class="privacy-hero-title">
+            <span>VicastCam</span>
+            <span class="theme-gradient-text">用户隐私与数据保护</span>
+          </h1>
+
+          <p class="privacy-hero-subtitle">
+            <span>了解我们如何收集、使用、保存和保护您的个人信息。</span>
+          </p>
+        </div>
+      </section>
+
       <div class="page-container privacy-layout">
         <aside class="privacy-sidebar" aria-label="政策目录">
           <button
-            v-for="item in policyMenuItems"
+            v-for="item in privacyMenuItems"
             :key="item.key"
             type="button"
-            :class="['privacy-menu-item', { 'privacy-menu-item-active': item.key === activePolicyKey }]"
-            @click="activePolicyKey = item.key"
+            :class="['privacy-menu-item', { 'privacy-menu-item-active': item.key === activeSectionKey }]"
+            @click="activeSectionKey = item.key"
           >
             <Icon :name="item.icon" aria-hidden="true" />
             <span>{{ item.label }}</span>
@@ -21,9 +36,9 @@
         <article class="privacy-content-card" aria-labelledby="privacy-title">
           <header class="privacy-content-header">
             <nav class="privacy-breadcrumb" aria-label="当前位置">
-              <span>常见问题</span>
+              <span>隐私政策</span>
               <Icon name="lucide:chevron-right" aria-hidden="true" />
-              <strong>如何下载与安装VicastCam</strong>
+              <strong>{{ activeSectionTitle }}</strong>
             </nav>
 
             <button type="button" class="privacy-share-button" aria-label="分享">
@@ -32,11 +47,12 @@
           </header>
 
           <div class="privacy-article">
-            <h1 id="privacy-title">{{ activePolicy.title }}</h1>
+            <h1 id="privacy-title">{{ privacyPolicy.title }}</h1>
 
             <section
-              v-for="section in activePolicy.sections"
-              :key="section.title"
+              v-for="section in privacyPolicy.sections"
+              :key="section.key"
+              :id="section.key"
               class="privacy-section"
             >
               <h2>{{ section.title }}</h2>
@@ -56,28 +72,21 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import { setupPageSeo } from '../../utils/seo'
 
-const activePolicyKey = ref('privacy')
-
-const policyMenuItems = [
-  { key: 'privacy', label: '隐私政策', icon: 'lucide:network' },
-  { key: 'terms', label: '服务条款', icon: 'lucide:badge-check' },
-  { key: 'sales', label: '销售政策', icon: 'lucide:scroll-text' },
-  { key: 'security', label: '安全与保障', icon: 'lucide:shield-check' },
-  { key: 'gdpr', label: 'GDPR与数据政策', icon: 'lucide:bar-chart-3' },
-  { key: 'feedback', label: '反馈意见', icon: 'lucide:message-circle' },
-]
+const activeSectionKey = ref('privacy-overview')
 
 const privacyPolicy = {
   title: '隐私政策',
   sections: [
     {
-      title: '',
+      key: 'privacy-overview',
+      title: '概述',
       paragraphs: [
         '保护个人信息是VicastCam的核心价值观之一。本隐私声明详细说明了我们如何收集和使用您在我们网站上提供的个人信息。同时，它也告知了您在个人信息使用方面的选择权，以及您可以采取哪些措施来更改这些信息，或要求我们纠正或删除相关信息。',
         'VicastCam遵守美国商务部制定的安全港框架规定，该框架涉及从欧盟地区收集、使用和存储数据的相关事项。',
       ],
     },
     {
+      key: 'privacy-collection',
       title: '信息收集',
       paragraphs: [
         '与大多数网站一样，我们也会自动收集信息，并将这些信息存储在日志文件中。这些信息包括互联网协议地址、浏览器类型、互联网服务供应商、访问页面、操作系统、日期和时间戳以及用户点击流数据。',
@@ -87,7 +96,8 @@ const privacyPolicy = {
       ],
     },
     {
-      title: 'cookies',
+      key: 'privacy-cookies',
+      title: 'Cookie 使用',
       paragraphs: [
         '“Cookie”是一种小型文件，其中包含一串字符。当您访问某个网站时，该网站会将这种Cookie发送到您的电脑上。下次您再次访问同一网站时，Cookie能够帮助网站识别您的浏览器。',
         'Cookie可以用来存储用户的偏好设置以及其他相关信息。您可以重新设置浏览器，让其拒绝所有Cookie，或者在发送新的Cookie被发送时得到提示。不过，如果没有Cookie的话，一些网站的功能或服务可能无法正常使用。',
@@ -97,56 +107,15 @@ const privacyPolicy = {
   ],
 }
 
-const policyContentMap = {
-  privacy: privacyPolicy,
-  terms: {
-    title: '服务条款',
-    sections: [
-      {
-        title: '',
-        paragraphs: ['本页面用于展示VicastCam服务条款内容。您可以在后台配置完整条款后替换这里的页面数据。'],
-      },
-    ],
-  },
-  sales: {
-    title: '销售政策',
-    sections: [
-      {
-        title: '',
-        paragraphs: ['本页面用于展示VicastCam销售政策内容。'],
-      },
-    ],
-  },
-  security: {
-    title: '安全与保障',
-    sections: [
-      {
-        title: '',
-        paragraphs: ['本页面用于展示VicastCam安全与保障相关说明。'],
-      },
-    ],
-  },
-  gdpr: {
-    title: 'GDPR与数据政策',
-    sections: [
-      {
-        title: '',
-        paragraphs: ['本页面用于展示GDPR与数据政策相关说明。'],
-      },
-    ],
-  },
-  feedback: {
-    title: '反馈意见',
-    sections: [
-      {
-        title: '',
-        paragraphs: ['如果您对VicastCam有任何建议或问题，欢迎通过官方联系方式向我们反馈。'],
-      },
-    ],
-  },
-}
+const privacyMenuItems = [
+  { key: 'privacy-overview', label: '概述', icon: 'lucide:shield-check' },
+  { key: 'privacy-collection', label: '信息收集', icon: 'lucide:database' },
+  { key: 'privacy-cookies', label: 'Cookie 使用', icon: 'lucide:cookie' },
+]
 
-const activePolicy = computed(() => policyContentMap[activePolicyKey.value] || privacyPolicy)
+const activeSectionTitle = computed(() => {
+  return privacyMenuItems.find(item => item.key === activeSectionKey.value)?.label || privacyPolicy.title
+})
 
 setupPageSeo('privacy')
 </script>
@@ -170,21 +139,88 @@ setupPageSeo('privacy')
   background: var(--theme-route-page-background, var(--page-route-background));
 }
 
+.privacy-hero-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  color: var(--theme-route-card-title, var(--theme-white));
+  background:
+    radial-gradient(circle at 50% 42%, var(--theme-extra-14-165-233-018), transparent 34%),
+    linear-gradient(180deg, var(--theme-surface) 0%, var(--theme-extra-13-22-39-1) 100%);
+  border-bottom: none;
+}
+
+@media (min-width: 901px) {
+  :root[data-theme="light"] .privacy-hero-section {
+    background: url("/images/common/light-page-hero-bg.png") center / cover no-repeat;
+  }
+}
+
+.privacy-hero-inner {
+  width: min(100%, var(--page-max-width));
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 34px var(--page-padding-x) 32px;
+  text-align: center;
+}
+
+.privacy-hero-eyebrow {
+  min-width: 76px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid var(--theme-primary-border);
+  border-radius: 999px;
+  color: var(--theme-primary-light);
+  background: var(--theme-primary-softer);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.privacy-hero-title {
+  max-width: 100%;
+  margin-top: 18px;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 52px;
+  overflow-wrap: anywhere;
+}
+
+.privacy-hero-title span {
+  display: block;
+}
+
+.privacy-hero-subtitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 14px;
+  color: var(--theme-route-card-text, var(--theme-text-muted));
+  font-size: 14px;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+}
+
 .privacy-layout {
   display: grid;
   grid-template-columns: 266px 830px;
   justify-content: center;
   align-items: start;
   gap: 20px;
-  padding-top: 68px;
+  padding-top: 32px;
   padding-bottom: 84px;
 }
 
 .privacy-sidebar {
   width: 266px;
-  height: 338px;
+  height: fit-content;
   display: grid;
   gap: 0;
+  overflow: hidden;
   padding: 8px;
   border: 1px solid var(--theme-route-card-border, var(--theme-border-panel));
   border-radius: var(--theme-route-card-radius, 15px);
@@ -194,23 +230,23 @@ setupPageSeo('privacy')
 
 .privacy-menu-item {
   width: 100%;
-  height: 39px;
+  min-height: 48px;
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) 14px;
+  grid-template-columns: 18px minmax(0, 1fr) 14px;
   align-items: center;
   gap: 10px;
   padding: 0 10px;
   border-radius: 8px;
   color: var(--theme-text-muted);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 20px;
   text-align: left;
   cursor: pointer;
 }
 
 .privacy-menu-item svg {
-  width: 13px;
-  height: 13px;
+  width: 16px;
+  height: 16px;
 }
 
 .privacy-menu-item span {
@@ -226,7 +262,7 @@ setupPageSeo('privacy')
 
 .privacy-menu-item-active {
   color: var(--theme-accent);
-  background: var(--theme-extra-14-116-144-045);
+  background: var(--theme-sdk-sidebar-active-background, var(--theme-extra-14-116-144-045));
 }
 
 .privacy-menu-item-active .privacy-menu-chevron {
@@ -236,7 +272,7 @@ setupPageSeo('privacy')
 .privacy-content-card {
   width: 830px;
   min-width: 0;
-  min-height: 844px;
+  min-height: 680px;
   padding: 22px 24px 38px;
   border: 1px solid var(--theme-route-card-border, var(--theme-border-panel-soft));
   border-radius: var(--theme-route-card-radius, 15px);
@@ -277,7 +313,7 @@ setupPageSeo('privacy')
 }
 
 .privacy-breadcrumb strong {
-  color: var(--theme-white-90);
+  color: var(--theme-route-card-title, var(--theme-white-90));
   font-weight: 600;
 }
 
@@ -304,7 +340,7 @@ setupPageSeo('privacy')
 }
 
 .privacy-article h1 {
-  color: var(--theme-white);
+  color: var(--theme-route-card-title, var(--theme-white));
   font-size: 30px;
   font-weight: 900;
   line-height: 42px;
@@ -316,7 +352,7 @@ setupPageSeo('privacy')
 
 .privacy-section h2 {
   margin-bottom: 8px;
-  color: var(--theme-white);
+  color: var(--theme-route-card-title, var(--theme-white));
   font-size: 18px;
   font-weight: 800;
   line-height: 28px;
@@ -340,7 +376,7 @@ setupPageSeo('privacy')
   .privacy-layout {
     grid-template-columns: 1fr;
     gap: 16px;
-    padding-top: 28px;
+    padding-top: 22px;
     padding-bottom: 44px;
   }
 
@@ -354,6 +390,16 @@ setupPageSeo('privacy')
     width: 100%;
     min-height: 0;
     padding: 20px 16px 30px;
+  }
+
+  .privacy-hero-inner {
+    min-height: 360px;
+    padding-top: 28px;
+  }
+
+  .privacy-hero-title {
+    font-size: 32px;
+    line-height: 40px;
   }
 }
 

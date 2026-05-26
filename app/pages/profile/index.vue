@@ -366,6 +366,7 @@ watch(locale, () => {
 .profile-user-card h1 {
   max-width: 100%;
   margin-top: 18px;
+  color: var(--theme-profile-section-title, var(--profile-text));
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;

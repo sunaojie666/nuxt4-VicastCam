@@ -17,7 +17,7 @@
 
     <div class="home-hero-inner">
       <div v-if="heroBadgeText" :key="heroBadgeText" class="home-hero-eyebrow">
-        <img src="/images/star.png" alt="" aria-hidden="true">
+        <img src="/images/common/badge-star.png" alt="" aria-hidden="true">
         <b>{{ heroBadgeText }}</b>
       </div>
 
@@ -25,7 +25,7 @@
         <span>{{ heroTitle }}</span>
         <span class="theme-gradient-text">
           {{ heroSubtitle }}
-          <img class="home-hero-title-line" src="/images/path.png" alt="" aria-hidden="true">
+          <img class="home-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true">
         </span>
       </h1>
 
@@ -37,24 +37,24 @@
       <div class="home-hero-actions" aria-label="下载VicastCam">
         <a href="#" class="home-hero-download home-hero-download-light">
           <span class="home-hero-download-icon-wrap" aria-hidden="true">
-            <img class="home-hero-download-icon-default" src="/images/download-icons/apple-default.svg" alt="">
-            <img class="home-hero-download-icon-active" src="/images/download-icons/apple-active.svg" alt="">
+            <img class="home-hero-download-icon-default" src="/images/home/download-buttons/apple-default.svg" alt="">
+            <img class="home-hero-download-icon-active" src="/images/home/download-buttons/apple-active.svg" alt="">
           </span>
           <span>{{ appStoreUrl }}</span>
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-light">
           <span class="home-hero-download-icon-wrap" aria-hidden="true">
-            <img class="home-hero-download-icon-default" src="/images/download-icons/android-default.svg" alt="">
-            <img class="home-hero-download-icon-active" src="/images/download-icons/android-active.svg" alt="">
+            <img class="home-hero-download-icon-default" src="/images/home/download-buttons/android-default.svg" alt="">
+            <img class="home-hero-download-icon-active" src="/images/home/download-buttons/android-active.svg" alt="">
           </span>
           <span>{{ googlePlayUrl }}</span>
         </a>
 
         <a href="#" class="home-hero-download home-hero-download-primary">
           <span class="home-hero-download-icon-wrap" aria-hidden="true">
-            <img class="home-hero-download-icon-default" src="/images/download-icons/windows-default.svg" alt="">
-            <img class="home-hero-download-icon-active" src="/images/download-icons/windows-active.svg" alt="">
+            <img class="home-hero-download-icon-default" src="/images/home/download-buttons/windows-default.svg" alt="">
+            <img class="home-hero-download-icon-active" src="/images/home/download-buttons/windows-active.svg" alt="">
           </span>
           <span>{{ desktopClientUrl }}</span>
         </a>
@@ -73,14 +73,14 @@
 
         <div class="home-hero-metric">
           <span class="home-hero-score-icons" aria-hidden="true">
-            <img v-for="star in 5" :key="star" src="/images/score.png" alt="">
+            <img v-for="star in 5" :key="star" src="/images/common/rating-star.png" alt="">
           </span>
           <strong>4.9</strong>
           <span>{{ ratingLabel }}</span>
         </div>
 
         <div class="home-hero-metric">
-          <img class="home-hero-download-icon" src="/images/download.png" alt="" aria-hidden="true">
+          <img class="home-hero-download-icon" src="/images/common/download-metric.png" alt="" aria-hidden="true">
           <strong>10万+</strong>
           <span>{{ downloadCountLabel }}</span>
         </div>
@@ -191,7 +191,8 @@ watch(locale, () => {
 .home-hero-section {
   position: relative;
   width: 100%;
-  height: 929px;
+  min-height: 929px;
+  height: auto;
   display: flex;
   justify-content: center;
   overflow: hidden;
@@ -219,7 +220,7 @@ watch(locale, () => {
   position: relative;
   z-index: 1;
   width: min(100%, var(--page-max-width));
-  min-height: 100%;
+  min-height: 929px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -573,6 +574,7 @@ watch(locale, () => {
   }
 
   .home-hero-inner {
+    min-height: 720px;
     padding-top: 62px;
     padding-bottom: 58px;
   }
