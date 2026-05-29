@@ -43,6 +43,17 @@ export const getAbouts = (locale) => {
   })
 }
 
+// 下载页文案接口，对应 Strapi 里的 api::download.download。
+export const getDownloads = (locale) => {
+  return createStrapiRequest().get('/downloads', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 // 导航栏接口，对应 Strapi 里的 api::navigation.navigation，REST 路由为 /api/navigations。
 export const getNavigation = (locale) => {
   return createStrapiRequest().get('/navigations', {

@@ -27,7 +27,7 @@
           v-if="!isPasswordLogin"
           type="button"
           class="auth-code-button"
-          :disabled="isSendingCode || codeCountdown > 0"
+          :disabled="isSendingCode || puzzleVisible || codeCountdown > 0"
           @click="handleSendEmailCode"
         >
           {{ codeButtonText }}
@@ -48,7 +48,7 @@
       {{ loginMethodToggleText }}
     </button>
 
-    <button type="submit" class="auth-submit-button" :disabled="isLoggingIn">
+    <button type="submit" class="auth-submit-button" :disabled="isLoggingIn || puzzleVisible">
       {{ submitButtonText }}
     </button>
 
@@ -62,10 +62,33 @@
       </span>
     </label>
   </form>
+
+  <ClientOnly>
+    <Vcode
+      :show="puzzleVisible"
+      class-name="auth-puzzle"
+      :imgs="puzzleImages"
+      :canvas-width="puzzleCanvasWidth"
+      :canvas-height="puzzleCanvasHeight"
+      :slider-size="48"
+      :puzzle-scale="0.9"
+      :range="8"
+      :slider-text="puzzleText.slider"
+      :success-text="puzzleText.success"
+      :fail-text="puzzleText.failed"
+      :interference-diagram-count="3"
+      :z-index="9997"
+      @success="handlePuzzleSuccess"
+      @fail="handlePuzzleFail"
+      @close="closePuzzle"
+    />
+  </ClientOnly>
 </template>
 
 <script setup>
 import { sendEmailCode } from '../../../api/request/auth'
+import Vcode from 'vue-sliding-puzzle'
+import 'vue-sliding-puzzle/css'
 
 const props = defineProps({
   loginMethod: {
@@ -89,14 +112,44 @@ const agreementModel = defineModel('agreementAccepted', {
 const { requestLoadingText, showErrorToast, showRequestFailToast, showRequestSuccessToast } = useSiteToast()
 const { loginWithEmailCode, loginWithPassword } = useAuth()
 const localePath = useLocalePath()
+const { locale } = useI18n()
 
 const emailAddress = ref('')
 const loginCredential = ref('')
 const isSendingCode = ref(false)
 const isLoggingIn = ref(false)
 const showPassword = ref(false)
+const puzzleVisible = ref(false)
+const puzzleCanvasWidth = ref(310)
 const codeCountdown = ref(0)
+const codeLoginVerifiedEmail = ref('')
 let codeCountdownTimer = null
+let pendingPuzzleAction = null
+
+const puzzleImages = [
+  '/images/login/captcha-bg-1.png',
+  '/images/login/captcha-bg-2.png',
+  '/images/login/captcha-bg-3.png',
+  '/images/login/captcha-bg-4.png',
+]
+
+const puzzleCopyMap = {
+  'zh-CN': {
+    slider: '拖动滑块完成拼图',
+    success: '验证通过',
+    failed: '验证失败，请重试',
+  },
+  'zh-TW': {
+    slider: '拖動滑塊完成拼圖',
+    success: '驗證通過',
+    failed: '驗證失敗，請重試',
+  },
+  en: {
+    slider: 'Drag the slider to complete the puzzle',
+    success: 'Verified',
+    failed: 'Verification failed. Please try again',
+  },
+}
 
 const loginBox = computed(() => props.loginBox || {})
 const toastBox = computed(() => props.toastBox || {})
@@ -139,9 +192,46 @@ const agreementConnector = computed(() => loginBox.value.agreementConnector || '
 const passwordVisibilityLabel = computed(() => {
   return showPassword.value ? (loginBox.value.hidePasswordLabel || '') : (loginBox.value.showPasswordLabel || '')
 })
+const puzzleCanvasHeight = computed(() => Math.round(puzzleCanvasWidth.value * 0.52))
+const puzzleLocaleCopy = computed(() => {
+  return puzzleCopyMap[locale.value] || puzzleCopyMap.en
+})
+const puzzleText = computed(() => {
+  return {
+    slider: loginBox.value.slideVerifyText ||
+      loginBox.value.puzzleSliderText ||
+      loginBox.value.captchaSliderText ||
+      loginBox.value.humanVerifyText ||
+      puzzleLocaleCopy.value.slider,
+    success: toastBox.value.slideVerifySuccess ||
+      toastBox.value.puzzleVerifySuccess ||
+      toastBox.value.humanVerifySuccess ||
+      toastBox.value.captchaSuccess ||
+      puzzleLocaleCopy.value.success,
+    failed: toastBox.value.slideVerifyFailed ||
+      toastBox.value.puzzleVerifyFailed ||
+      toastBox.value.humanVerifyFailed ||
+      toastBox.value.captchaFailed ||
+      puzzleLocaleCopy.value.failed,
+  }
+})
 
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+const normalizeEmailForVerification = email => String(email || '').trim().toLowerCase()
+
+const markCodeLoginHumanVerified = (email) => {
+  codeLoginVerifiedEmail.value = normalizeEmailForVerification(email)
+}
+
+const clearCodeLoginHumanVerified = () => {
+  codeLoginVerifiedEmail.value = ''
+}
+
+const isCodeLoginHumanVerified = (email) => {
+  return Boolean(codeLoginVerifiedEmail.value && codeLoginVerifiedEmail.value === normalizeEmailForVerification(email))
 }
 
 const validateEmail = () => {
@@ -171,6 +261,39 @@ const validateAccount = () => {
   return account
 }
 
+const updatePuzzleSize = () => {
+  if (!import.meta.client) {
+    return
+  }
+
+  puzzleCanvasWidth.value = window.innerWidth <= 360 ? 280 : 310
+}
+
+const closePuzzle = () => {
+  puzzleVisible.value = false
+  pendingPuzzleAction = null
+}
+
+const openPuzzle = (action) => {
+  pendingPuzzleAction = action
+  puzzleVisible.value = true
+}
+
+const handlePuzzleSuccess = () => {
+  const action = pendingPuzzleAction
+
+  puzzleVisible.value = false
+  pendingPuzzleAction = null
+
+  if (typeof action === 'function') {
+    nextTick(() => action())
+  }
+}
+
+const handlePuzzleFail = () => {
+  showErrorToast(puzzleText.value.failed)
+}
+
 // 邮箱验证码发送成功后开启倒计时，避免用户连续点击重复发送。
 const startCodeCountdown = () => {
   codeCountdown.value = 60
@@ -192,12 +315,28 @@ const startCodeCountdown = () => {
 
 // 调用 Nuxt 代理接口发送邮箱验证码，接口代码保持 Promise 写法。
 const handleSendEmailCode = () => {
+  if (isSendingCode.value) {
+    return
+  }
+
   const email = validateEmail()
 
   if (!email) {
     return
   }
 
+  if (isCodeLoginHumanVerified(email)) {
+    sendEmailCodeAfterPuzzle(email)
+    return
+  }
+
+  openPuzzle(() => {
+    markCodeLoginHumanVerified(email)
+    sendEmailCodeAfterPuzzle(email)
+  })
+}
+
+const sendEmailCodeAfterPuzzle = (email) => {
   isSendingCode.value = true
 
   sendEmailCode(email).then(
@@ -215,8 +354,13 @@ const handleSendEmailCode = () => {
 
 // 邮箱验证码登录提交 email/captcha；密码登录提交 account/password。
 const handleLoginSubmit = () => {
+  if (isLoggingIn.value) {
+    return
+  }
+
   const account = isPasswordLogin.value ? validateAccount() : validateEmail()
   const credential = loginCredential.value.trim()
+  const loginByPasswordMode = isPasswordLogin.value
 
   if (!account) {
     return
@@ -232,9 +376,30 @@ const handleLoginSubmit = () => {
     return
   }
 
+  const loginPayload = {
+    account,
+    credential,
+    isPassword: loginByPasswordMode,
+  }
+
+  if (!loginByPasswordMode && isCodeLoginHumanVerified(account)) {
+    loginAfterPuzzle(loginPayload)
+    return
+  }
+
+  openPuzzle(() => {
+    if (!loginByPasswordMode) {
+      markCodeLoginHumanVerified(account)
+    }
+
+    loginAfterPuzzle(loginPayload)
+  })
+}
+
+const loginAfterPuzzle = ({ account, credential, isPassword }) => {
   isLoggingIn.value = true
 
-  const loginRequest = isPasswordLogin.value
+  const loginRequest = isPassword
     ? loginWithPassword({ account, password: credential })
     : loginWithEmailCode({ email: account, captcha: credential })
 
@@ -251,10 +416,29 @@ const handleLoginSubmit = () => {
   )
 }
 
+watch([emailAddress, () => props.loginMethod], () => {
+  if (puzzleVisible.value) {
+    closePuzzle()
+  } else {
+    pendingPuzzleAction = null
+  }
+
+  if (isPasswordLogin.value || !isCodeLoginHumanVerified(emailAddress.value)) {
+    clearCodeLoginHumanVerified()
+  }
+})
+
+onMounted(() => {
+  updatePuzzleSize()
+  window.addEventListener('resize', updatePuzzleSize)
+})
+
 onBeforeUnmount(() => {
   if (codeCountdownTimer) {
     window.clearInterval(codeCountdownTimer)
   }
+
+  window.removeEventListener('resize', updatePuzzleSize)
 })
 </script>
 

@@ -29,8 +29,13 @@
         </div>
 
         <p class="site-footer-description">
-          {{ footerText.description }}
+          {{ footerDescription }}
         </p>
+
+        <a class="site-footer-email" :href="businessEmailHref" aria-label="business email">
+          <Icon name="lucide:mail" aria-hidden="true" />
+          <span>{{ businessEmail }}</span>
+        </a>
 
         <div v-if="footerText.socials.length" class="site-footer-socials" :aria-label="footerText.brand">
           <button
@@ -64,6 +69,10 @@
           </button>
         </section>
       </nav>
+
+      <p class="site-footer-copyright">
+        {{ copyrightText }}
+      </p>
     </div>
   </footer>
 </template>
@@ -76,6 +85,10 @@ const localePath = useLocalePath()
 const { locale } = useI18n()
 const route = useRoute()
 const { currentTheme, initTheme, setTheme } = createThemeContext()
+const footerDescription = '一站式直播解决方案，以丰富特效赋能，面向全球创作者，实现多平台一键开播与沉浸式虚拟直播体验'
+const businessEmail = 'business@vicastcam.com'
+const businessEmailHref = `mailto:${businessEmail}`
+const copyrightText = 'Copyright © 2025 VICAST INTERNATIONAL LIMITED Copyright © 2026 VICAST LTD'
 
 const footerLinkActionsByKey = {
   features: { sectionId: 'home-features-anchor' },
@@ -88,8 +101,8 @@ const footerLinkActionsByKey = {
   faq: { path: '/faq' },
   privacy: { path: '/privacy' },
   about: { path: '/about' },
-  terms: { path: '/privacy' },
-  salesPolicy: { path: '/privacy' },
+  terms: { path: '/terms' },
+  salesPolicy: { path: '/sales-policy' },
   docs: { path: '/tutorial' },
   contact: { path: '/about' },
 }
@@ -195,6 +208,37 @@ const normalizeFooterActionText = value => {
 
 const isExternalFooterPath = path => /^(https?:)?\/\//.test(path) || /^(mailto|tel):/i.test(path)
 
+const openPageInNewTab = (path) => {
+  if (!process.client || !path) {
+    return
+  }
+
+  window.open(path, '_blank', 'noopener,noreferrer')
+}
+
+const getHomeSectionNewTabPath = (sectionId) => {
+  const homePath = localePath('/')
+  const separator = homePath.includes('?') ? '&' : '?'
+
+  return `${homePath}${separator}scrollTarget=${encodeURIComponent(sectionId)}`
+}
+
+const createLocalizedFooterPath = (item = {}) => {
+  const basePath = localePath(item.path || '/')
+  const queryEntries = Object.entries(item.query || {}).filter(([, value]) => value !== undefined && value !== null && value !== '')
+
+  if (!queryEntries.length) {
+    return basePath
+  }
+
+  const separator = basePath.includes('?') ? '&' : '?'
+  const query = queryEntries
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&')
+
+  return `${basePath}${separator}${query}`
+}
+
 const scrollToSection = (sectionId) => {
   const sectionElement = document.getElementById(sectionId)
 
@@ -214,11 +258,11 @@ const scrollToSection = (sectionId) => {
 const handleFooterLinkClick = (item) => {
   if (item.path) {
     if (isExternalFooterPath(item.path)) {
-      navigateTo(item.path, { external: true })
+      openPageInNewTab(item.path)
       return
     }
 
-    navigateTo(localePath(item.path))
+    openPageInNewTab(createLocalizedFooterPath(item))
     return
   }
 
@@ -231,11 +275,7 @@ const handleFooterLinkClick = (item) => {
     return
   }
 
-  Promise.resolve(navigateTo(localePath('/'))).then(() => {
-    nextTick(() => {
-      window.setTimeout(() => scrollToSection(item.sectionId), 40)
-    })
-  })
+  openPageInNewTab(getHomeSectionNewTabPath(item.sectionId))
 }
 
 const getFooterContentData = (response) => {
@@ -259,11 +299,14 @@ const createFooterLink = (link = {}, columnIndex, linkIndex) => {
   const textActionKey = footerLinkTextActionMap[normalizeFooterActionText(text)]
   const actionKey = explicitActionKey || textActionKey || footerColumnActionOrder[columnIndex]?.[linkIndex] || ''
   const action = footerLinkActionsByKey[actionKey] || {}
+  const directPathBase = directPath.split(/[?#]/)[0]
+  const shouldUseActionQuery = !directPath || (action.path && normalizePath(directPathBase) === normalizePath(action.path))
 
   return {
     key: `${columnIndex}-${linkIndex}-${text}`,
     label: text,
     path: directPath || action.path || '',
+    query: shouldUseActionQuery ? action.query || {} : {},
     sectionId: action.sectionId || '',
   }
 }
@@ -324,6 +367,7 @@ watch(locale, () => {
 }
 
 .site-footer-inner {
+  position: relative;
   height: var(--page-footer-height);
   display: flex;
   align-items: flex-start;
@@ -350,6 +394,10 @@ watch(locale, () => {
   height: 30px;
   flex: 0 0 auto;
   object-fit: contain;
+}
+
+:root[data-theme="dark"] .site-footer-logo {
+  border-radius: 7px;
 }
 .site-footer-brand-name {
   min-width: 0;
@@ -435,6 +483,32 @@ watch(locale, () => {
   line-height: 22px;
   overflow-wrap: anywhere;
 }
+.site-footer-email {
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  color: var(--theme-footer-text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+  transition: color 0.2s ease;
+}
+.site-footer-email:hover,
+.site-footer-email:focus {
+  color: var(--theme-footer-link-hover);
+}
+.site-footer-email svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+.site-footer-email span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .site-footer-socials {
   display: flex;
   align-items: center;
@@ -511,6 +585,21 @@ watch(locale, () => {
 .site-footer-link:focus {
   color: var(--theme-footer-link-hover);
 }
+.site-footer-copyright {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 38px;
+  max-width: 100%;
+  padding: 0 24px;
+  color: var(--theme-footer-text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  text-align: center;
+  opacity: 0.42;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 768px) {
   .site-footer {
     height: auto;
@@ -525,6 +614,12 @@ watch(locale, () => {
     padding-top: 44px;
     padding-bottom: 44px;
     overflow: visible;
+  }
+
+  .site-footer-copyright {
+    position: static;
+    padding: 0;
+    text-align: left;
   }
 
   .site-footer-brand {

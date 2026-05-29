@@ -104,6 +104,10 @@ watch(() => props.loginData, (loginData) => {
   border-radius: 4px;
 }
 
+:global(:root[data-theme="dark"]) .auth-logo img {
+  border-radius: 8px;
+}
+
 .auth-logo span span {
   color: var(--theme-accent-brand);
 }

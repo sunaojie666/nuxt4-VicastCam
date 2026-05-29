@@ -278,6 +278,10 @@ watch(locale, () => {
   border-radius: 4px;
 }
 
+:root[data-theme="dark"] .auth-mobile-logo img {
+  border-radius: 8px;
+}
+
 .auth-mobile-logo > span {
   min-width: 0;
   overflow: hidden;

@@ -274,8 +274,10 @@ onBeforeUnmount(() => {
 }
 
 .auth-scan-code img {
-  width: 100%;
-  height: 100%;
+  width: 252px;
+  height: 252px;
+  max-width: none;
+  flex: 0 0 auto;
   object-fit: contain;
 }
 
@@ -287,6 +289,8 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   color: var(--theme-surface-alt);
+  border-radius: 4px;
+  background-color: var(--theme-white);
   font-size: 14px;
   line-height: 20px;
   text-align: center;

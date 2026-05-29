@@ -419,7 +419,7 @@ watch(locale, () => {
   justify-content: center;
   gap: 86px;
   margin-top: 45px;
-  color: var(--theme-text-muted);
+  color: var(--theme-white-86);
   font-size: 16px;
   line-height: 24px;
   animation: home-hero-enter 0.75s ease 0.32s both;

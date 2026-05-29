@@ -212,6 +212,7 @@ import SiteHeader from '../../components/SiteHeader.vue'
 import { setupPageSeo } from '../../utils/seo'
 
 const { showRequestSuccessToast, showRequestFailToast } = useSiteToast()
+const route = useRoute()
 
 const heroFeatures = [
   { title: '全面兼容', text: '支持多平台多场景', icon: '/images/sdk/feature-compatible.png' },
@@ -394,6 +395,43 @@ const copyCode = async (code) => {
     showRequestFailToast()
   }
 }
+
+const getSingleQueryValue = value => Array.isArray(value) ? value[0] : value
+
+const selectSdkGroupByKey = (key) => {
+  const group = sdkGroups.find(item => item.key === key)
+
+  if (!group) {
+    return
+  }
+
+  activeGroupKey.value = group.key
+
+  if (group.items?.[0]) {
+    activeItemKey.value = group.items[0].key
+  }
+}
+
+const syncSdkTargetFromRoute = () => {
+  const target = String(getSingleQueryValue(route.query.sdkTarget) || '').trim().toLowerCase()
+  const targetMap = {
+    camera: 'camera',
+    audio: 'audio',
+    cast: 'cast',
+  }
+
+  if (targetMap[target]) {
+    selectSdkGroupByKey(targetMap[target])
+  }
+}
+
+onMounted(() => {
+  syncSdkTargetFromRoute()
+})
+
+watch(() => route.query.sdkTarget, () => {
+  syncSdkTargetFromRoute()
+})
 
 setupPageSeo('sdk')
 </script>

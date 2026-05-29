@@ -159,7 +159,7 @@ button, input, textarea {
   color: var(--theme-feature-card-border);
   background-color: var(--theme-feature-eyebrow-background);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 :root[data-theme="light"] .page-home-main .home-section-title {
@@ -174,7 +174,62 @@ button, input, textarea {
   margin-top: 20px;
   color: var(--theme-feature-card-text);
   font-size: 14px;
+  font-weight: 400;
   line-height: 22px;
+}
+
+:root[data-theme="light"] .site-nav-link,
+:root[data-theme="light"] .site-select-button,
+:root[data-theme="light"] .site-auth-button,
+:root[data-theme="light"] .site-nav-dropdown-item,
+:root[data-theme="light"] .site-select-option,
+:root[data-theme="light"] .site-profile-menu-item,
+:root[data-theme="light"] .site-mobile-link,
+:root[data-theme="light"] .site-footer-description,
+:root[data-theme="light"] .site-footer-email,
+:root[data-theme="light"] .site-footer-link,
+:root[data-theme="light"] .site-footer-copyright,
+:root[data-theme="light"] .home-features-card p,
+:root[data-theme="light"] .home-pricing-card-description,
+:root[data-theme="light"] .home-pricing-price span,
+:root[data-theme="light"] .home-pricing-price-note,
+:root[data-theme="light"] .home-pricing-feature,
+:root[data-theme="light"] .home-learning-subtitle,
+:root[data-theme="light"] .home-faq-subtitle,
+:root[data-theme="light"] .home-faq-answer,
+:root[data-theme="light"] .home-community-subtitle,
+:root[data-theme="light"] .home-community-platforms-subtitle,
+:root[data-theme="light"] .home-virtual-subtitle,
+:root[data-theme="light"] .sdk-hero p,
+:root[data-theme="light"] .sdk-sidebar-title small,
+:root[data-theme="light"] .sdk-download-copy,
+:root[data-theme="light"] .sdk-demo-content p,
+:root[data-theme="light"] .faq-hero-subtitle,
+:root[data-theme="light"] .tutorial-hero-subtitle {
+  font-weight: 400;
+}
+
+:root[data-theme="light"] .home-section-eyebrow,
+:root[data-theme="light"] .home-hero-badge,
+:root[data-theme="light"] .home-features-eyebrow,
+:root[data-theme="light"] .home-pricing-eyebrow,
+:root[data-theme="light"] .home-learning-eyebrow,
+:root[data-theme="light"] .home-faq-eyebrow,
+:root[data-theme="light"] .home-community-eyebrow,
+:root[data-theme="light"] .home-virtual-eyebrow,
+:root[data-theme="light"] .home-footer-hero-eyebrow,
+:root[data-theme="light"] .site-nav-link,
+:root[data-theme="light"] .site-select-button,
+:root[data-theme="light"] .site-auth-button,
+:root[data-theme="light"] .site-nav-dropdown-item,
+:root[data-theme="light"] .site-footer-link,
+:root[data-theme="light"] .home-pricing-price span,
+:root[data-theme="light"] .home-pricing-feature,
+:root[data-theme="light"] .home-learning-tag,
+:root[data-theme="light"] .sdk-sidebar-title small,
+:root[data-theme="light"] .sdk-breadcrumb,
+:root[data-theme="light"] .sdk-demo-tags span {
+  font-weight: 400 !important;
 }
 
 .theme-more-link {
@@ -206,6 +261,83 @@ button, input, textarea {
   height: 16px;
   flex: 0 0 auto;
   object-fit: contain;
+}
+
+body .auth-puzzle.vue-puzzle-vcode {
+  background:
+    linear-gradient(180deg, var(--theme-page-82), var(--theme-page-72)),
+    var(--theme-page-72);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+}
+
+body .auth-puzzle .vue-auth-box_ {
+  top: 46%;
+  padding: 18px;
+  border: 1px solid var(--theme-border-panel);
+  border-radius: 8px;
+  background: var(--theme-surface-98);
+  box-shadow: 0 24px 70px var(--theme-black-55);
+}
+
+body .auth-puzzle .auth-body_ {
+  border: 1px solid var(--theme-border-muted);
+  border-radius: 7px;
+  background:
+    url("/images/login/captcha-bg-1.png") center / cover no-repeat,
+    var(--theme-surface-deep);
+  box-shadow: inset 0 0 0 1px var(--theme-white-04);
+}
+
+body .auth-puzzle .auth-body_ .loading-box_ {
+  background-color: var(--theme-page-82);
+}
+
+body .auth-puzzle .auth-body_ .info-box_ {
+  background-color: var(--theme-success);
+}
+
+body .auth-puzzle .auth-body_ .info-box_.fail {
+  background-color: var(--theme-error-strong);
+}
+
+body .auth-puzzle .auth-body_ .reset_ {
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  padding: 5px;
+  border-radius: 999px;
+  background: var(--theme-page-65);
+}
+
+body .auth-puzzle .auth-control_ .range-box {
+  margin-top: 16px;
+  border-radius: 7px;
+  background: var(--theme-surface-deep);
+  box-shadow:
+    inset 0 0 0 1px var(--theme-border-panel),
+    inset 0 8px 18px var(--theme-black-22);
+}
+
+body .auth-puzzle .auth-control_ .range-box .range-text {
+  color: var(--theme-text-muted);
+}
+
+body .auth-puzzle .auth-control_ .range-box .range-slider {
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--theme-extra-14-181-213-1), var(--theme-extra-14-145-233-1));
+  box-shadow: 0 0 18px var(--theme-brand-accent-20);
+}
+
+body .auth-puzzle .auth-control_ .range-box .range-slider .range-btn {
+  border: 1px solid var(--theme-white);
+  border-radius: 7px;
+  background: var(--theme-white);
+  box-shadow: 0 7px 18px var(--theme-black-28);
+}
+
+body .auth-puzzle .auth-control_ .range-box .range-slider .range-btn > div {
+  border-color: var(--theme-brand-accent);
 }
 
 #home-download,

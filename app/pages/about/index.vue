@@ -38,7 +38,7 @@
             <button type="button" class="about-hero-action about-hero-action-primary" @click="handleContactClick">
               {{ aboutBox.hero.primaryButtonText }}
             </button>
-            <NuxtLink :to="localePath('/sdk')" class="about-hero-action about-hero-action-ghost">
+            <NuxtLink :to="localePath('/sdk')" class="about-hero-action about-hero-action-ghost" target="_blank" rel="noopener noreferrer">
               {{ aboutBox.hero.secondaryButtonText }}
             </NuxtLink>
           </div>

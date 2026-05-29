@@ -3,7 +3,7 @@
   <header :class="['page-header', { 'page-header-scrolled': headerScrolled }]">
     <div class="page-header-inner">
       <div class="site-brand-row">
-        <NuxtLink :to="localePath('/')" class="site-brand">
+        <NuxtLink :to="localePath('/')" class="site-brand" target="_blank" rel="noopener noreferrer">
           <img
             class="site-brand-image"
             src="/images/common/logo.png"
@@ -19,15 +19,57 @@
 
       <!-- 页面导航点击后滚动到首页对应区块。 -->
       <nav class="site-nav" :aria-label="headerText.navBrand">
-        <button
+        <div
           v-for="item in navigationItems"
           :key="item.key"
-          type="button"
-          :class="['site-nav-link', { 'site-nav-link-active': activeNavigationKey === item.key }]"
-          @click="handleNavigationClick(item.key)"
+          class="site-nav-item"
+          @mouseenter="openNavigationDropdown(item.key)"
+          @mouseleave="closeNavigationDropdown(item.key)"
+          @focusin="openNavigationDropdown(item.key)"
+          @focusout="handleNavigationDropdownFocusOut"
         >
-          <span>{{ item.label }}</span>
-        </button>
+          <button
+            type="button"
+            :class="[
+              'site-nav-link',
+              {
+                'site-nav-link-active': activeNavigationKey === item.key,
+                'site-nav-link-dropdown-open': navigationDropdownOpenKey === item.key,
+              },
+            ]"
+            :aria-expanded="hasNavigationDropdown(item.key) ? navigationDropdownOpenKey === item.key : undefined"
+            :aria-haspopup="hasNavigationDropdown(item.key) ? 'menu' : undefined"
+            @click="handleNavigationClick(item.key)"
+          >
+            <span class="site-nav-link-label">{{ item.label }}</span>
+            <Icon
+              v-if="hasNavigationDropdown(item.key)"
+              class="site-nav-chevron"
+              :name="navigationDropdownOpenKey === item.key ? 'lucide:chevron-up' : 'lucide:chevron-down'"
+              aria-hidden="true"
+            />
+          </button>
+
+          <Transition name="site-nav-dropdown-fade">
+            <div
+              v-if="navigationDropdownOpenKey === item.key && hasNavigationDropdown(item.key)"
+              class="site-nav-dropdown"
+              role="menu"
+            >
+              <button
+                v-for="dropdownItem in getNavigationDropdownItems(item.key)"
+                :key="dropdownItem.key"
+                type="button"
+                class="site-nav-dropdown-item"
+                role="menuitem"
+                @click="handleNavigationDropdownItemClick(dropdownItem)"
+              >
+                <Icon :name="dropdownItem.icon" aria-hidden="true" />
+                <span>{{ dropdownItem.label }}</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
       </nav>
 
       <div class="site-actions">
@@ -176,6 +218,7 @@ const headerText = ref({})
 const activeLocale = ref({})
 const localeMenuOpen = ref(false)
 const profileMenuOpen = ref(false)
+const navigationDropdownOpenKey = ref('')
 const mobileMenuOpen = ref(false)
 const mobileMenuIcon = ref('lucide:menu')
 const isSmallHeader = ref(false)
@@ -225,6 +268,45 @@ const navigationSectionMap = {
   },
 }
 const navigationScrollOrder = ['clientDownload', 'features', 'pricing', 'faq']
+const navigationDropdownItemsMap = {
+  faq: [
+    {
+      key: 'graphic-tutorial',
+      label: '图文教程',
+      path: '/faq',
+      icon: 'lucide:file-text',
+    },
+    {
+      key: 'video-tutorial',
+      label: '视频教程',
+      path: '/tutorial',
+      icon: 'lucide:play-circle',
+    },
+  ],
+  sdk: [
+    {
+      key: 'audio-sdk',
+      label: '虚拟声卡SDK',
+      path: '/sdk',
+      query: { sdkTarget: 'audio' },
+      icon: 'lucide:volume-2',
+    },
+    {
+      key: 'camera-sdk',
+      label: '虚拟相机SDK',
+      path: '/sdk',
+      query: { sdkTarget: 'camera' },
+      icon: 'lucide:camera',
+    },
+    {
+      key: 'cast-sdk',
+      label: '手机投屏SDK',
+      path: '/sdk',
+      query: { sdkTarget: 'cast' },
+      icon: 'lucide:screen-share',
+    },
+  ],
+}
 
 const normalizePath = path => {
   if (!path || path === '/') {
@@ -235,6 +317,41 @@ const normalizePath = path => {
 }
 
 const getHomePath = () => localePath('/')
+
+const openPageInNewTab = (path) => {
+  if (!process.client || !path) {
+    return
+  }
+
+  window.open(path, '_blank', 'noopener,noreferrer')
+}
+
+const getHomeSectionNewTabPath = (sectionId) => {
+  const homePath = getHomePath()
+  const separator = homePath.includes('?') ? '&' : '?'
+
+  return `${homePath}${separator}scrollTarget=${encodeURIComponent(sectionId)}`
+}
+
+const getSingleQueryValue = (value) => {
+  return Array.isArray(value) ? value[0] : value
+}
+
+const createLocalizedPath = (item = {}) => {
+  const basePath = localePath(item.path || '/')
+  const queryEntries = Object.entries(item.query || {}).filter(([, value]) => value !== undefined && value !== null && value !== '')
+
+  if (!queryEntries.length) {
+    return basePath
+  }
+
+  const separator = basePath.includes('?') ? '&' : '?'
+  const query = queryEntries
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&')
+
+  return `${basePath}${separator}${query}`
+}
 
 const isHomeRoute = () => {
   return normalizePath(route.path) === normalizePath(getHomePath())
@@ -250,6 +367,7 @@ const toggleMobileMenu = () => {
 const closeMobileMenu = () => {
   mobileMenuOpen.value = false
   mobileMenuIcon.value = 'lucide:menu'
+  navigationDropdownOpenKey.value = ''
 }
 
 const getLocaleDisplayLanguage = (localeItem) => {
@@ -353,6 +471,44 @@ const closeLocaleMenu = () => {
   localeMenuOpen.value = false
 }
 
+const hasNavigationDropdown = (key) => {
+  return Boolean(navigationDropdownItemsMap[key]?.length)
+}
+
+const getNavigationDropdownItems = (key) => {
+  return navigationDropdownItemsMap[key] || []
+}
+
+const openNavigationDropdown = (key) => {
+  if (isSmallHeader.value || !hasNavigationDropdown(key)) {
+    return
+  }
+
+  navigationDropdownOpenKey.value = key
+  localeMenuOpen.value = false
+  closeProfileMenu()
+}
+
+const closeNavigationDropdown = (key) => {
+  if (navigationDropdownOpenKey.value === key) {
+    navigationDropdownOpenKey.value = ''
+  }
+}
+
+const handleNavigationDropdownFocusOut = (event) => {
+  if (event.currentTarget?.contains(event.relatedTarget)) {
+    return
+  }
+
+  navigationDropdownOpenKey.value = ''
+}
+
+const handleNavigationDropdownItemClick = (item) => {
+  navigationDropdownOpenKey.value = ''
+  closeMobileMenu()
+  openPageInNewTab(createLocalizedPath(item))
+}
+
 const openProfileMenu = () => {
   if (isSmallHeader.value) {
     return
@@ -360,6 +516,7 @@ const openProfileMenu = () => {
 
   profileMenuOpen.value = true
   localeMenuOpen.value = false
+  navigationDropdownOpenKey.value = ''
   closeMobileMenu()
 }
 
@@ -378,13 +535,14 @@ const handleProfileMenuFocusOut = (event) => {
 const handleProfileButtonClick = () => {
   profileMenuOpen.value = !profileMenuOpen.value
   localeMenuOpen.value = false
+  navigationDropdownOpenKey.value = ''
   closeMobileMenu()
 }
 
 const goToProfile = () => {
   closeProfileMenu()
   closeMobileMenu()
-  navigateTo(localePath('/profile'))
+  openPageInNewTab(localePath('/profile'))
 }
 
 const handleLogout = () => {
@@ -401,6 +559,7 @@ const handleLocaleButtonClick = () => {
   }
 
   localeMenuOpen.value = !localeMenuOpen.value
+  navigationDropdownOpenKey.value = ''
   closeMobileMenu()
 }
 
@@ -504,8 +663,15 @@ const syncHeaderScrolledState = () => {
 const handleNavigationClick = (key) => {
   closeMobileMenu()
 
+  if (!isSmallHeader.value && hasNavigationDropdown(key)) {
+    navigationDropdownOpenKey.value = key
+    localeMenuOpen.value = false
+    closeProfileMenu()
+    return
+  }
+
   if (key === 'sdk') {
-    navigateTo(localePath('/sdk'))
+    openPageInNewTab(createLocalizedPath({ path: '/sdk' }))
     return
   }
 
@@ -516,14 +682,7 @@ const handleNavigationClick = (key) => {
   activeNavigationKey.value = key
 
   if (!isHomeRoute()) {
-    Promise.resolve(navigateTo({ path: getHomePath() })).then(() => {
-      nextTick(() => {
-        window.setTimeout(() => {
-          scrollToSection(sectionId)
-          syncActiveNavigationByScroll()
-        }, 40)
-      })
-    })
+    openPageInNewTab(getHomeSectionNewTabPath(sectionId))
     return
   }
 
@@ -613,7 +772,10 @@ onMounted(() => {
   syncHeaderMode = () => {
     isSmallHeader.value = headerMediaQuery.matches
 
-    if (!isSmallHeader.value) {
+    if (isSmallHeader.value) {
+      navigationDropdownOpenKey.value = ''
+      profileMenuOpen.value = false
+    } else {
       localeMenuOpen.value = false
     }
   }
@@ -642,6 +804,20 @@ onMounted(() => {
 
   syncActiveNavigationByScroll()
   syncHeaderScrolledState()
+
+  const initialScrollTarget = getSingleQueryValue(route.query.scrollTarget)
+  const validScrollTargets = Object.values(navigationSectionMap).map(item => item.targetId)
+
+  if (isHomeRoute() && validScrollTargets.includes(initialScrollTarget)) {
+    window.setTimeout(() => {
+      scrollToSection(initialScrollTarget, 'auto')
+      syncActiveNavigationByScroll()
+
+      const currentUrl = new URL(window.location.href)
+      currentUrl.searchParams.delete('scrollTarget')
+      window.history.replaceState({}, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`)
+    }, 120)
+  }
 
   closeMobileMenuOnOutsideClick = (event) => {
     if (!mobileMenuOpen.value) {
@@ -791,6 +967,10 @@ onBeforeUnmount(() => {
   object-fit: contain;
 }
 
+:root[data-theme="dark"] .site-brand-image {
+  border-radius: 8px;
+}
+
 .site-brand-name {
   color: var(--theme-header-text);
   font-size: 18px;
@@ -810,6 +990,22 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
+.site-nav-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.site-nav-item::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 8px;
+}
+
 .site-nav-link {
   position: relative;
   flex: 0 1 auto;
@@ -817,17 +1013,21 @@ onBeforeUnmount(() => {
   max-width: 164px;
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   border-radius: 4px;
+  border: 0;
   padding: 6px 10px;
   color: var(--theme-header-text);
+  background-color: transparent;
   font-size: 16px;
   font-weight: 500;
   line-height: 20px;
   white-space: nowrap;
+  cursor: pointer;
   transition: color 0.2s ease;
 }
 
-.site-nav-link span {
+.site-nav-link-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -849,6 +1049,10 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
+.site-nav-link-dropdown-open::after {
+  opacity: 1;
+}
+
 :root[data-theme="light"] .site-nav-link::after {
   height: 3px;
 }
@@ -861,6 +1065,94 @@ onBeforeUnmount(() => {
 .site-nav-link:active {
   color: var(--theme-header-text);
   background-color: transparent;
+}
+
+.site-nav-chevron {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  color: var(--theme-text-muted);
+}
+
+.site-nav-dropdown {
+  position: absolute;
+  top: calc(100% + 11px);
+  left: 50%;
+  z-index: 20;
+  width: max-content;
+  min-width: 170px;
+  max-width: min(280px, calc(100vw - 32px));
+  padding: 6px;
+  border: 1px solid var(--theme-header-dropdown-border, transparent);
+  border-radius: 8px;
+  background-color: var(--theme-header-dropdown-background, var(--theme-surface-alt));
+  box-shadow: var(--theme-header-dropdown-shadow, 0 10px 24px var(--theme-shadow));
+  transform: translateX(-50%);
+}
+
+.site-nav-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid var(--theme-header-dropdown-border, transparent);
+  border-left: 1px solid var(--theme-header-dropdown-border, transparent);
+  background-color: var(--theme-header-dropdown-background, var(--theme-surface-alt));
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.site-nav-dropdown-item {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 158px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--theme-header-dropdown-text, var(--theme-text));
+  background-color: transparent;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.site-nav-dropdown-item span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-nav-dropdown-item svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--theme-header-dropdown-icon, var(--theme-text-muted));
+}
+
+.site-nav-dropdown-item:hover,
+.site-nav-dropdown-item:focus {
+  color: var(--theme-header-dropdown-hover-text, var(--theme-accent-bright));
+  background-color: var(--theme-header-dropdown-hover-background, var(--theme-accent-hover));
+}
+
+.site-nav-dropdown-fade-enter-active,
+.site-nav-dropdown-fade-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.site-nav-dropdown-fade-enter-from,
+.site-nav-dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -4px);
 }
 
 /* Actions */

@@ -5,16 +5,16 @@
     <main class="download-page-main">
       <section class="download-hero">
         <div class="page-container download-hero-inner">
-          <span class="download-eyebrow">下载中心</span>
-          <h1>下载VicastCam</h1>
+          <span class="download-eyebrow">{{ downloadBox.hero.eyebrow }}</span>
+          <h1>{{ downloadBox.hero.title }}</h1>
         </div>
       </section>
 
       <section class="download-platform-section">
         <div class="page-container download-platform-inner">
           <header class="download-section-heading">
-            <h2>选择您的平台</h2>
-            <p>VicastCam支持Windows、iOS、Android三大平台，开启专业直播</p>
+            <h2>{{ downloadBox.platform.title }}</h2>
+            <p>{{ downloadBox.platform.description }}</p>
           </header>
 
           <div class="download-card-grid">
@@ -43,7 +43,7 @@
               <button
                 type="button"
                 class="download-card-icon-button"
-                :aria-label="`${platform.name}下载`"
+                :aria-label="`${platform.name}${downloadBox.platform.downloadAriaSuffix}`"
                 @click="handleDownload(platform)"
               >
                 <Icon name="lucide:download" aria-hidden="true" />
@@ -51,15 +51,15 @@
 
               <dl class="download-card-info">
                 <div>
-                  <dt>版本号</dt>
+                  <dt>{{ downloadBox.platform.versionLabel }}</dt>
                   <dd>{{ platform.version }}</dd>
                 </div>
                 <div>
-                  <dt>更新时间</dt>
+                  <dt>{{ downloadBox.platform.updatedAtLabel }}</dt>
                   <dd>{{ platform.updatedAt }}</dd>
                 </div>
                 <div>
-                  <dt>安装包大小</dt>
+                  <dt>{{ downloadBox.platform.sizeLabel }}</dt>
                   <dd>{{ platform.size }}</dd>
                 </div>
               </dl>
@@ -81,7 +81,7 @@
                   <button
                     type="button"
                     class="download-qr-close"
-                    :aria-label="`关闭${platform.name}下载二维码`"
+                    :aria-label="`${downloadBox.platform.closeQrAriaPrefix}${platform.name}${downloadBox.platform.closeQrAriaSuffix}`"
                     @click="closeDownloadQr"
                   >
                     <Icon name="lucide:x" aria-hidden="true" />
@@ -99,7 +99,7 @@
           </div>
 
           <section class="download-reasons" aria-labelledby="download-reasons-title">
-            <h2 id="download-reasons-title">为什么选择VicastCam</h2>
+            <h2 id="download-reasons-title">{{ downloadBox.reasons.title }}</h2>
 
             <div class="download-reason-grid">
               <article
@@ -127,87 +127,171 @@
 <script setup>
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
+import { getDownloads } from '../../api/request/strapi'
 import { setupPageSeo } from '../../utils/seo'
 
-const platforms = [
+const { locale } = useI18n()
+let downloadRequestId = 0
+
+const emptyDownloadBox = {
+  hero: {
+    eyebrow: '',
+    title: '',
+  },
+  platform: {
+    title: '',
+    description: '',
+    versionLabel: '',
+    updatedAtLabel: '',
+    sizeLabel: '',
+    downloadAriaSuffix: '',
+    closeQrAriaPrefix: '',
+    closeQrAriaSuffix: '',
+    items: [],
+  },
+  reasons: {
+    title: '',
+    items: [],
+  },
+  seo: {
+    title: '',
+    description: '',
+  },
+}
+
+const platformAssets = [
   {
     key: 'android',
-    name: 'Android',
-    subtitle: 'Android 8.0+',
-    version: 'v3.2.0',
-    updatedAt: '2026-05-13',
-    size: '115MB',
-    system: '支持Android 8.0及以上系统',
     image: '/images/download/win.png',
-    actionLabel: '立即下载',
     actionIcon: '/images/download/action-download.png',
     desktopActionIcon: '/images/download/action-qr-green.png',
     mobileBackground: '/images/download/mobile-android-bg.png',
     mobileIcon: '/images/download/mobile-android-icon.png',
     qrImage: '/images/download/action-qr-green.png',
-    qrTitle: '扫码下载 Android 版',
-    qrDescription: '请使用手机扫码下载安装',
   },
   {
     key: 'ios',
-    name: 'IOS',
-    subtitle: 'iPhone / iPad',
-    version: 'v3.2.0',
-    updatedAt: '2026-05-13',
-    size: '115MB',
-    system: '支持iOS 13.0及以上系统',
     image: '/images/download/ios.png',
-    actionLabel: 'App Store',
     actionIcon: '/images/download/action-download.png',
     desktopActionIcon: '/images/download/action-qr-purple.png',
     mobileBackground: '/images/download/mobile-ios-bg.png',
     mobileIcon: '/images/download/mobile-ios-icon.png',
     qrImage: '/images/download/action-qr-purple.png',
-    qrTitle: '扫码前往 App Store',
-    qrDescription: '请使用手机扫码下载 iOS 版',
   },
   {
     key: 'windows',
-    name: 'Windows',
-    subtitle: 'Windows 10/11 64-bit',
-    version: 'v3.2.0',
-    updatedAt: '2026-05-13',
-    size: '115MB',
-    system: '适用 Windows 10及以上系统',
     image: '/images/download/android.png',
-    actionLabel: '立即下载',
     actionIcon: '/images/download/action-download.png',
     desktopActionIcon: '/images/download/action-download.png',
     mobileBackground: '/images/download/mobile-windows-bg.png',
     mobileIcon: '/images/download/mobile-windows-icon.png',
     qrImage: '',
-    qrTitle: '',
-    qrDescription: '',
   },
 ]
 
-const reasonCards = [
+const reasonAssets = [
   {
-    title: '安全可靠',
-    text: '多重安全防护机制，保障您的数据与账号安全',
+    key: 'secure',
     image: '/images/download/reason-fast.png',
   },
   {
-    title: '持续更新',
-    text: '我们持续优化产品，为您带来更稳定的使用体验',
+    key: 'updates',
     image: '/images/download/reason-secure.png',
   },
   {
-    title: '专业支持',
-    text: '7×24 小时技术支持，快速响应您的问题',
+    key: 'support',
     image: '/images/download/reason-cross-platform.png',
   },
   {
-    title: '使用教程',
-    text: '详细的视频教程与功能说明，帮助您快速上手',
+    key: 'tutorial',
     image: '/images/download/reason-support.png',
   },
 ]
+
+const createEmptyDownloadBox = () => ({
+  hero: { ...emptyDownloadBox.hero },
+  platform: { ...emptyDownloadBox.platform, items: [] },
+  reasons: { ...emptyDownloadBox.reasons, items: [] },
+  seo: { ...emptyDownloadBox.seo },
+})
+
+const downloadBox = ref(createEmptyDownloadBox())
+
+const normalizeList = (items) => {
+  return Array.isArray(items) ? items.filter(Boolean) : []
+}
+
+const normalizeDownloadBox = (box = {}) => {
+  const source = box || {}
+
+  return {
+    hero: {
+      ...emptyDownloadBox.hero,
+      ...(source.hero || {}),
+    },
+    platform: {
+      ...emptyDownloadBox.platform,
+      ...(source.platform || {}),
+      items: normalizeList(source.platform?.items),
+    },
+    reasons: {
+      ...emptyDownloadBox.reasons,
+      ...(source.reasons || {}),
+      items: normalizeList(source.reasons?.items),
+    },
+    seo: {
+      ...emptyDownloadBox.seo,
+      ...(source.seo || {}),
+    },
+  }
+}
+
+const getDownloadBoxFromResponse = (response) => {
+  const records = response?.data
+  const firstRecord = Array.isArray(records) ? records[0] : records
+  const record = firstRecord?.attributes || firstRecord || {}
+  const data = record.data || {}
+
+  return normalizeDownloadBox(data.downloadBox || data)
+}
+
+const platforms = computed(() => {
+  return normalizeList(downloadBox.value.platform.items).map(item => {
+    const asset = platformAssets.find(platform => platform.key === item.key) || {}
+
+    return {
+      ...asset,
+      ...item,
+      key: item.key || asset.key || '',
+    }
+  }).filter(item => item.key)
+})
+
+const reasonCards = computed(() => {
+  return normalizeList(downloadBox.value.reasons.items).map(item => {
+    const asset = reasonAssets.find(reason => reason.key === item.key) || {}
+
+    return {
+      ...asset,
+      ...item,
+      key: item.key || asset.key || item.title || '',
+    }
+  })
+})
+
+const loadDownloadBox = () => {
+  const requestId = ++downloadRequestId
+  const currentLocale = locale.value
+
+  getDownloads(currentLocale).then(response => {
+    if (requestId !== downloadRequestId || currentLocale !== locale.value) {
+      return
+    }
+
+    downloadBox.value = getDownloadBoxFromResponse(response)
+    closeDownloadQr()
+  })
+}
 
 const handleDownload = (platform) => {
   if (!process.client) {
@@ -225,7 +309,15 @@ const closeDownloadQr = () => {
   activeQrPlatform.value = ''
 }
 
-setupPageSeo('download')
+onMounted(() => {
+  loadDownloadBox()
+})
+
+watch(locale, () => {
+  loadDownloadBox()
+})
+
+setupPageSeo('download', () => downloadBox.value.seo)
 </script>
 
 <style scoped>

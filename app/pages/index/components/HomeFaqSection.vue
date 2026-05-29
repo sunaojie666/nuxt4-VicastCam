@@ -25,7 +25,10 @@
             :aria-controls="`home-faq-answer-${index}`"
             @click="toggleFaqItem(index)"
           >
-            <span>{{ item.question }}</span>
+            <span class="home-faq-question-icon" aria-hidden="true">
+              <Icon name="lucide:circle-question-mark" />
+            </span>
+            <span class="home-faq-question-text">{{ item.question }}</span>
             <span class="home-faq-toggle" aria-hidden="true">
               <Icon v-if="activeFaqIndex === index" name="lucide:chevron-up" />
               <Icon v-else name="lucide:chevron-down" />
@@ -42,7 +45,7 @@
         </article>
       </div>
 
-      <NuxtLink :to="localePath('/faq')" class="home-faq-more theme-more-link">
+      <NuxtLink :to="localePath('/faq')" class="home-faq-more theme-more-link" target="_blank" rel="noopener noreferrer">
         <span>{{ viewMoreText }}</span>
         <img src="/images/common/arrow-right.png" alt="" aria-hidden="true">
       </NuxtLink>
@@ -227,8 +230,7 @@ watch(locale, () => {
   height: 64px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 12px;
   padding: 0 22px;
   color: var(--theme-faq-question, var(--theme-white));
   font-size: 16px;
@@ -236,8 +238,28 @@ watch(locale, () => {
   line-height: 20px;
   text-align: left;
 }
-.home-faq-question > span:first-child {
+
+.home-faq-question-icon {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 26px;
+  border-radius: 7px;
+  color: var(--theme-primary);
+  background: var(--theme-primary-softer);
+}
+
+.home-faq-question-icon svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.2;
+}
+
+.home-faq-question-text {
   min-width: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -328,6 +350,18 @@ watch(locale, () => {
     min-height: 58px;
     padding: 0 16px;
     font-size: 13px;
+  }
+
+  .home-faq-question-icon {
+    width: 24px;
+    height: 24px;
+    flex-basis: 24px;
+    border-radius: 6px;
+  }
+
+  .home-faq-question-icon svg {
+    width: 14px;
+    height: 14px;
   }
 
   .home-faq-answer-wrap {

@@ -39,7 +39,7 @@
         </article>
       </div>
 
-      <NuxtLink :to="localePath('/tutorial')" class="home-learning-more theme-more-link">
+      <NuxtLink :to="localePath('/tutorial')" class="home-learning-more theme-more-link" target="_blank" rel="noopener noreferrer">
         <span>{{ tutorialContent.buttonText }}</span>
         <img src="/images/common/arrow-right.png" alt="" aria-hidden="true">
       </NuxtLink>
