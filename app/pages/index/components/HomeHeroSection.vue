@@ -16,73 +16,77 @@
     <div class="home-hero-overlay"></div>
 
     <div class="home-hero-inner">
-      <div v-if="heroBadgeText" :key="heroBadgeText" class="home-hero-eyebrow">
-        <img src="/images/common/badge-star.png" alt="" aria-hidden="true">
-        <b>{{ heroBadgeText }}</b>
-      </div>
+      <div class="home-hero-content">
+        <div class="home-hero-main">
+          <div v-if="heroBadgeText" :key="heroBadgeText" class="home-hero-eyebrow">
+            <img src="/images/common/badge-star.png" alt="" aria-hidden="true">
+            <b>{{ heroBadgeText }}</b>
+          </div>
 
-      <h1 id="home-hero-title" class="home-hero-title">
-        <span>{{ heroTitle }}</span>
-        <span class="theme-gradient-text">
-          {{ heroSubtitle }}
-          <img class="home-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true">
-        </span>
-      </h1>
+          <h1 id="home-hero-title" :class="['home-hero-title', { 'home-hero-title-long': isLongHeroTitle }]">
+            <span>{{ heroTitle }}</span>
+            <span class="theme-gradient-text">
+              {{ heroSubtitle }}
+              <img class="home-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true">
+            </span>
+          </h1>
 
-      <p class="home-hero-subtitle">
-        <span>{{ heroDescription1 }}</span>
-        <span>{{ heroDescription2 }}</span>
-      </p>
+          <p class="home-hero-subtitle">
+            <span>{{ heroDescription1 }}</span>
+            <span>{{ heroDescription2 }}</span>
+          </p>
 
-      <div class="home-hero-actions" aria-label="下载VicastCam">
-        <a href="#" class="home-hero-download home-hero-download-light">
-          <span class="home-hero-download-icon-wrap" aria-hidden="true">
-            <img class="home-hero-download-icon-default" src="/images/home/download-buttons/apple-default.svg" alt="">
-            <img class="home-hero-download-icon-active" src="/images/home/download-buttons/apple-active.svg" alt="">
-          </span>
-          <span>{{ appStoreUrl }}</span>
-        </a>
+          <div class="home-hero-actions" aria-label="下载VicastCam">
+            <a href="#" class="home-hero-download home-hero-download-light">
+              <span class="home-hero-download-icon-wrap" aria-hidden="true">
+                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/apple-default.svg" alt="">
+                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/apple-active.svg" alt="">
+              </span>
+              <span>{{ appStoreUrl }}</span>
+            </a>
 
-        <a href="#" class="home-hero-download home-hero-download-light">
-          <span class="home-hero-download-icon-wrap" aria-hidden="true">
-            <img class="home-hero-download-icon-default" src="/images/home/download-buttons/android-default.svg" alt="">
-            <img class="home-hero-download-icon-active" src="/images/home/download-buttons/android-active.svg" alt="">
-          </span>
-          <span>{{ googlePlayUrl }}</span>
-        </a>
+            <a href="#" class="home-hero-download home-hero-download-light">
+              <span class="home-hero-download-icon-wrap" aria-hidden="true">
+                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/android-default.svg" alt="">
+                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/android-active.svg" alt="">
+              </span>
+              <span>{{ googlePlayUrl }}</span>
+            </a>
 
-        <a href="#" class="home-hero-download home-hero-download-primary">
-          <span class="home-hero-download-icon-wrap" aria-hidden="true">
-            <img class="home-hero-download-icon-default" src="/images/home/download-buttons/windows-default.svg" alt="">
-            <img class="home-hero-download-icon-active" src="/images/home/download-buttons/windows-active.svg" alt="">
-          </span>
-          <span>{{ desktopClientUrl }}</span>
-        </a>
-      </div>
-
-      <div class="home-hero-metrics" aria-label="VicastCam数据">
-        <div class="home-hero-metric">
-          <span class="home-hero-avatars">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-          <strong>50万+</strong>
-          <span>{{ userCountLabel }}</span>
+            <a href="#" class="home-hero-download home-hero-download-primary">
+              <span class="home-hero-download-icon-wrap" aria-hidden="true">
+                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/windows-default.svg" alt="">
+                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/windows-active.svg" alt="">
+              </span>
+              <span>{{ desktopClientUrl }}</span>
+            </a>
+          </div>
         </div>
 
-        <div class="home-hero-metric">
-          <span class="home-hero-score-icons" aria-hidden="true">
-            <img v-for="star in 5" :key="star" src="/images/common/rating-star.png" alt="">
-          </span>
-          <strong>4.9</strong>
-          <span>{{ ratingLabel }}</span>
-        </div>
+        <div class="home-hero-metrics" aria-label="VicastCam数据">
+          <div class="home-hero-metric">
+            <span class="home-hero-avatars">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+            <strong>50万+</strong>
+            <span>{{ userCountLabel }}</span>
+          </div>
 
-        <div class="home-hero-metric">
-          <img class="home-hero-download-icon" src="/images/common/download-metric.png" alt="" aria-hidden="true">
-          <strong>10万+</strong>
-          <span>{{ downloadCountLabel }}</span>
+          <div class="home-hero-metric">
+            <span class="home-hero-score-icons" aria-hidden="true">
+              <img v-for="star in 5" :key="star" src="/images/common/rating-star.png" alt="">
+            </span>
+            <strong>4.9</strong>
+            <span>{{ ratingLabel }}</span>
+          </div>
+
+          <div class="home-hero-metric">
+            <img class="home-hero-download-icon" src="/images/common/download-metric.png" alt="" aria-hidden="true">
+            <strong>10万+</strong>
+            <span>{{ downloadCountLabel }}</span>
+          </div>
         </div>
       </div>
 
@@ -122,6 +126,7 @@ const googlePlayUrl = ref('')
 const desktopClientUrl = ref('')
 const { setToastText } = useSiteToast()
 const heroBadgeText = computed(() => String(topBadge.value || '').trim())
+const isLongHeroTitle = computed(() => `${heroTitle.value || ''}${heroSubtitle.value || ''}`.length > 56)
 
 // Strapi 本地上传文件返回 /uploads/...，前端播放时需要补上 Strapi 服务地址。
 const createStrapiAssetUrl = (url) => {
@@ -191,7 +196,8 @@ watch(locale, () => {
 .home-hero-section {
   position: relative;
   width: 100%;
-  min-height: 929px;
+  min-height: calc(100vh - var(--page-header-height));
+  min-height: calc(100svh - var(--page-header-height));
   height: auto;
   display: flex;
   justify-content: center;
@@ -220,12 +226,28 @@ watch(locale, () => {
   position: relative;
   z-index: 1;
   width: min(100%, var(--page-max-width));
-  min-height: 929px;
+  min-height: calc(100vh - var(--page-header-height));
+  min-height: calc(100svh - var(--page-header-height));
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 172px var(--page-padding-x) 72px;
+  justify-content: center;
+  padding: clamp(32px, 5vh, 64px) var(--page-padding-x) clamp(40px, 7vh, 72px);
   text-align: center;
+}
+.home-hero-content {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.home-hero-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .home-hero-eyebrow {
   max-width: 100%;
@@ -262,11 +284,11 @@ watch(locale, () => {
   overflow-wrap: anywhere;
 }
 .home-hero-title {
-  max-width: min(100%, 980px);
+  max-width: min(100%, 1120px);
   margin-top: 22px;
-  font-size: clamp(44px, 4.35vw, 58px);
+  font-size: clamp(40px, 3.75vw, 56px);
   font-weight: 900;
-  line-height: 1.17;
+  line-height: 1.12;
   text-align: center;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -281,6 +303,14 @@ watch(locale, () => {
   display: inline-block;
   max-width: 100%;
 }
+.home-hero-title-long {
+  max-width: min(100%, 1154px);
+  font-size: clamp(34px, 3.05vw, 48px);
+  line-height: 1.1;
+}
+.home-hero-title-long + .home-hero-subtitle {
+  margin-top: 22px;
+}
 .home-hero-title-line {
   position: absolute;
   left: 50%;
@@ -290,7 +320,7 @@ watch(locale, () => {
   transform: translateX(-50%);
 }
 .home-hero-subtitle {
-  max-width: 100%;
+  max-width: min(100%, 1120px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -418,7 +448,7 @@ watch(locale, () => {
   align-items: center;
   justify-content: center;
   gap: 86px;
-  margin-top: 45px;
+  margin-top: 42px;
   color: var(--theme-white-86);
   font-size: 16px;
   line-height: 24px;
@@ -432,7 +462,7 @@ watch(locale, () => {
   justify-content: center;
   width: 112px;
   height: 112px;
-  margin-top: 94px;
+  margin-top: clamp(34px, 6vh, 74px);
   color: var(--theme-extra-226-232-240-078);
   line-height: 1;
   animation: home-hero-enter 0.75s ease 0.42s both;
@@ -570,19 +600,30 @@ watch(locale, () => {
 
   .home-hero-section {
     height: auto;
-    min-height: 720px;
+    min-height: calc(100vh - var(--page-header-height));
+    min-height: calc(100svh - var(--page-header-height));
   }
 
   .home-hero-inner {
-    min-height: 720px;
-    padding-top: 62px;
-    padding-bottom: 58px;
+    min-height: calc(100vh - var(--page-header-height));
+    min-height: calc(100svh - var(--page-header-height));
+    padding-top: 34px;
+    padding-bottom: 46px;
+  }
+
+  .home-hero-main {
+    justify-content: center;
   }
 
   .home-hero-title {
     margin-top: 22px;
     font-size: 36px;
     line-height: 44px;
+  }
+
+  .home-hero-title-long {
+    font-size: 32px;
+    line-height: 38px;
   }
 
   .home-hero-title span {
