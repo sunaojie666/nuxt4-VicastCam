@@ -14,52 +14,16 @@
             <Icon class="account-info-icon" name="lucide:user-round" aria-hidden="true" />
             <span class="account-info-main">
               <span>{{ accountText.usernameLabel }}</span>
-              <input
-                v-if="editingField === 'nickname'"
-                ref="nicknameInput"
-                v-model.trim="profileForm.nickname"
-                type="text"
-                autocomplete="name"
-                :placeholder="accountText.usernamePlaceholder"
-              >
-              <strong v-else>{{ profileName }}</strong>
+              <strong>{{ profileName }}</strong>
             </span>
-            <button
-              type="button"
-              class="account-row-action"
-              :disabled="isSaving"
-              @click="handleFieldAction('nickname')"
-            >
-              {{ editingField === 'nickname' ? commonText.confirmButton : commonText.editButton }}
-            </button>
           </div>
 
           <div class="account-info-row">
             <Icon class="account-info-icon" name="lucide:lock-keyhole" aria-hidden="true" />
             <span class="account-info-main">
               <span>{{ accountText.passwordLabel }}</span>
-              <span v-if="editingField === 'password'" class="account-password-wrap">
-                <input
-                  ref="passwordInput"
-                  v-model="profileForm.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  autocomplete="new-password"
-                  :placeholder="accountText.passwordPlaceholder"
-                >
-                <button type="button" :aria-label="commonText.togglePasswordLabel" @click="showPassword = !showPassword">
-                  <Icon :name="showPassword ? 'lucide:eye' : 'lucide:eye-off'" aria-hidden="true" />
-                </button>
-              </span>
-              <strong v-else>{{ accountText.passwordMask }}</strong>
+              <strong>{{ accountText.passwordMask }}</strong>
             </span>
-            <button
-              type="button"
-              class="account-row-action"
-              :disabled="isSaving"
-              @click="handleFieldAction('password')"
-            >
-              {{ editingField === 'password' ? commonText.confirmButton : commonText.editButton }}
-            </button>
           </div>
         </div>
 
@@ -93,30 +57,15 @@
 </template>
 
 <script setup>
-const emit = defineEmits(['profile-saved'])
-const { authUser, updateUserProfile } = useAuth()
-const { showErrorToast, showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+const { authUser } = useAuth()
+const { showRequestSuccessToast } = useSiteToast()
 const { profileBox } = useProfileText()
-const showPassword = ref(false)
-const isSaving = ref(false)
-const editingField = ref('')
-const nicknameInput = ref(null)
-const passwordInput = ref(null)
-
-const profileForm = reactive({
-  nickname: authUser.value?.nickname || '',
-  password: '',
-})
 
 const commonText = computed(() => profileBox.value?.common || {})
 const accountText = computed(() => profileBox.value?.account || {})
 const profileName = computed(() => {
   return authUser.value?.nickname || accountText.value.defaultUsername || ''
 })
-
-const syncProfileForm = (user = {}) => {
-  profileForm.nickname = user.nickname || ''
-}
 
 const inviteLink = computed(() => {
   if (authUser.value?.invite_link) {
@@ -140,91 +89,6 @@ const copyInviteLink = () => {
     () => null
   )
 }
-
-const createProfilePayload = (field) => {
-  if (field === 'nickname') {
-    return {
-      nickname: profileForm.nickname,
-    }
-  }
-
-  if (field === 'password') {
-    return {
-      password: profileForm.password,
-    }
-  }
-
-  return {}
-}
-
-const saveProfileField = (field) => {
-  if (isSaving.value) {
-    return
-  }
-
-  isSaving.value = true
-
-  updateUserProfile(createProfilePayload(field)).then(
-    () => {
-      emit('profile-saved')
-      if (field === 'password') {
-        profileForm.password = ''
-        showPassword.value = false
-      }
-      editingField.value = ''
-      showRequestSuccessToast()
-      isSaving.value = false
-    },
-    () => {
-      showRequestFailToast()
-      isSaving.value = false
-    }
-  )
-}
-
-const focusEditingField = (field) => {
-  nextTick(() => {
-    const target = field === 'nickname' ? nicknameInput.value : passwordInput.value
-
-    target?.focus()
-  })
-}
-
-const handleFieldAction = (field) => {
-  if (editingField.value !== field) {
-    editingField.value = field
-
-    if (field === 'nickname') {
-      profileForm.nickname = authUser.value?.nickname || ''
-    }
-
-    if (field === 'password') {
-      profileForm.password = ''
-      showPassword.value = false
-    }
-
-    focusEditingField(field)
-    return
-  }
-
-  if (field === 'nickname' && !profileForm.nickname.trim()) {
-    showErrorToast(accountText.value.errors?.usernameRequired || '')
-    return
-  }
-
-  if (field === 'password' && !profileForm.password.trim()) {
-    showErrorToast(accountText.value.errors?.passwordRequired || '')
-    return
-  }
-
-  saveProfileField(field)
-}
-
-watch(authUser, user => {
-  syncProfileForm(user || {})
-}, {
-  immediate: true,
-})
 </script>
 
 <style scoped>
@@ -263,7 +127,7 @@ watch(authUser, user => {
 .account-info-row {
   min-width: 0;
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) 52px;
+  grid-template-columns: 20px minmax(0, 1fr);
   align-items: center;
   gap: 16px;
   min-height: 50px;
@@ -291,20 +155,6 @@ watch(authUser, user => {
   line-height: 16px;
 }
 
-.account-info-main input {
-  width: 100%;
-  min-width: 0;
-  color: var(--theme-profile-field-text, var(--theme-text-strong));
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 20px;
-}
-
-.account-info-main input::placeholder {
-  color: var(--theme-profile-field-placeholder, var(--theme-extra-120-136-162-1));
-  font-weight: 400;
-}
-
 .account-info-main strong {
   display: block;
   min-width: 0;
@@ -317,44 +167,6 @@ watch(authUser, user => {
   white-space: nowrap;
 }
 
-.account-password-wrap {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px;
-  align-items: center;
-}
-
-.account-password-wrap input {
-  padding-right: 8px;
-}
-
-.account-password-wrap button {
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-profile-field-muted, var(--theme-text-muted-alt));
-  cursor: pointer;
-}
-
-.account-password-wrap svg {
-  width: 15px;
-  height: 15px;
-}
-
-.account-row-action {
-  justify-self: end;
-  color: var(--theme-profile-field-action, var(--theme-accent));
-  font-size: 14px;
-  line-height: 20px;
-  cursor: pointer;
-}
-
-.account-row-action:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 @media (max-width: 900px) {
   .account-profile-panel {
     min-height: 0 !important;
@@ -364,11 +176,6 @@ watch(authUser, user => {
 @media (max-width: 640px) {
   .account-info-row {
     grid-template-columns: 20px minmax(0, 1fr);
-  }
-
-  .account-row-action {
-    grid-column: 2;
-    justify-self: start;
   }
 }
 </style>

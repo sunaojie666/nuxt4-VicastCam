@@ -51,37 +51,6 @@ export const checkScanLoginStatus = (uuid) => {
   })
 }
 
-const appendUpdateUserValue = (formData, key, value) => {
-  if (value === undefined || value === null) {
-    return
-  }
-
-  if (key === 'password' && !String(value || '').trim()) {
-    return
-  }
-
-  if (key === 'avatar') {
-    if (value instanceof File) {
-      formData.append(key, value)
-    }
-    return
-  }
-
-  formData.append(key, String(value))
-}
-
-// 修改用户资料。服务端会转发到 https://api.vicastcam.com/v1/UpdateUser。
-export const updateUserProfile = (payload = {}) => {
-  const formData = new FormData()
-
-  appendUpdateUserValue(formData, 'user_id', payload.user_id)
-  appendUpdateUserValue(formData, 'nickname', payload.nickname)
-  appendUpdateUserValue(formData, 'password', payload.password)
-  appendUpdateUserValue(formData, 'avatar', payload.avatar)
-
-  return authRequest.post('/update-user', formData)
-}
-
 // 获取团队成员列表。服务端会转发到 https://api.vicastcam.com/v1/GetTeamList。
 export const getTeamList = (payload = {}) => {
   return authRequest.post('/get-team-list', {

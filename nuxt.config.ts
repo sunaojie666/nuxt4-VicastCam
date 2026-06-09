@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     // VicastCam 业务接口只在 Nuxt 服务端使用，前端通过 server/api 代理访问。
     vicastApiUrl: process.env.NUXT_VICAST_API_URL || 'https://api.vicastcam.com',
     public: {
-      strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://localhost:1337',
+      strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://192.168.18.100:1337',
     },
   },
 

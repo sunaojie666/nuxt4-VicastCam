@@ -90,6 +90,7 @@
           >
             <Icon class="locale-flag-icon" :name="activeLocale.flagIcon || 'circle-flags:xx'" aria-hidden="true" />
             <span>{{ activeLocale.name }}</span>
+            <span class="site-select-mobile-label">{{ activeLocale.mobileLabel }}</span>
             <Icon class="locale-chevron-icon" name="lucide:chevron-down" aria-hidden="true" />
           </button>
 
@@ -361,6 +362,8 @@ const isHomeRoute = () => {
 const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value
   mobileMenuIcon.value = mobileMenuOpen.value ? 'lucide:x' : 'lucide:menu'
+  localeMenuOpen.value = false
+  profileMenuOpen.value = false
 }
 
 // 关闭手机端导航菜单。
@@ -406,6 +409,43 @@ const createLocaleDisplayName = (localeItem, displayNames) => {
   return displayNames?.of(languageCode) || localeItem.name || localeItem.code
 }
 
+const normalizeLocaleTranslatedName = (localeItem, translatedName) => {
+  const localeCode = typeof localeItem === 'string' ? localeItem : localeItem?.code
+
+  if (localeCode !== 'zh-TW') {
+    return translatedName
+  }
+
+  return String(translatedName || '')
+    .replace(/台湾/g, '香港')
+    .replace(/台灣/g, '香港')
+    .replace(/臺灣/g, '香港')
+    .replace(/Taiwan/g, 'Hong Kong')
+}
+
+const createLocaleFlagIcon = (localeItem) => {
+  if (typeof localeItem === 'string') {
+    return localeItem === 'zh-TW' ? 'circle-flags:cn' : 'circle-flags:xx'
+  }
+
+  return localeItem.code === 'zh-TW' ? 'circle-flags:cn' : localeItem.flagIcon || 'circle-flags:xx'
+}
+
+const createLocaleMobileLabel = (localeItem) => {
+  const localeCode = typeof localeItem === 'string' ? localeItem : localeItem?.code
+  const labelMap = {
+    'zh-CN': '简',
+    'zh-TW': '繁',
+    en: 'EN',
+  }
+
+  if (labelMap[localeCode]) {
+    return labelMap[localeCode]
+  }
+
+  return String(localeCode || '').slice(0, 2).toUpperCase()
+}
+
 const createLocaleNativeName = (localeItem) => {
   if (typeof localeItem === 'string') {
     return localeItem
@@ -416,7 +456,7 @@ const createLocaleNativeName = (localeItem) => {
 
 const createLocaleTranslatedName = (localeItem, displayNames) => {
   const nativeName = createLocaleNativeName(localeItem)
-  const translatedName = createLocaleDisplayName(localeItem, displayNames)
+  const translatedName = normalizeLocaleTranslatedName(localeItem, createLocaleDisplayName(localeItem, displayNames))
 
   if (!translatedName || translatedName === nativeName) {
     return ''
@@ -435,7 +475,8 @@ const createAvailableLocales = () => {
         code: item,
         name: createLocaleNativeName(item),
         translatedName: createLocaleTranslatedName(item, displayNames),
-        flagIcon: 'circle-flags:xx',
+        flagIcon: createLocaleFlagIcon(item),
+        mobileLabel: createLocaleMobileLabel(item),
       }
     }
 
@@ -443,7 +484,8 @@ const createAvailableLocales = () => {
       code: item.code,
       name: createLocaleNativeName(item),
       translatedName: createLocaleTranslatedName(item, displayNames),
-      flagIcon: item.flagIcon || 'circle-flags:xx',
+      flagIcon: createLocaleFlagIcon(item),
+      mobileLabel: createLocaleMobileLabel(item),
       dir: item.dir || 'ltr',
     }
   })
@@ -820,7 +862,7 @@ onMounted(() => {
   }
 
   closeMobileMenuOnOutsideClick = (event) => {
-    if (!mobileMenuOpen.value) {
+    if (!mobileMenuOpen.value && !localeMenuOpen.value) {
       return
     }
 
@@ -830,6 +872,7 @@ onMounted(() => {
     }
 
     closeMobileMenu()
+    localeMenuOpen.value = false
   }
 
   document.addEventListener('click', closeMobileMenuOnOutsideClick)
@@ -1238,6 +1281,10 @@ onBeforeUnmount(() => {
   text-overflow: ellipsis;
 }
 
+.site-select-mobile-label {
+  display: none;
+}
+
 .site-select-button:hover,
 .site-select-button:focus {
   border-color: var(--theme-header-control-border, var(--theme-border-control));
@@ -1274,16 +1321,21 @@ onBeforeUnmount(() => {
 }
 
 .site-profile-link {
-  width: 36px;
-  height: 36px;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 36px;
+  flex: 0 0 44px;
   margin-left: 20px;
+  padding: 3px;
+  border: 2px solid rgba(0, 0, 0, 0.86);
   border-radius: 50%;
   color: var(--theme-white);
-  background: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
+  background: var(--theme-white);
+  box-shadow: 0 6px 16px var(--theme-black-22);
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
@@ -1314,7 +1366,18 @@ onBeforeUnmount(() => {
 .site-profile-avatar {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   object-fit: cover;
+}
+
+.site-profile-link > span {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
 }
 
 .site-profile-dropdown {
@@ -1647,49 +1710,17 @@ onBeforeUnmount(() => {
   .site-actions {
     width: auto;
     min-width: 0;
-    gap: 8px;
+    gap: 6px;
     justify-content: flex-end;
     padding-bottom: 0;
     flex-wrap: nowrap;
     margin-left: auto;
     flex: 0 0 auto;
-    max-width: calc(100vw - 132px);
+    max-width: calc(100vw - 104px);
   }
 
   .site-locale-select {
-    flex: 0 0 auto;
-    margin-left: 0;
-  }
-
-  .site-select-button {
-    min-width: 32px;
-    width: 32px;
-    max-width: 32px;
-    flex: 0 0 32px;
-    gap: 0;
-    padding: 0;
-    border-color: transparent;
-    border-radius: 0;
-    background-color: transparent;
-  }
-
-  .site-select-button:hover,
-  .site-select-button:focus {
-    border-color: transparent;
-    background-color: transparent;
-  }
-
-  .site-select-button > span,
-  .locale-chevron-icon {
     display: none;
-  }
-
-  .site-select-menu {
-    left: auto;
-    right: 0;
-    width: max-content;
-    max-width: calc(100vw - 32px);
-    max-height: min(420px, calc(100vh - var(--page-header-height) - 24px));
   }
 
   .site-auth-button {
@@ -1704,9 +1735,9 @@ onBeforeUnmount(() => {
   }
 
   .site-profile-link {
-    width: 36px;
-    height: 36px;
-    flex-basis: 36px;
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
     margin-left: 0;
   }
 

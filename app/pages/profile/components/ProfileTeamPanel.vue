@@ -107,7 +107,7 @@
         </table>
       </div>
 
-      <div class="team-pagination">
+      <div v-if="!isLoadingTeam && pagedRows.length" class="team-pagination">
         <button
           type="button"
           :disabled="currentPage === 1"
@@ -512,8 +512,8 @@ onBeforeUnmount(() => {
 .team-month-button:hover,
 .team-month-button:focus,
 .team-month-button-active {
-  color: var(--theme-text-info);
-  border-color: var(--theme-extra-62-91-135-1);
+  color: var(--theme-profile-field-action, var(--theme-text-info));
+  border-color: var(--theme-profile-field-action, var(--theme-extra-62-91-135-1));
 }
 
 .team-month-popover {
@@ -523,10 +523,10 @@ onBeforeUnmount(() => {
   z-index: 30;
   width: 248px;
   padding: 12px;
-  border: 1px solid var(--theme-border-card);
+  border: 1px solid var(--theme-profile-table-border, var(--theme-border-card));
   border-radius: 10px;
-  background: var(--theme-panel-code);
-  box-shadow: 0 18px 42px var(--theme-black-34);
+  background: var(--theme-profile-table-background, var(--theme-panel-code));
+  box-shadow: var(--theme-route-card-shadow, 0 18px 42px var(--theme-black-34));
 }
 
 .team-month-popover-header {
@@ -535,7 +535,7 @@ onBeforeUnmount(() => {
   grid-template-columns: 32px minmax(0, 1fr) 32px;
   align-items: center;
   gap: 8px;
-  color: var(--theme-text-title);
+  color: var(--theme-profile-section-title, var(--theme-text-title));
 }
 
 .team-month-popover-header strong {
@@ -547,10 +547,10 @@ onBeforeUnmount(() => {
 .team-month-year-button {
   width: 32px;
   height: 32px;
-  border: 1px solid var(--theme-border-control-soft);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-control-soft));
   border-radius: 8px;
-  color: var(--theme-text-muted);
-  background: var(--theme-extra-18-30-51-1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted));
+  background: var(--theme-profile-field-background, var(--theme-extra-18-30-51-1));
   cursor: pointer;
 }
 
@@ -573,10 +573,10 @@ onBeforeUnmount(() => {
 
 .team-month-option {
   height: 34px;
-  border: 1px solid var(--theme-border-control-soft);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-control-soft));
   border-radius: 8px;
-  color: var(--theme-text-muted);
-  background: var(--theme-extra-18-30-51-1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted));
+  background: var(--theme-profile-field-background, var(--theme-extra-18-30-51-1));
   font-size: 13px;
   line-height: 18px;
   cursor: pointer;
@@ -584,18 +584,20 @@ onBeforeUnmount(() => {
 
 .team-month-option:hover,
 .team-month-option:focus {
-  color: var(--theme-text-info);
-  border-color: var(--theme-cyan-hover);
+  color: var(--theme-profile-field-action, var(--theme-text-info));
+  border-color: var(--theme-profile-field-action, var(--theme-cyan-hover));
 }
 
 .team-month-option-active {
-  color: var(--theme-text-button);
-  border-color: var(--theme-cyan-hover);
-  background: var(--theme-extra-20-101-145-06);
+  color: var(--theme-white);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--theme-profile-field-action, var(--theme-cyan)) 0%, var(--theme-primary, var(--theme-gradient-mid)) 100%);
+  box-shadow: 0 8px 18px rgba(40, 115, 253, 0.24);
+  font-weight: 700;
 }
 
 .team-month-option:disabled {
-  opacity: 0.35;
+  opacity: 0.48;
   cursor: not-allowed;
 }
 

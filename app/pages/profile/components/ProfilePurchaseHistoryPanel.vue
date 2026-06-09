@@ -22,35 +22,49 @@
           :class="['purchase-tab', { 'purchase-tab-active': activeRecordTab === 'exchange' }]"
           @click="activeRecordTab = 'exchange'"
         >
-          <span>{{ purchaseText.exchangeTabTitle || '兑换记录' }}</span>
+          <span>{{ purchaseText.exchangeTabTitle }}</span>
           <strong>{{ exchangeCount }}</strong>
         </button>
       </div>
 
-      <ul v-if="activeRecordTab === 'purchase'" class="purchase-record-list">
-        <li v-for="record in currentRecords" :key="record.id" class="purchase-record-item">
-          <div class="purchase-record-main">
-            <Icon name="lucide:clipboard-check" aria-hidden="true" />
-            <div>
-              <strong>{{ record.title }}</strong>
-              <p>
-                <Icon name="lucide:calendar" aria-hidden="true" />
-                {{ purchaseText.datePrefix }} {{ record.date }}
-              </p>
-            </div>
-          </div>
-
-          <div class="purchase-record-side">
-            <strong>${{ record.price }}</strong>
-            <span :class="record.statusClass">{{ record.status }}</span>
-          </div>
-        </li>
-      </ul>
-      <div v-if="!currentRecords.length" class="purchase-empty-state">
-        {{ activeRecordTab === 'exchange' ? purchaseText.exchangeEmptyText || purchaseText.emptyText : purchaseText.emptyText }}
+      <div class="purchase-table-wrap">
+        <table class="purchase-table">
+          <thead>
+            <tr>
+              <th>{{ purchaseText.tableHeaders?.title }}</th>
+              <th>{{ purchaseText.tableHeaders?.date }}</th>
+              <th>{{ purchaseText.tableHeaders?.price }}</th>
+              <th>{{ purchaseText.tableHeaders?.status }}</th>
+            </tr>
+          </thead>
+          <tbody v-if="activeRecordTab === 'purchase' && currentRecords.length">
+            <tr v-for="record in currentRecords" :key="record.id">
+              <td>
+                <span class="purchase-record-title">
+                  <span class="purchase-record-icon">
+                    <Icon name="lucide:clipboard-check" aria-hidden="true" />
+                  </span>
+                  <strong>{{ record.title }}</strong>
+                </span>
+              </td>
+              <td>{{ record.date }}</td>
+              <td class="purchase-record-price">${{ record.price }}</td>
+              <td>
+                <span :class="['purchase-record-status', record.statusClass]">{{ record.status }}</span>
+              </td>
+            </tr>
+          </tbody>
+          <tbody v-else>
+            <tr>
+              <td colspan="4" class="purchase-empty-cell">
+                {{ activeRecordTab === 'exchange' ? purchaseText.exchangeEmptyText || purchaseText.emptyText : purchaseText.emptyText }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <div class="purchase-pagination" :aria-label="commonText.paginationLabel">
+      <div v-if="currentRecords.length" class="purchase-pagination" :aria-label="commonText.paginationLabel">
         <button
           type="button"
           class="purchase-page-arrow"
@@ -312,87 +326,94 @@ onMounted(() => {
   background: var(--theme-profile-tab-count-active-background, var(--theme-extra-26-92-140-1));
 }
 
-.purchase-record-list {
-  display: grid;
-  gap: 20px;
+.purchase-table-wrap {
   margin-top: 20px;
+  border: 1px solid var(--theme-profile-table-border, var(--theme-border-code));
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--theme-profile-table-background, var(--theme-panel-code));
 }
 
-.purchase-empty-state {
-  min-height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-extra-118-136-163-1);
+.purchase-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.purchase-table th,
+.purchase-table td {
+  height: 50px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--theme-profile-table-border, var(--theme-border-table));
+  color: var(--theme-profile-table-text, var(--theme-text-table));
   font-size: 14px;
+  text-align: center;
 }
 
-.purchase-record-item {
-  height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 13px;
-  border: 1px solid var(--theme-extra-32-47-78-1);
-  border-radius: 10px;
-  background: var(--theme-extra-8-19-39-1);
+.purchase-table thead th {
+  background: var(--theme-profile-table-head-background, var(--theme-extra-17-25-39-1));
+  color: var(--theme-profile-table-head-text, var(--theme-text-slate));
+  font-weight: 600;
 }
 
-.purchase-record-main {
+.purchase-table tbody tr:nth-child(odd) td {
+  background: var(--theme-profile-table-row-background, var(--theme-panel));
+}
+
+.purchase-table tbody tr:nth-child(even) td {
+  background: var(--theme-profile-table-row-alt-background, var(--theme-panel-row));
+}
+
+.purchase-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.purchase-table th:first-child,
+.purchase-table td:first-child {
+  text-align: left;
+  padding-left: 14px;
+}
+
+.purchase-record-title {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
+  color: var(--theme-team-member-name, var(--theme-extra-242-247-255-1)) !important;
+  font-size: 16px !important;
+  line-height: 22px;
+  font-weight: 700;
 }
 
-.purchase-record-main > svg {
-  width: 16px;
-  height: 16px;
+.purchase-record-title strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.purchase-record-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--theme-extra-156-174-201-1);
   flex: 0 0 auto;
 }
 
-.purchase-record-main strong {
-  display: block;
-  color: var(--theme-extra-244-248-255-1);
-  font-size: 16px;
-  line-height: 22px;
+.purchase-record-icon :deep(svg) {
+  width: 16px;
+  height: 16px;
+}
+
+.purchase-record-price {
+  color: var(--theme-extra-241-247-255-1) !important;
   font-weight: 700;
 }
 
-.purchase-record-main p {
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--theme-extra-118-136-163-1);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.purchase-record-main p svg {
-  width: 13px;
-  height: 13px;
-}
-
-.purchase-record-side {
-  flex: 0 0 auto;
-  text-align: right;
-}
-
-.purchase-record-side strong {
-  display: block;
-  color: var(--theme-extra-241-247-255-1);
-  font-size: 16px;
-  line-height: 22px;
-  font-weight: 700;
-}
-
-.purchase-record-side span {
-  margin-top: 6px;
+.purchase-record-status {
   min-width: 62px;
-  height: 20px;
+  height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -409,6 +430,12 @@ onMounted(() => {
 .record-status-expired {
   color: var(--theme-extra-145-159-182-1);
   background: var(--theme-extra-36-51-80-1);
+}
+
+.purchase-empty-cell {
+  height: 120px !important;
+  color: var(--theme-text-muted-alt) !important;
+  text-align: center !important;
 }
 
 .purchase-pagination {
@@ -466,14 +493,17 @@ onMounted(() => {
     padding-bottom: 20px;
   }
 
-  .purchase-record-item {
-    height: auto;
-    min-height: 72px;
-  }
-
   .purchase-tabs {
     gap: 10px;
     flex-wrap: wrap;
+  }
+
+  .purchase-table-wrap {
+    overflow-x: auto;
+  }
+
+  .purchase-table {
+    min-width: 640px;
   }
 
   .purchase-pagination {

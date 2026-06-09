@@ -107,7 +107,7 @@
         </table>
       </div>
 
-      <div class="earnings-pagination">
+      <div v-if="!isLoadingCommission && commissionRows.length" class="earnings-pagination">
         <button
           type="button"
           :disabled="currentPage === 1 || isLoadingCommission"
@@ -138,7 +138,12 @@
     </section>
 
     <Teleport to="body">
-      <div v-if="showWithdrawModal" class="earnings-withdraw-overlay" @click.self="closeWithdrawModal">
+      <div
+        v-if="showWithdrawModal"
+        class="earnings-withdraw-overlay"
+        :class="{ 'is-light': currentTheme === 'light' }"
+        @click.self="closeWithdrawModal"
+      >
         <section class="earnings-withdraw-modal" role="dialog" aria-modal="true" :aria-label="withdrawText.ariaLabel">
           <header class="earnings-withdraw-header">
             <div class="earnings-withdraw-title">
@@ -157,7 +162,7 @@
               <Icon name="lucide:wallet" aria-hidden="true" />
               <strong>{{ withdrawText.balanceLabel }}</strong>
             </div>
-            <strong>$23,560.00</strong>
+            <strong>{{ withdrawBalanceText }}</strong>
           </article>
 
           <div class="earnings-withdraw-field">
@@ -220,12 +225,14 @@
 
 <script setup>
 import { getCommissionList } from '../../../api/request/auth'
+import { createThemeContext } from '../../../utils/theme'
 
 const createMoneyText = (value) => {
   return `$ ${String(value || '0.00')}`
 }
 
 const { profileBox } = useProfileText()
+const { currentTheme } = createThemeContext()
 const commonText = computed(() => profileBox.value?.common || {})
 const earningsText = computed(() => profileBox.value?.earnings || {})
 const withdrawText = computed(() => earningsText.value.withdraw || {})
@@ -250,7 +257,7 @@ const summaryCards = computed(() => [
   },
   {
     title: getSummaryText('settling').title || '',
-    value: '$ 1,560.00',
+    value: createMoneyText(getSummaryText('settling').value),
     desc: getSummaryText('settling').desc || '',
     icon: 'lucide:info',
     theme: 'card-violet',
@@ -283,8 +290,8 @@ const showWithdrawModal = ref(false)
 const withdrawMethods = computed(() => Array.isArray(withdrawText.value.methods) ? withdrawText.value.methods : [])
 const withdrawForm = reactive({
   amount: '',
-  method: 'PayPal',
-  name: 'Marcus Johnson',
+  method: '',
+  name: '',
   bankCard: '',
   remark: '',
 })
@@ -325,6 +332,18 @@ const commissionTableMessage = computed(() => {
 
   return earningsText.value.emptyCommission || ''
 })
+const withdrawBalanceText = computed(() => {
+  return String(withdrawText.value.balanceValue || '').trim()
+})
+const syncWithdrawDefaults = () => {
+  if (!withdrawForm.method) {
+    withdrawForm.method = String(withdrawText.value.defaultMethod || '').trim()
+  }
+
+  if (!withdrawForm.name) {
+    withdrawForm.name = String(withdrawText.value.defaultName || '').trim()
+  }
+}
 
 selectedMonth.value = currentMonth.value
 
@@ -447,6 +466,10 @@ watch(currentPage, () => {
   loadCommissionList()
 })
 
+watch(withdrawText, () => {
+  syncWithdrawDefaults()
+})
+
 const openWithdrawModal = () => {
   showWithdrawModal.value = true
 }
@@ -456,7 +479,7 @@ const closeWithdrawModal = () => {
 }
 
 const setAllAmount = () => {
-  withdrawForm.amount = '23560'
+  withdrawForm.amount = String(withdrawText.value.allAmountValue || '').trim()
 }
 
 const submitWithdraw = () => {
@@ -464,6 +487,7 @@ const submitWithdraw = () => {
 }
 
 onMounted(() => {
+  syncWithdrawDefaults()
   loadCommissionList()
   document.addEventListener('click', closeMonthPickerOnOutsideClick)
 })
@@ -476,31 +500,29 @@ onBeforeUnmount(() => {
 <style scoped>
 .earnings-overview-panel {
   min-height: 297px !important;
-  height: 297px !important;
+  height: auto !important;
   padding-bottom: 22px;
 }
 
 .earnings-cards {
   display: grid;
-  grid-template-columns: repeat(4, 194px);
-  justify-content: space-between;
-  gap: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 18px;
 }
 
 .earnings-card {
-  width: 194px;
-  height: 165px;
+  min-width: 0;
+  min-height: 185px;
   position: relative;
   border: 1px solid var(--theme-extra-48-63-97-1);
   border-radius: 10px;
-  padding: 0 12px 10px;
+  padding: 17px 12px 14px;
 }
 
 .earnings-card-icon {
   width: 47px;
   height: 47px;
-  margin-top: 17px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -519,6 +541,7 @@ onBeforeUnmount(() => {
   color: var(--theme-earnings-card-title, var(--theme-extra-128-146-174-1));
   font-size: 12px;
   line-height: 16px;
+  overflow-wrap: anywhere;
 }
 
 .earnings-card-value {
@@ -534,6 +557,7 @@ onBeforeUnmount(() => {
   color: var(--theme-earnings-card-desc, var(--theme-extra-106-123-149-1));
   font-size: 12px;
   line-height: 16px;
+  overflow-wrap: anywhere;
 }
 
 .earnings-withdraw-button {
@@ -672,8 +696,8 @@ onBeforeUnmount(() => {
 .earnings-month-button:hover,
 .earnings-month-button:focus,
 .earnings-month-button-active {
-  color: var(--theme-text-info);
-  border-color: var(--theme-extra-62-91-135-1);
+  color: var(--theme-profile-field-action, var(--theme-text-info));
+  border-color: var(--theme-profile-field-action, var(--theme-extra-62-91-135-1));
 }
 
 .earnings-month-popover {
@@ -683,10 +707,10 @@ onBeforeUnmount(() => {
   z-index: 30;
   width: 248px;
   padding: 12px;
-  border: 1px solid var(--theme-border-card);
+  border: 1px solid var(--theme-profile-table-border, var(--theme-border-card));
   border-radius: 10px;
-  background: var(--theme-panel-code);
-  box-shadow: 0 18px 42px var(--theme-black-34);
+  background: var(--theme-profile-table-background, var(--theme-panel-code));
+  box-shadow: var(--theme-route-card-shadow, 0 18px 42px var(--theme-black-34));
 }
 
 .earnings-month-popover-header {
@@ -695,7 +719,7 @@ onBeforeUnmount(() => {
   grid-template-columns: 32px minmax(0, 1fr) 32px;
   align-items: center;
   gap: 8px;
-  color: var(--theme-text-title);
+  color: var(--theme-profile-section-title, var(--theme-text-title));
 }
 
 .earnings-month-popover-header strong {
@@ -707,10 +731,10 @@ onBeforeUnmount(() => {
 .earnings-month-year-button {
   width: 32px;
   height: 32px;
-  border: 1px solid var(--theme-border-control-soft);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-control-soft));
   border-radius: 8px;
-  color: var(--theme-text-muted);
-  background: var(--theme-extra-18-30-51-1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted));
+  background: var(--theme-profile-field-background, var(--theme-extra-18-30-51-1));
   cursor: pointer;
 }
 
@@ -733,10 +757,10 @@ onBeforeUnmount(() => {
 
 .earnings-month-option {
   height: 34px;
-  border: 1px solid var(--theme-border-control-soft);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-control-soft));
   border-radius: 8px;
-  color: var(--theme-text-muted);
-  background: var(--theme-extra-18-30-51-1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted));
+  background: var(--theme-profile-field-background, var(--theme-extra-18-30-51-1));
   font-size: 13px;
   line-height: 18px;
   cursor: pointer;
@@ -744,18 +768,20 @@ onBeforeUnmount(() => {
 
 .earnings-month-option:hover,
 .earnings-month-option:focus {
-  color: var(--theme-text-info);
-  border-color: var(--theme-cyan-hover);
+  color: var(--theme-profile-field-action, var(--theme-text-info));
+  border-color: var(--theme-profile-field-action, var(--theme-cyan-hover));
 }
 
 .earnings-month-option-active {
-  color: var(--theme-text-button);
-  border-color: var(--theme-cyan-hover);
-  background: var(--theme-extra-20-101-145-06);
+  color: var(--theme-white);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--theme-profile-field-action, var(--theme-cyan)) 0%, var(--theme-primary, var(--theme-gradient-mid)) 100%);
+  box-shadow: 0 8px 18px rgba(40, 115, 253, 0.24);
+  font-weight: 700;
 }
 
 .earnings-month-option:disabled {
-  opacity: 0.35;
+  opacity: 0.48;
   cursor: not-allowed;
 }
 
@@ -1090,6 +1116,81 @@ onBeforeUnmount(() => {
 .earnings-withdraw-submit {
   color: var(--theme-white);
   background: linear-gradient(90deg, var(--theme-extra-58-199-239-1), var(--theme-extra-75-204-233-1));
+}
+
+.earnings-withdraw-overlay.is-light {
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-modal {
+  border-color: rgba(229, 231, 235, 1);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-header {
+  border-bottom-color: rgba(229, 231, 235, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-title h2 {
+  color: rgba(17, 24, 39, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-close {
+  color: rgba(75, 85, 99, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-balance {
+  border-color: rgba(34, 197, 94, 0.26);
+  background: rgba(240, 253, 244, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-balance strong {
+  color: rgba(17, 24, 39, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-field label,
+.earnings-withdraw-overlay.is-light .earnings-withdraw-field p,
+.earnings-withdraw-overlay.is-light .earnings-withdraw-note {
+  color: rgba(55, 65, 81, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-amount-row,
+.earnings-withdraw-overlay.is-light .earnings-withdraw-methods,
+.earnings-withdraw-overlay.is-light .earnings-withdraw-form-panel input,
+.earnings-withdraw-overlay.is-light .earnings-withdraw-form-panel textarea {
+  border-color: rgba(229, 231, 235, 1);
+  background: rgba(248, 250, 252, 1);
+  color: rgba(17, 24, 39, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-amount-row input {
+  color: rgba(17, 24, 39, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-amount-row input::placeholder,
+.earnings-withdraw-overlay.is-light .earnings-withdraw-form-panel input::placeholder,
+.earnings-withdraw-overlay.is-light .earnings-withdraw-form-panel textarea::placeholder {
+  color: rgba(107, 114, 128, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-method {
+  color: rgba(55, 65, 81, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-method-active {
+  color: var(--theme-white);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-form-panel {
+  border-color: rgba(229, 231, 235, 1);
+  background: rgba(249, 250, 251, 1);
+}
+
+.earnings-withdraw-overlay.is-light .earnings-withdraw-cancel {
+  border: 1px solid rgba(229, 231, 235, 1);
+  color: rgba(55, 65, 81, 1);
+  background: rgba(243, 244, 246, 1);
 }
 
 @media (max-width: 900px) {

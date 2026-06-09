@@ -26,10 +26,55 @@
               </span>
             </span>
           </button>
+          <div class="site-footer-locale-select">
+            <button
+              type="button"
+              class="site-footer-locale-button"
+              :dir="activeFooterLocale.dir || 'ltr'"
+              :aria-label="footerLocaleSwitchLabel"
+              :aria-expanded="footerLocaleMenuOpen"
+              aria-haspopup="listbox"
+              @click="toggleFooterLocaleMenu"
+            >
+              <Icon class="site-footer-locale-flag" :name="activeFooterLocale.flagIcon || 'circle-flags:xx'" aria-hidden="true" />
+              <span>{{ activeFooterLocale.name }}</span>
+              <Icon class="site-footer-locale-chevron" name="lucide:chevron-down" aria-hidden="true" />
+            </button>
+
+            <Transition name="site-footer-locale-fade">
+              <ul
+                v-if="footerLocaleMenuOpen"
+                class="site-footer-locale-menu"
+                :dir="activeFooterLocale.dir || 'ltr'"
+                role="listbox"
+              >
+                <li
+                  v-for="item in footerLocales"
+                  :key="item.code"
+                  class="site-footer-locale-option"
+                  role="option"
+                  :aria-selected="item.code === locale"
+                >
+                  <button
+                    type="button"
+                    class="site-footer-locale-option-button"
+                    :dir="item.dir || 'ltr'"
+                    @click="switchFooterLanguage(item.code)"
+                  >
+                    <Icon class="site-footer-locale-flag" :name="item.flagIcon || 'circle-flags:xx'" aria-hidden="true" />
+                    <span class="site-footer-locale-copy">
+                      <span>{{ item.name }}</span>
+                      <small v-if="item.translatedName">{{ item.translatedName }}</small>
+                    </span>
+                  </button>
+                </li>
+              </ul>
+            </Transition>
+          </div>
         </div>
 
-        <p class="site-footer-description">
-          {{ footerDescription }}
+        <p v-if="footerText.description" class="site-footer-description">
+          {{ footerText.description }}
         </p>
 
         <a class="site-footer-email" :href="businessEmailHref" aria-label="business email">
@@ -82,10 +127,12 @@ import { getFooter } from '../api/request/strapi'
 import { createThemeContext } from '../utils/theme'
 
 const localePath = useLocalePath()
-const { locale } = useI18n()
+const switchLocalePath = useSwitchLocalePath()
+const { locale, locales } = useI18n()
 const route = useRoute()
 const { currentTheme, initTheme, setTheme } = createThemeContext()
-const footerDescription = '一站式直播解决方案，以丰富特效赋能，面向全球创作者，实现多平台一键开播与沉浸式虚拟直播体验'
+const footerLocaleMenuOpen = ref(false)
+let closeFooterLocaleMenuOnOutsideClick = null
 const businessEmail = 'business@vicastcam.com'
 const businessEmailHref = `mailto:${businessEmail}`
 const copyrightText = 'Copyright © 2025 VICAST INTERNATIONAL LIMITED Copyright © 2026 VICAST LTD'
@@ -181,9 +228,156 @@ const footerText = computed(() => {
 })
 const themeSwitchIcon = computed(() => currentTheme.value === 'dark' ? 'lucide:sun' : 'lucide:moon')
 const themeSwitchLabel = computed(() => currentTheme.value === 'dark' ? '切换浅色模式' : '切换深色模式')
+const footerLocaleSwitchLabel = '切换语言'
 
 const toggleTheme = () => {
   setTheme(currentTheme.value === 'dark' ? 'light' : 'dark')
+  footerLocaleMenuOpen.value = false
+}
+
+const getFooterLocaleLanguage = (localeItem) => {
+  if (!localeItem || typeof localeItem === 'string') {
+    return localeItem || ''
+  }
+
+  return localeItem.language || localeItem.code || ''
+}
+
+const createFooterLocaleDisplayNames = () => {
+  const activeLocaleConfig = locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
+  const displayLocale = getFooterLocaleLanguage(activeLocaleConfig) || locale.value
+
+  if (typeof Intl === 'undefined' || !Intl.DisplayNames) {
+    return null
+  }
+
+  try {
+    return new Intl.DisplayNames([displayLocale], {
+      type: 'language',
+      languageDisplay: 'standard',
+    })
+  } catch {
+    return null
+  }
+}
+
+const normalizeFooterLocaleTranslatedName = (localeItem, translatedName) => {
+  const localeCode = typeof localeItem === 'string' ? localeItem : localeItem?.code
+
+  if (localeCode !== 'zh-TW') {
+    return translatedName
+  }
+
+  return String(translatedName || '')
+    .replace(/台湾/g, '香港')
+    .replace(/台灣/g, '香港')
+    .replace(/臺灣/g, '香港')
+    .replace(/Taiwan/g, 'Hong Kong')
+}
+
+const createFooterLocaleFlagIcon = (localeItem) => {
+  if (typeof localeItem === 'string') {
+    return localeItem === 'zh-TW' ? 'circle-flags:cn' : 'circle-flags:xx'
+  }
+
+  return localeItem.code === 'zh-TW' ? 'circle-flags:cn' : localeItem.flagIcon || 'circle-flags:xx'
+}
+
+const createFooterLocaleNativeName = (localeItem) => {
+  if (typeof localeItem === 'string') {
+    return localeItem
+  }
+
+  return localeItem.name || localeItem.code
+}
+
+const createFooterLocaleDisplayName = (localeItem, displayNames) => {
+  if (typeof localeItem === 'string') {
+    return displayNames?.of(localeItem) || localeItem
+  }
+
+  const languageCode = getFooterLocaleLanguage(localeItem)
+
+  return displayNames?.of(languageCode) || localeItem.name || localeItem.code
+}
+
+const createFooterLocaleTranslatedName = (localeItem, displayNames) => {
+  const nativeName = createFooterLocaleNativeName(localeItem)
+  const translatedName = normalizeFooterLocaleTranslatedName(localeItem, createFooterLocaleDisplayName(localeItem, displayNames))
+
+  if (!translatedName || translatedName === nativeName) {
+    return ''
+  }
+
+  return translatedName
+}
+
+const footerLocales = computed(() => {
+  const displayNames = createFooterLocaleDisplayNames()
+
+  return locales.value.map(item => {
+    if (typeof item === 'string') {
+      return {
+        code: item,
+        name: createFooterLocaleNativeName(item),
+        translatedName: createFooterLocaleTranslatedName(item, displayNames),
+        flagIcon: createFooterLocaleFlagIcon(item),
+        dir: 'ltr',
+      }
+    }
+
+    return {
+      code: item.code,
+      name: createFooterLocaleNativeName(item),
+      translatedName: createFooterLocaleTranslatedName(item, displayNames),
+      flagIcon: createFooterLocaleFlagIcon(item),
+      dir: item.dir || 'ltr',
+    }
+  })
+})
+
+const activeFooterLocale = computed(() => footerLocales.value.find(item => item.code === locale.value) || footerLocales.value[0] || {})
+
+const toggleFooterLocaleMenu = () => {
+  footerLocaleMenuOpen.value = !footerLocaleMenuOpen.value
+}
+
+const nonDefaultFooterLocaleCodes = computed(() => {
+  return footerLocales.value
+    .map(item => item.code)
+    .filter(code => code && code !== 'zh-CN')
+})
+
+const createDefaultFooterLocalePath = () => {
+  for (const code of nonDefaultFooterLocaleCodes.value) {
+    const prefix = `/${code}`
+
+    if (route.fullPath === prefix) {
+      return '/'
+    }
+
+    if (route.fullPath.startsWith(`${prefix}/`)) {
+      return route.fullPath.slice(prefix.length) || '/'
+    }
+
+    if (route.fullPath.startsWith(`${prefix}?`)) {
+      return `/${route.fullPath.slice(prefix.length + 1)}`
+    }
+  }
+
+  return route.fullPath || '/'
+}
+
+const switchFooterLanguage = (code) => {
+  footerLocaleMenuOpen.value = false
+
+  if (!code || code === locale.value) {
+    return
+  }
+
+  const targetPath = code === 'zh-CN' ? createDefaultFooterLocalePath() : switchLocalePath(code)
+
+  navigateTo(targetPath || '/')
 }
 
 const normalizePath = path => {
@@ -347,6 +541,27 @@ const loadFooterContent = () => {
 onMounted(() => {
   initTheme()
   loadFooterContent()
+
+  closeFooterLocaleMenuOnOutsideClick = (event) => {
+    if (!footerLocaleMenuOpen.value) {
+      return
+    }
+
+    const localeSelect = document.querySelector('.site-footer-locale-select')
+    if (localeSelect?.contains(event.target)) {
+      return
+    }
+
+    footerLocaleMenuOpen.value = false
+  }
+
+  document.addEventListener('click', closeFooterLocaleMenuOnOutsideClick)
+})
+
+onBeforeUnmount(() => {
+  if (closeFooterLocaleMenuOnOutsideClick) {
+    document.removeEventListener('click', closeFooterLocaleMenuOnOutsideClick)
+  }
 })
 
 watch(locale, () => {
@@ -475,6 +690,183 @@ watch(locale, () => {
   transform: translateX(24px);
 }
 
+.site-footer-locale-select {
+  position: relative;
+  display: none;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+  margin-left: 14px;
+}
+
+.site-footer-locale-button {
+  width: auto;
+  max-width: min(214px, calc(100vw - 32px));
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
+  border-radius: 6px;
+  color: var(--theme-footer-title);
+  background-color: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 36px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.site-footer-locale-button[dir="rtl"] {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.site-footer-locale-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-footer-locale-button:hover,
+.site-footer-locale-button:focus {
+  border-color: var(--theme-header-control-border, var(--theme-border-control));
+  background-color: transparent;
+}
+
+.site-footer-locale-flag {
+  width: 22px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: inline-block;
+}
+
+.site-footer-locale-chevron {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--theme-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.site-footer-locale-select:hover .site-footer-locale-chevron,
+.site-footer-locale-select:focus-within .site-footer-locale-chevron {
+  transform: rotate(180deg);
+}
+
+.site-footer-locale-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  min-width: 214px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 4px 0;
+  border: 1px solid var(--theme-header-dropdown-border, var(--theme-border));
+  border-radius: 4px;
+  background-color: var(--theme-header-dropdown-background, var(--theme-surface-alt));
+  box-shadow: var(--theme-header-dropdown-shadow, 0 10px 24px var(--theme-shadow));
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-header-dropdown-icon, var(--theme-extra-64-217-247-07)) var(--theme-header-dropdown-background, var(--theme-surface));
+}
+
+.site-footer-locale-menu[dir="rtl"] {
+  left: auto;
+  right: 0;
+  text-align: right;
+}
+
+.site-footer-locale-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.site-footer-locale-menu::-webkit-scrollbar-track {
+  background: var(--theme-header-dropdown-background, var(--theme-surface));
+}
+
+.site-footer-locale-menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--theme-header-dropdown-icon, var(--theme-extra-64-217-247-07));
+}
+
+.site-footer-locale-option {
+  color: var(--theme-header-dropdown-text, var(--theme-text));
+  font-size: 14px;
+  line-height: 20px;
+  background-color: transparent;
+}
+
+.site-footer-locale-option-button {
+  width: 100%;
+  min-width: 176px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  color: var(--theme-header-dropdown-text, var(--theme-text));
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.site-footer-locale-option-button[dir="rtl"] {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.site-footer-locale-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.site-footer-locale-option-button[dir="rtl"] .site-footer-locale-copy {
+  text-align: right;
+}
+
+.site-footer-locale-copy > span,
+.site-footer-locale-copy > small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-footer-locale-copy > small {
+  color: var(--theme-header-dropdown-icon, var(--theme-text-muted));
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.site-footer-locale-option-button:hover,
+.site-footer-locale-option-button:focus {
+  color: var(--theme-header-dropdown-hover-text, var(--theme-accent-bright));
+  background-color: var(--theme-header-dropdown-hover-background, var(--theme-accent-hover));
+}
+
+.site-footer-locale-fade-enter-active,
+.site-footer-locale-fade-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.site-footer-locale-fade-enter-from,
+.site-footer-locale-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
 .site-footer-description {
   margin-top: 24px;
   color: var(--theme-footer-text);
@@ -600,7 +992,7 @@ watch(locale, () => {
   opacity: 0.42;
   overflow-wrap: anywhere;
 }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .site-footer {
     height: auto;
     min-height: var(--page-footer-height);
@@ -625,6 +1017,21 @@ watch(locale, () => {
   .site-footer-brand {
     width: 100%;
     flex-basis: auto;
+  }
+
+  .site-footer-logo-row {
+    row-gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .site-footer-locale-select {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin-left: 8px;
+  }
+
+  .site-footer-locale-button {
+    width: auto;
   }
 
   .site-footer-columns {

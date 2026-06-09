@@ -10,7 +10,7 @@
 
       <article class="membership-current">
         <div class="membership-current-main">
-          <img class="membership-current-badge" :src="currentBadgeImage" :alt="membershipText.badgeAlt">
+          <img class="membership-current-badge" :src="currentMembershipBadgeImage" :alt="membershipText.badgeAlt">
           <div class="membership-current-copy">
             <strong>{{ currentVipName }}</strong>
             <p>
@@ -45,7 +45,8 @@
 
             <ul class="membership-benefits">
               <li v-for="benefit in plan.benefits" :key="benefit">
-                {{ benefit }}
+                <Icon class="membership-benefit-icon" name="lucide:check" aria-hidden="true" />
+                <span>{{ benefit }}</span>
               </li>
             </ul>
 
@@ -119,11 +120,147 @@ const { authUser } = useAuth()
 const { vipPlans, loadVipTypes } = useVipTypes()
 const { profileBox } = useProfileText()
 
-const membershipPlans = computed(() => vipPlans.value)
 const membershipText = computed(() => profileBox.value?.membership || {})
 
+const normalizePlanText = value => String(value || '').trim()
+const normalizePriceValue = value => normalizePlanText(value).replace(/[,¥￥$]/g, '').trim()
+const normalizePlanType = value => {
+  const type = normalizePlanText(value).toLowerCase()
+
+  if (['month', 'monthly', 'm', 'monthly-plan'].includes(type)) {
+    return 'month'
+  }
+
+  if (['year', 'yearly', 'annual', 'y', 'yearly-plan'].includes(type)) {
+    return 'year'
+  }
+
+  if (['life', 'lifetime', 'permanent', 'l', 'lifetime-plan'].includes(type)) {
+    return 'life'
+  }
+
+  return type
+}
+
+const membershipPlanMeta = {
+  month: {
+    theme: 'theme-cyan',
+    badgeImage: '/images/profile/month.png',
+  },
+  year: {
+    theme: 'theme-blue',
+    badgeImage: '/images/profile/year.png',
+  },
+  life: {
+    theme: 'theme-violet',
+    badgeImage: '/images/profile/gold.png',
+  },
+}
+
+const normalizeMembershipPlan = (plan = {}, index = 0) => {
+  const type = normalizePlanType(plan.type || plan.id)
+  const meta = membershipPlanMeta[type] || membershipPlanMeta.month
+
+  return {
+    id: normalizePlanText(plan.id || `${type || 'membership'}-plan-${index}`),
+    productId: normalizePlanText(plan.productId),
+    type,
+    name: normalizePlanText(plan.name),
+    subtitle: normalizePlanText(plan.subtitle || plan.description),
+    price: normalizePlanText(plan.price),
+    originalPrice: normalizePlanText(plan.originalPrice),
+    unit: normalizePlanText(plan.unit),
+    cta: normalizePlanText(plan.cta),
+    theme: meta.theme,
+    badgeImage: meta.badgeImage,
+    benefits: Array.isArray(plan.benefits) ? plan.benefits.map(normalizePlanText).filter(Boolean) : [],
+  }
+}
+
+const isMatchingSourcePlan = (source = {}, type = '') => {
+  const text = [
+    source.id,
+    source.name,
+    source.description,
+    source.subtitle,
+    source.unit,
+    source.price,
+  ].map(normalizePlanText).join(' ')
+  const normalizedText = text.toLowerCase()
+  const code = normalizePlanText(source.name || source.id).toUpperCase()
+  const price = normalizePriceValue(source.price)
+
+  if (type === 'life') {
+    return code === 'L' || normalizedText.includes('life') || normalizedText.includes('lifetime') || text.includes('\u7ec8\u8eab') || text.includes('\u6c38\u4e45') || /89\.99|99\.99/.test(price)
+  }
+
+  if (type === 'year') {
+    return code === 'Y' || normalizedText.includes('year') || normalizedText.includes('annual') || text.includes('\u5e74') || price.includes('69.99')
+  }
+
+  if (type === 'month') {
+    return code === 'M' || normalizedText.includes('month') || text.includes('\u6708') || price.includes('9.99')
+  }
+
+  return false
+}
+
+const findSourcePlan = (type) => {
+  const sourcePlans = Array.isArray(vipPlans.value) ? vipPlans.value : []
+
+  return sourcePlans.find(plan => isMatchingSourcePlan(plan, type)) || null
+}
+const resolveVipBadgeImage = (value) => {
+  const vipType = String(value || '').trim()
+  const normalizedVipType = vipType.toLowerCase()
+  const vipTypeCode = vipType.toUpperCase()
+
+  if (
+    vipTypeCode === 'L' ||
+    normalizedVipType.includes('life') ||
+    normalizedVipType.includes('lifetime') ||
+    normalizedVipType.includes('permanent') ||
+    normalizedVipType.includes('\u7ec8\u8eab') ||
+    normalizedVipType.includes('\u6c38\u4e45')
+  ) {
+    return '/images/profile/gold.png'
+  }
+
+  if (
+    vipTypeCode === 'Y' ||
+    normalizedVipType.includes('year') ||
+    normalizedVipType.includes('annual') ||
+    normalizedVipType.includes('\u5e74')
+  ) {
+    return '/images/profile/year.png'
+  }
+
+  if (
+    vipTypeCode === 'M' ||
+    normalizedVipType.includes('month') ||
+    normalizedVipType.includes('monthly') ||
+    normalizedVipType.includes('\u6708')
+  ) {
+    return '/images/profile/month.png'
+  }
+
+  return '/images/profile/year.png'
+}
+
+const membershipPlans = computed(() => {
+  const plans = Array.isArray(membershipText.value.plans) ? membershipText.value.plans : []
+
+  return plans
+    .map(normalizeMembershipPlan)
+    .filter(plan => plan.name || plan.price || plan.benefits.length)
+    .map(plan => ({
+      ...plan,
+      id: plan.productId || findSourcePlan(plan.type)?.id || plan.id,
+    }))
+})
+
 const currentVipName = computed(() => {
-  return authUser.value?.vip_type || membershipText.value.defaultVipName || ''
+  return authUser.value?.vip_type ? 'VIP' : membershipText.value.defaultVipName || ''
 })
 
 const currentVipExpireText = computed(() => {
@@ -138,22 +275,8 @@ const currentVipStatusText = computed(() => {
     : membershipText.value.inactiveStatus || ''
 })
 
-const currentBadgeImage = computed(() => {
-  const vipType = String(authUser.value?.vip_type || '').toLowerCase()
-
-  if (vipType.includes('终身') || vipType.includes('永久') || vipType.includes('life')) {
-    return '/images/profile/gold.png'
-  }
-
-  if (vipType.includes('年')) {
-    return '/images/profile/year.png'
-  }
-
-  if (vipType.includes('月')) {
-    return '/images/profile/month.png'
-  }
-
-  return '/images/profile/year.png'
+const currentMembershipBadgeImage = computed(() => {
+  return resolveVipBadgeImage(authUser.value?.vip_type)
 })
 
 const compareRows = computed(() => Array.isArray(membershipText.value.compareRows) ? membershipText.value.compareRows : [])
@@ -167,7 +290,8 @@ onMounted(() => {
 <style scoped>
 .profile-membership-panel {
   width: 869px;
-  height: 650px;
+  min-height: 650px;
+  height: auto;
 }
 
 .profile-membership-panel,
@@ -268,13 +392,14 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, 256px);
   justify-content: space-between;
+  align-items: stretch;
   gap: 14px;
   margin-top: 20px;
 }
 
 .membership-card {
   width: 256px;
-  height: 426px;
+  min-height: 426px;
   display: grid;
   grid-template-rows: 132px minmax(0, 1fr);
   border: 1px solid var(--theme-membership-card-border, var(--theme-border-card));
@@ -299,6 +424,12 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
 }
 
 .membership-card-top p {
@@ -306,6 +437,12 @@ onMounted(() => {
   color: var(--theme-extra-226-237-255-095);
   font-size: 12px;
   line-height: 18px;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .membership-medal {
@@ -324,9 +461,9 @@ onMounted(() => {
 
 .membership-card-body {
   min-height: 0;
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  padding: 10px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 20px 20px;
 }
 
 .membership-price {
@@ -334,7 +471,7 @@ onMounted(() => {
   align-items: baseline;
   justify-content: center;
   gap: 2px;
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .membership-price strong {
@@ -361,11 +498,12 @@ onMounted(() => {
 
 .membership-benefits {
   min-height: 0;
-  margin-top: 12px;
+  flex: 1 1 auto;
+  margin-top: 18px;
   display: grid;
-  justify-items: center;
+  justify-items: stretch;
   align-content: start;
-  gap: 8px;
+  gap: 9px;
   overflow: hidden;
   color: var(--theme-membership-card-body-text, var(--theme-extra-148-164-187-1));
   font-size: 13px;
@@ -374,18 +512,46 @@ onMounted(() => {
 
 .membership-benefits li {
   max-width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
   overflow: hidden;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-align: left;
+}
+
+.membership-benefit-icon {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  color: var(--theme-extra-61-180-255-1);
+  stroke-width: 3;
+}
+
+.membership-card:nth-child(2) .membership-benefit-icon {
+  color: var(--theme-extra-46-141-234-1);
+}
+
+.membership-card:nth-child(3) .membership-benefit-icon {
+  color: var(--theme-purple-light);
+}
+
+.membership-benefits span {
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .membership-action {
-  width: 216px;
+  width: 100%;
   height: 42px;
   align-self: end;
   justify-self: center;
-  margin-top: 30px;
+  margin-top: 18px;
   border-radius: 8px;
   color: var(--theme-extra-237-248-255-1);
   font-size: 16px;
@@ -540,7 +706,7 @@ onMounted(() => {
   }
 
   .membership-card {
-    height: auto;
+    min-height: 0;
   }
 
   .membership-current {

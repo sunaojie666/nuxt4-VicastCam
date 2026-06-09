@@ -26,7 +26,7 @@
           </div>
 
           <div class="home-pricing-price">
-            <img v-if="plan.priceImage" class="home-pricing-price-image" :src="plan.priceImage" :alt="`${plan.name} 价格`">
+            <img v-if="plan.priceImage" class="home-pricing-price-image" :src="plan.priceImage" :alt="`${plan.name} ${pricingContent.priceAltSuffix}`.trim()">
             <span v-if="plan.priceImage" class="home-pricing-price-text">
               <strong>{{ plan.price }}</strong>
               <span v-if="plan.unit">{{ plan.unit }}</span>
@@ -58,112 +58,180 @@
 </template>
 
 <script setup>
+import { getPricings } from '../../../api/request/strapi'
+
 const localePath = useLocalePath()
 const router = useRouter()
+const { locale } = useI18n()
 const { vipPlans, loadVipTypes } = useVipTypes()
 const { showErrorToast } = useSiteToast()
 
-const paidBenefits = [
-  '畅享手机端全量功能',
-  '开启电脑端投屏直播',
-  '解锁高清直播画质',
-  '启用进阶美颜效果',
-  '畅享海量专属直播特效',
-]
-
-const pricingContent = {
-  sectionTag: '套餐价格',
-  titleMain: '请选择你想要的',
-  titleHighlight: '订阅计划',
-  description: '免费试用，也可以选择其他套餐',
-}
-
-const displayPlans = [
-  {
-    id: 'free-plan',
-    name: '免费',
-    description: '下载注册零门槛，基础功能免费畅用',
-    price: '$0',
-    priceImage: '',
-    originalPrice: '',
-    unit: '/月',
-    priceNote: '',
-    cta: '购买',
-    badgeText: '',
-    featured: false,
-    delay: 0,
-    benefits: [
-      '支持单场景创意搭建',
-      '畅享四层图层自由布局',
-      '适配多款直播背景素材',
-      '支持电脑投屏基础画质',
-      '搭载原生自然美颜效果',
-    ],
-  },
-  {
-    id: 'monthly-plan',
-    name: '月卡',
-    description: '激活即享整月使用权，低门槛轻松体验',
-    price: '$9.99',
-    priceImage: '',
-    originalPrice: '',
-    unit: '/月',
-    priceNote: '月卡30天使用权',
-    cta: '购买',
-    badgeText: '',
-    featured: false,
-    delay: 120,
-    benefits: paidBenefits,
-  },
-  {
-    id: 'yearly-plan',
-    name: '年卡',
-    description: '年度超值特惠，性价比拉满更省钱',
-    price: '$69.99',
-    priceImage: '',
-    originalPrice: '',
-    unit: '/年',
-    priceNote: '年卡365天使用权',
-    cta: '购买',
-    badgeText: '最受欢迎',
-    featured: true,
-    delay: 240,
-    benefits: paidBenefits,
-  },
-]
+const pricingContent = ref({
+  sectionTag: '',
+  titleMain: '',
+  titleHighlight: '',
+  description: '',
+  priceAltSuffix: '',
+  freePlanMessage: '',
+  plans: [],
+})
 
 const normalizePlanText = value => String(value || '').trim()
+const normalizePriceValue = value => normalizePlanText(value).replace(/[,¥￥$]/g, '').trim()
+const normalizePlanType = value => {
+  const type = normalizePlanText(value).toLowerCase()
+
+  if (['free', 'f', 'free-plan'].includes(type)) {
+    return 'free'
+  }
+
+  if (['month', 'monthly', 'm', 'monthly-plan'].includes(type)) {
+    return 'month'
+  }
+
+  if (['year', 'yearly', 'annual', 'y', 'yearly-plan'].includes(type)) {
+    return 'year'
+  }
+
+  if (['life', 'lifetime', 'permanent', 'l', 'lifetime-plan'].includes(type)) {
+    return 'life'
+  }
+
+  return type
+}
 
 const isFreePlan = (plan = {}) => {
-  const planName = normalizePlanText(plan.name)
-  const planPrice = normalizePlanText(plan.price)
+  const planType = normalizePlanType(plan.type || plan.id)
+  const planPrice = normalizePriceValue(plan.price)
 
-  return plan.id === 'free-plan' || /免费|free/i.test(planName) || /^[$¥￥]?0(?:\.00)?$/.test(planPrice)
+  return planType === 'free' || /^0(?:\.00)?$/.test(planPrice)
+}
+
+const getSourcePlanType = (source = {}) => {
+  const explicitType = normalizePlanType(source.type || source.planType || source.productType || source.termType)
+
+  if (explicitType) {
+    return explicitType
+  }
+
+  const text = [
+    source.id,
+    source.name,
+    source.description,
+    source.subtitle,
+    source.unit,
+    source.price,
+  ].map(normalizePlanText).join(' ')
+  const normalizedText = text.toLowerCase()
+  const code = normalizePlanText(source.name || source.id).toUpperCase()
+  const price = normalizePriceValue(source.price)
+
+  if (code === 'L' || normalizedText.includes('life') || normalizedText.includes('lifetime') || text.includes('\u7ec8\u8eab') || text.includes('\u6c38\u4e45') || /89\.99|99\.99/.test(price)) {
+    return 'life'
+  }
+
+  if (code === 'Y' || normalizedText.includes('year') || normalizedText.includes('annual') || text.includes('\u5e74') || price.includes('69.99')) {
+    return 'year'
+  }
+
+  if (code === 'M' || normalizedText.includes('month') || text.includes('\u6708') || price.includes('9.99')) {
+    return 'month'
+  }
+
+  if (normalizedText.includes('free') || text.includes('\u514d\u8d39') || /^0(?:\.00)?$/.test(price)) {
+    return 'free'
+  }
+
+  return ''
 }
 
 const findSourcePlan = (sourcePlans = [], plan = {}) => {
-  const matchers = {
-    'free-plan': source => /免费|free/i.test(normalizePlanText(source.name)) || /[$¥￥]?0(?:\.00)?/.test(normalizePlanText(source.price)),
-    'monthly-plan': source => /月/.test(normalizePlanText(source.name) + normalizePlanText(source.unit)) || normalizePlanText(source.price).includes('9.99'),
-    'yearly-plan': source => /年/.test(normalizePlanText(source.name) + normalizePlanText(source.unit)) || normalizePlanText(source.price).includes('69.99'),
-  }
-  const matcher = matchers[plan.id]
+  const planType = normalizePlanType(plan.type || plan.id)
 
-  return matcher ? sourcePlans.find(matcher) : null
+  return sourcePlans.find(source => getSourcePlanType(source) === planType) || null
 }
+
+const normalizePricingPlan = (plan = {}, index = 0) => {
+  const type = normalizePlanText(plan.type || plan.id)
+
+  return {
+    id: normalizePlanText(plan.id || `${type || 'pricing'}-plan-${index}`),
+    productId: normalizePlanText(plan.productId),
+    type,
+    name: normalizePlanText(plan.name),
+    description: normalizePlanText(plan.description),
+    price: normalizePlanText(plan.price),
+    priceImage: normalizePlanText(plan.priceImage),
+    originalPrice: normalizePlanText(plan.originalPrice),
+    unit: normalizePlanText(plan.unit),
+    priceNote: normalizePlanText(plan.priceNote),
+    cta: normalizePlanText(plan.cta),
+    badgeText: normalizePlanText(plan.badgeText),
+    featured: Boolean(plan.featured),
+    delay: Number.isFinite(Number(plan.delay)) ? Number(plan.delay) : index * 120,
+    benefits: Array.isArray(plan.benefits) ? plan.benefits.map(normalizePlanText).filter(Boolean) : [],
+  }
+}
+
+const getPricingContentData = (response) => {
+  if (Array.isArray(response?.data)) {
+    const firstItem = response.data[0] || {}
+
+    return firstItem.attributes || firstItem
+  }
+
+  return response?.data?.attributes || response?.data || response || {}
+}
+
+const getPricingBoxData = (pricingData = {}) => {
+  const jsonData = pricingData.data || pricingData.pricingData || pricingData.pricing_data || pricingData
+
+  return jsonData.pricingBox || jsonData.pricing_box || jsonData || {}
+}
+
+const syncPricingContent = (pricingData = {}) => {
+  const pricingBox = getPricingBoxData(pricingData)
+
+  pricingContent.value = {
+    sectionTag: normalizePlanText(pricingBox.sectionTag),
+    titleMain: normalizePlanText(pricingBox.titleMain),
+    titleHighlight: normalizePlanText(pricingBox.titleHighlight),
+    description: normalizePlanText(pricingBox.description),
+    priceAltSuffix: normalizePlanText(pricingBox.priceAltSuffix),
+    freePlanMessage: normalizePlanText(pricingBox.freePlanMessage),
+    plans: Array.isArray(pricingBox.plans) ? pricingBox.plans : [],
+  }
+}
+
+const loadPricingContent = () => {
+  getPricings(locale.value).then(
+    response => {
+      syncPricingContent(getPricingContentData(response))
+    },
+    () => {
+      syncPricingContent()
+    }
+  )
+}
+
+const displayPlans = computed(() => {
+  return Array.isArray(pricingContent.value.plans)
+    ? pricingContent.value.plans.map(normalizePricingPlan).filter(plan => plan.name || plan.price || plan.benefits.length)
+    : []
+})
 
 const pricingPlans = computed(() => {
   const sourcePlans = Array.isArray(vipPlans.value) ? vipPlans.value : []
 
-  return displayPlans.map(plan => ({
+  return displayPlans.value.map(plan => ({
     ...plan,
-    id: findSourcePlan(sourcePlans, plan)?.id || plan.id,
+    id: plan.productId || findSourcePlan(sourcePlans, plan)?.id || plan.id,
   }))
 })
 
 const handlePlanCheckout = (plan = {}) => {
   if (isFreePlan(plan)) {
-    showErrorToast('免费用户无需购买')
+    showErrorToast(pricingContent.value.freePlanMessage || '')
     return
   }
 
@@ -185,7 +253,12 @@ const handlePlanCheckout = (plan = {}) => {
 }
 
 onMounted(() => {
+  loadPricingContent()
   loadVipTypes()
+})
+
+watch(locale, () => {
+  loadPricingContent()
 })
 </script>
 
@@ -299,9 +372,9 @@ onMounted(() => {
 }
 
 .home-pricing-grid {
-  width: min(100%, 1038px);
+  width: min(100%, 1154px);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 332px));
+  grid-template-columns: repeat(4, minmax(0, 274px));
   justify-content: center;
   gap: 20px;
   margin-top: 56px;
@@ -311,7 +384,7 @@ onMounted(() => {
   position: relative;
   isolation: isolate;
   width: 100%;
-  height: 461px;
+  min-height: 461px;
   display: flex;
   flex-direction: column;
   overflow: visible;
@@ -537,8 +610,9 @@ onMounted(() => {
 
 .home-pricing-features {
   display: grid;
-  gap: 14px;
-  margin-top: 34px;
+  gap: 12px;
+  margin-top: 28px;
+  margin-bottom: 24px;
 }
 
 .home-pricing-price-note + .home-pricing-features {
@@ -659,7 +733,7 @@ onMounted(() => {
 
   .home-pricing-card {
     width: 100%;
-    height: 461px;
+    min-height: 461px;
     padding: 26px 22px 22px;
   }
 

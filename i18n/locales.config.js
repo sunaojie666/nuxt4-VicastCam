@@ -4,7 +4,7 @@ export const locales = [
   { code: 'zh-CN', language: 'zh-CN', name: '简体中文', flagIcon: 'circle-flags:cn' },
   // 英文站点，访问路径为 /en。
   { code: 'en', language: 'en-US', name: 'English', flagIcon: 'circle-flags:us' },
-  { code: 'zh-TW', language: 'zh-TW', name: '繁體中文', flagIcon: 'circle-flags:hk' },
+  { code: 'zh-TW', language: 'zh-TW', name: '繁體中文', flagIcon: 'circle-flags:cn' },
   { code: 'id', language: 'id-ID', name: 'Indonesia', flagIcon: 'circle-flags:id' },
   { code: 'ms', language: 'ms-MY', name: 'Bahasa Malaysia', flagIcon: 'circle-flags:my' },
   { code: 'th', language: 'th-TH', name: 'ไทย', flagIcon: 'circle-flags:th' },

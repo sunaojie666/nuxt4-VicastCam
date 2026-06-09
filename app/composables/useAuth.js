@@ -1,4 +1,4 @@
-import { checkScanLoginStatus, getVipInfo, loginByEmailCode, loginByPassword, updateUserProfile as requestUpdateUserProfile } from '../api/request/auth'
+import { checkScanLoginStatus, getVipInfo, loginByEmailCode, loginByPassword } from '../api/request/auth'
 import { authUserCookieName, clearAuthStorage } from '../utils/auth-session'
 
 const getLoginUser = (response) => {
@@ -100,28 +100,6 @@ const createPublicAuthUser = (user) => {
   }
 }
 
-const setAuthPatchValue = (target, key, value) => {
-  if (value !== undefined && value !== null) {
-    target[key] = value
-  }
-}
-
-const createAuthPatchFromUpdatePayload = (payload = {}) => {
-  const patch = {}
-
-  setAuthPatchValue(patch, 'nickname', payload.nickname)
-
-  return patch
-}
-
-const getUpdateResponsePatch = (response, requestPayload, currentUser = {}) => {
-  return {
-    ...createAuthPatchFromUpdatePayload(requestPayload),
-    ...(getLoginUser(response) || {}),
-    user_id: requestPayload.user_id || currentUser.user_id || '',
-  }
-}
-
 // 登录态集中放在这里，后续 Header、个人中心和路由守卫都读取同一份状态。
 export const useAuth = () => {
   const authUserCookie = useCookie(authUserCookieName, {
@@ -206,25 +184,6 @@ export const useAuth = () => {
     })
   }
 
-  const updateUserProfile = (payload = {}) => {
-    const requestPayload = {
-      ...payload,
-      user_id: payload.user_id || authUser.value?.user_id || '',
-    }
-
-    return requestUpdateUserProfile(requestPayload).then((response) => {
-      if (isBusinessFailedResponse(response)) {
-        return Promise.reject(Object.assign(new Error(getLoginErrorMessage(response)), {
-          data: response,
-        }))
-      }
-
-      mergeAuthUser(getUpdateResponsePatch(response, requestPayload, authUser.value || {}))
-
-      return response
-    })
-  }
-
   const refreshVipInfo = () => {
     const user_id = authUser.value?.user_id
 
@@ -256,7 +215,6 @@ export const useAuth = () => {
     loginWithEmailCode,
     loginWithPassword,
     loginWithScanQrcode,
-    updateUserProfile,
     refreshVipInfo,
     mergeAuthUser,
     clearAuth,

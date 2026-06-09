@@ -3,7 +3,7 @@ import { createRequest } from './index'
 
 // Strapi REST 接口统一挂在 /api 下，这里兼容配置里是否带尾部斜杠。
 const normalizeStrapiApiBaseURL = (url) => {
-  const baseURL = url || 'http://localhost:1337'
+  const baseURL = url || 'http://192.168.18.100:1337'
   return `${baseURL.replace(/\/+$/, '')}/api`
 }
 

@@ -42,16 +42,84 @@ import { activeCard } from '../../../api/request/auth'
 
 const cardPwd = ref('')
 const isActivating = ref(false)
-const { authUser } = useAuth()
-const { showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+const { authUser, refreshVipInfo } = useAuth()
+const { showErrorToast, showRequestFailToast, showRequestSuccessToast, showSuccessToast } = useSiteToast()
 const { profileBox } = useProfileText()
+const profileText = computed(() => profileBox.value || {})
 const redeemText = computed(() => profileBox.value?.redeem || {})
+const successResponseCodes = new Set([0, 200, 200001, 200200])
+
+const pickResponseValue = (...values) => {
+  return values.find(value => value !== undefined && value !== null && value !== '')
+}
+
+const getResponseCode = (response) => {
+  const code = pickResponseValue(
+    response?.code,
+    response?.data?.code,
+    response?.data?.data?.code,
+    response?.raw?.code,
+    response?.raw?.data?.code,
+    response?.data?.raw?.code,
+    response?.data?.raw?.data?.code
+  )
+
+  return code === undefined ? '' : String(code)
+}
+
+const getResponseMessage = (response) => {
+  return String(pickResponseValue(
+    response?.message,
+    response?.error?.message,
+    response?.data?.message,
+    response?.data?.error?.message,
+    response?.data?.data?.message,
+    response?.raw?.message,
+    response?.raw?.data?.message,
+    response?.data?.raw?.message,
+    response?.data?.raw?.data?.message
+  ) || '').trim()
+}
+
+const normalizeCardErrorMessages = (errors = {}) => {
+  if (Array.isArray(errors)) {
+    return errors.reduce((messages, error) => {
+      const code = getResponseCode(error)
+      const message = String(pickResponseValue(error?.message, error?.text, error?.label) || '').trim()
+
+      if (code && message) {
+        messages[code] = message
+      }
+
+      return messages
+    }, {})
+  }
+
+  if (!errors || typeof errors !== 'object') {
+    return {}
+  }
+
+  return Object.entries(errors).reduce((messages, [code, message]) => {
+    const text = String(message || '').trim()
+
+    if (code && text) {
+      messages[String(code)] = text
+    }
+
+    return messages
+  }, {})
+}
+
+const activeCardErrorMessages = computed(() => ({
+  ...normalizeCardErrorMessages(profileText.value.cardErrors),
+}))
 
 const isSuccessResponse = (response) => {
-  const code = Number(response?.code ?? response?.data?.code)
+  const code = getResponseCode(response)
+  const numericCode = Number(code)
   const status = String(response?.status ?? response?.data?.status ?? '').toLowerCase()
 
-  if (code && ![0, 200, 200001, 200200].includes(code)) {
+  if (code && Number.isFinite(numericCode) && !successResponseCodes.has(numericCode)) {
     return false
   }
 
@@ -60,6 +128,21 @@ const isSuccessResponse = (response) => {
   }
 
   return !response?.error && !response?.data?.error
+}
+
+const getActiveCardErrorMessage = (response) => {
+  const code = getResponseCode(response)
+
+  return String(
+    activeCardErrorMessages.value[code] ||
+    getResponseMessage(response) ||
+    redeemText.value.errors?.activateFail ||
+    ''
+  ).trim()
+}
+
+const getActiveCardSuccessMessage = () => {
+  return String(profileText.value.successMessage || '').trim()
 }
 
 const handleActiveCard = () => {
@@ -76,13 +159,30 @@ const handleActiveCard = () => {
     card_pwd,
   }).then((response) => {
     if (!isSuccessResponse(response)) {
-      return Promise.reject(new Error(response?.message || response?.data?.message || redeemText.value.errors?.activateFail || ''))
+      return Promise.reject(Object.assign(new Error(getActiveCardErrorMessage(response)), {
+        data: response,
+      }))
     }
 
     cardPwd.value = ''
-    showRequestSuccessToast()
+    const successMessage = getActiveCardSuccessMessage()
+
+    if (successMessage) {
+      showSuccessToast(successMessage)
+    } else {
+      showRequestSuccessToast()
+    }
+
+    refreshVipInfo().catch(() => null)
     return response
-  }).catch(() => {
+  }).catch((error) => {
+    const message = getActiveCardErrorMessage(error?.data || error)
+
+    if (message) {
+      showErrorToast(message)
+      return
+    }
+
     showRequestFailToast()
   }).finally(() => {
     isActivating.value = false

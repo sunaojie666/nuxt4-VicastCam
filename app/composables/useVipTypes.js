@@ -10,6 +10,7 @@ const themes = ['theme-cyan', 'theme-blue', 'theme-violet']
 const homePriceImages = {
   '9.99': '/images/pricing/price-9-99.png',
   '69.99': '/images/pricing/price-69-99.png',
+  '89.99': '/images/pricing/price-99-99.png',
   '99.99': '/images/pricing/price-99-99.png',
 }
 
@@ -55,7 +56,7 @@ const fallbackPlans = [
     name: '终身卡',
     description: '适合想体验软件功能的用户',
     subtitle: '一次付费永久畅用，免费更新',
-    price: '¥99.99',
+    price: '$89.99',
     priceImage: '/images/pricing/price-99-99.png',
     originalPrice: '',
     unit: '',
@@ -180,7 +181,7 @@ const mapVipTypesToPlans = (vipTypes = []) => {
     })
   })
 
-  return plans.slice(0, 3)
+  return plans.slice(0, 4)
 }
 
 export const useVipTypes = () => {

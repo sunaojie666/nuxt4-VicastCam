@@ -7,32 +7,19 @@
         <aside class="profile-sidebar" :aria-label="profileCommon.sidebarAriaLabel">
           <section class="profile-user-card">
             <div class="profile-avatar-wrap">
-              <button type="button" class="profile-avatar-button" :aria-label="profileCommon.editAvatarLabel" @click="openAvatarPicker">
+              <div class="profile-avatar-frame">
                 <img v-if="profileAvatar" class="profile-avatar" :src="profileAvatar" :alt="profileName">
                 <span v-else class="profile-avatar-placeholder" aria-hidden="true">
                   <Icon name="lucide:user-round" />
                 </span>
-              </button>
-              <button
-                type="button"
-                class="profile-avatar-edit"
-                :aria-label="profileCommon.editAvatarLabel"
-                :disabled="isSavingAvatar"
-                @click="openAvatarPicker"
-              >
-                <Icon name="lucide:edit-3" aria-hidden="true" />
-              </button>
-              <input
-                ref="avatarInput"
-                class="profile-avatar-input"
-                type="file"
-                accept="image/*"
-                @change="handleAvatarChange"
-              >
+              </div>
             </div>
             <h1>{{ profileName }}</h1>
             <p>{{ profileEmail }}</p>
-            <span v-if="profileVipText" class="profile-vip-badge">{{ profileVipText }}</span>
+            <span v-if="profileVipText" class="profile-vip-badge">
+              <img class="profile-vip-badge-icon" :src="profileVipBadgeIcon" alt="">
+              <span>VIP</span>
+            </span>
           </section>
 
           <nav class="profile-menu">
@@ -57,7 +44,6 @@
             :is="activePanelComponent"
             :key="activeTab"
             v-bind="activePanelProps"
-            @profile-saved="handleProfileSaved"
           />
         </Transition>
       </div>
@@ -103,14 +89,9 @@ const profileTabComponents = {
 const validProfileTabs = new Set(Object.keys(profileTabComponents))
 const profileTabCookie = useCookie('profile-active-tab', { sameSite: 'lax' })
 const activeTab = ref(validProfileTabs.has(profileTabCookie.value) ? profileTabCookie.value : 'account')
-const { authUser, updateUserProfile, refreshVipInfo } = useAuth()
-const { showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+const { authUser, refreshVipInfo } = useAuth()
 const { profileBox, loadProfileText } = useProfileText()
 const { locale } = useI18n()
-const avatarInput = ref(null)
-const avatarFile = ref(null)
-const avatarPreview = ref('')
-const isSavingAvatar = ref(false)
 
 setupPageSeo('profile', computed(() => ({
   title: profileBox.value?.seo?.title || undefined,
@@ -119,7 +100,6 @@ setupPageSeo('profile', computed(() => ({
 
 const profileCommon = computed(() => {
   return {
-    editAvatarLabel: profileBox.value?.common?.editAvatarLabel || '',
     sidebarAriaLabel: profileBox.value?.sidebar?.ariaLabel || '',
     defaultProfileName: profileBox.value?.common?.defaultProfileName || '',
   }
@@ -144,10 +124,46 @@ const profileEmail = computed(() => {
   return authUser.value?.email || ''
 })
 const profileAvatar = computed(() => {
-  return avatarPreview.value || authUser.value?.avatar || ''
+  return authUser.value?.avatar || ''
 })
 const profileVipText = computed(() => {
   return authUser.value?.vip_type || ''
+})
+const profileVipBadgeIcon = computed(() => {
+  const vipType = String(authUser.value?.vip_type || '').trim()
+  const normalizedVipType = vipType.toLowerCase()
+  const vipTypeCode = vipType.toUpperCase()
+
+  if (
+    vipTypeCode === 'L' ||
+    normalizedVipType.includes('life') ||
+    normalizedVipType.includes('lifetime') ||
+    normalizedVipType.includes('permanent') ||
+    normalizedVipType.includes('\u7ec8\u8eab') ||
+    normalizedVipType.includes('\u6c38\u4e45')
+  ) {
+    return '/images/profile/gold.png'
+  }
+
+  if (
+    vipTypeCode === 'Y' ||
+    normalizedVipType.includes('year') ||
+    normalizedVipType.includes('annual') ||
+    normalizedVipType.includes('\u5e74')
+  ) {
+    return '/images/profile/year.png'
+  }
+
+  if (
+    vipTypeCode === 'M' ||
+    normalizedVipType.includes('month') ||
+    normalizedVipType.includes('monthly') ||
+    normalizedVipType.includes('\u6708')
+  ) {
+    return '/images/profile/month.png'
+  }
+
+  return '/images/profile/year.png'
 })
 
 watch(activeTab, (tab) => {
@@ -155,68 +171,6 @@ watch(activeTab, (tab) => {
     return
   }
   profileTabCookie.value = tab
-})
-
-const clearAvatarPreview = () => {
-  if (!process.client || !avatarPreview.value) {
-    return
-  }
-
-  window.URL.revokeObjectURL(avatarPreview.value)
-  avatarPreview.value = ''
-}
-
-const openAvatarPicker = () => {
-  avatarInput.value?.click()
-}
-
-const handleAvatarChange = (event) => {
-  const file = event.target?.files?.[0] || null
-
-  if (event.target) {
-    event.target.value = ''
-  }
-
-  if (!file) {
-    return
-  }
-
-  clearAvatarPreview()
-  avatarFile.value = file
-  avatarPreview.value = window.URL.createObjectURL(file)
-  saveAvatar()
-}
-
-const handleProfileSaved = () => {
-  return null
-}
-
-const saveAvatar = () => {
-  if (!avatarFile.value || isSavingAvatar.value) {
-    return
-  }
-
-  isSavingAvatar.value = true
-
-  updateUserProfile({
-    avatar: avatarFile.value,
-  }).then(
-    () => {
-      avatarFile.value = null
-      showRequestSuccessToast()
-      isSavingAvatar.value = false
-    },
-    () => {
-      avatarFile.value = null
-      clearAvatarPreview()
-      showRequestFailToast()
-      isSavingAvatar.value = false
-    }
-  )
-}
-
-onBeforeUnmount(() => {
-  clearAvatarPreview()
 })
 
 onMounted(() => {
@@ -299,20 +253,19 @@ watch(locale, () => {
   height: 74px;
 }
 
-.profile-avatar-button,
+.profile-avatar-frame,
 .profile-avatar,
 .profile-avatar-placeholder {
   width: 74px;
   height: 74px;
 }
 
-.profile-avatar-button {
+.profile-avatar-frame {
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
   background: var(--theme-panel-soft);
-  cursor: pointer;
   overflow: hidden;
 }
 
@@ -331,36 +284,6 @@ watch(locale, () => {
 .profile-avatar-placeholder :deep(svg) {
   width: 30px;
   height: 30px;
-}
-
-.profile-avatar-edit {
-  position: absolute;
-  right: -4px;
-  bottom: -4px;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--theme-border-strong);
-  border-radius: 6px;
-  color: var(--profile-muted);
-  background: var(--theme-panel-muted);
-  cursor: pointer;
-}
-
-.profile-avatar-edit:disabled {
-  opacity: 0.58;
-  cursor: not-allowed;
-}
-
-.profile-avatar-input {
-  display: none;
-}
-
-.profile-avatar-edit svg {
-  width: 12px;
-  height: 12px;
 }
 
 .profile-user-card h1 {
@@ -387,18 +310,31 @@ watch(locale, () => {
 }
 
 .profile-vip-badge {
-  min-width: 66px;
+  min-width: 65px;
   height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   margin-top: 14px;
-  padding: 0 14px;
+  padding: 0 10px 0 6px;
   border-radius: 999px;
   color: var(--theme-white);
-  background: linear-gradient(90deg, var(--theme-accent), var(--theme-primary));
+  background: var(--theme-accent);
   font-size: 14px;
   font-weight: 700;
+  line-height: 1;
+}
+
+.profile-vip-badge-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.profile-vip-badge span {
+  line-height: 1;
 }
 
 .profile-menu {
