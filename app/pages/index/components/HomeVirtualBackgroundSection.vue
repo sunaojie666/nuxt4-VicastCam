@@ -17,6 +17,7 @@
           <video
             class="home-virtual-video"
             :src="virtualVideoSrc"
+            poster="/images/login/background.png"
             autoplay
             muted
             loop
@@ -30,6 +31,7 @@
           <video
             class="home-virtual-reflection-video"
             :src="virtualVideoSrc"
+            poster="/images/login/background.png"
             autoplay
             muted
             loop
@@ -47,13 +49,14 @@ import { getVirtual } from '../../../api/request/strapi'
 
 const { locale } = useI18n()
 const config = useRuntimeConfig()
-const virtualVideoSrc = ref('')
-const virtualSection = ref({
+const virtualVideoSrc = useState('home-virtual-video-src', () => '')
+const virtualSection = useState('home-virtual-section', () => ({
   tag: '',
   title_main: '',
   title_highlight: '',
   description: '',
-})
+}))
+const homeVirtualLocale = useState('home-virtual-locale', () => '')
 
 const getVirtualContentData = (response) => {
   if (Array.isArray(response?.data)) {
@@ -90,23 +93,16 @@ const syncVirtualContent = (virtualData = {}) => {
   virtualVideoSrc.value = getVirtualVideoURL(virtualData)
 }
 
-const loadVirtualContent = () => {
-  getVirtual(locale.value).then(
-    response => {
-      syncVirtualContent(getVirtualContentData(response))
-    },
-    () => {
-      syncVirtualContent()
-    }
-  )
-}
-
-onMounted(() => {
-  loadVirtualContent()
-})
-
-watch(locale, () => {
-  loadVirtualContent()
+const { loadContent: loadVirtualContent } = useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeVirtualLocale,
+  load: currentLocale => getVirtual(currentLocale),
+  sync: response => {
+    syncVirtualContent(getVirtualContentData(response))
+  },
+  reset: () => {
+    syncVirtualContent()
+  },
 })
 </script>
 

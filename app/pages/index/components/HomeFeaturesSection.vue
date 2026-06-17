@@ -21,12 +21,12 @@
           :style="{ '--reveal-delay': `${feature.delay}ms`, '--feature-icon-bg': feature.gradient }"
         >
           <span class="home-features-icon">
-            <img v-if="index === 0" src="/images/home/features/feature-1.png" alt="" aria-hidden="true">
-            <img v-else-if="index === 1" src="/images/home/features/feature-2.png" alt="" aria-hidden="true">
-            <img v-else-if="index === 2" src="/images/home/features/feature-3.png" alt="" aria-hidden="true">
-            <img v-else-if="index === 3" src="/images/home/features/feature-4.png" alt="" aria-hidden="true">
-            <img v-else-if="index === 4" src="/images/home/features/feature-5.png" alt="" aria-hidden="true">
-            <img v-else src="/images/home/features/feature-6.png" alt="" aria-hidden="true">
+            <img v-if="index === 0" src="/images/home/features/feature-1.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else-if="index === 1" src="/images/home/features/feature-2.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else-if="index === 2" src="/images/home/features/feature-3.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else-if="index === 3" src="/images/home/features/feature-4.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else-if="index === 4" src="/images/home/features/feature-5.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else src="/images/home/features/feature-6.png" alt="" aria-hidden="true" role="presentation">
           </span>
 
           <h3>{{ feature.title }}</h3>
@@ -58,13 +58,14 @@ const featureDirections = [
 ]
 
 const { locale } = useI18n()
-const featuresSection = ref({
+const featuresSection = useState('home-features-section', () => ({
   title_tag: '',
   title_main: '',
   title_highlight: '',
   description: '',
-})
-const featureItems = ref([])
+}))
+const featureItems = useState('home-feature-items', () => [])
+const homeFeaturesLocale = useState('home-features-locale', () => '')
 
 const features = computed(() => {
   return featureItems.value.map((feature, index) => ({
@@ -99,23 +100,16 @@ const syncFeatureContent = (featureData = {}) => {
     : []
 }
 
-const loadFeatureContent = () => {
-  getFeature(locale.value).then(
-    response => {
-      syncFeatureContent(getFeatureContentData(response))
-    },
-    () => {
-      syncFeatureContent()
-    }
-  )
-}
-
-onMounted(() => {
-  loadFeatureContent()
-})
-
-watch(locale, () => {
-  loadFeatureContent()
+const { loadContent: loadFeatureContent } = useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeFeaturesLocale,
+  load: currentLocale => getFeature(currentLocale),
+  sync: response => {
+    syncFeatureContent(getFeatureContentData(response))
+  },
+  reset: () => {
+    syncFeatureContent()
+  },
 })
 </script>
 

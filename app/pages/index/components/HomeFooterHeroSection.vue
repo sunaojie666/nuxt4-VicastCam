@@ -2,7 +2,7 @@
   <section v-if="hasHeroContent" class="home-footer-hero-section" aria-labelledby="home-footer-hero-title">
     <div class="page-container home-footer-hero-inner">
       <span v-if="footerHero.tag" class="home-footer-hero-eyebrow">
-        <img src="/images/common/badge-star.png" alt="" aria-hidden="true">
+        <img src="/images/common/badge-star.png" alt="" aria-hidden="true" role="presentation">
         {{ footerHero.tag }}
       </span>
 
@@ -10,7 +10,7 @@
         <span>{{ footerHero.title_main }}</span>
         <span class="theme-gradient-text">
           {{ footerHero.title_highlight }}
-          <img class="home-footer-hero-line" src="/images/common/title-underline.png" alt="" aria-hidden="true">
+          <img class="home-footer-hero-line" src="/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
         </span>
       </h2>
 
@@ -26,8 +26,8 @@
           :class="['home-hero-download', button.buttonClass]"
         >
           <span class="home-hero-download-icon-wrap" aria-hidden="true">
-            <img class="home-hero-download-icon-default" :src="button.icon" alt="">
-            <img class="home-hero-download-icon-active" :src="button.activeIcon" alt="">
+            <img class="home-hero-download-icon-default" :src="button.icon" alt="" role="presentation">
+            <img class="home-hero-download-icon-active" :src="button.activeIcon" alt="" role="presentation">
           </span>
           <span>{{ button.label }}</span>
         </a>
@@ -40,17 +40,19 @@
 import { getFooter, getHomes } from '../../../api/request/strapi'
 
 const { locale } = useI18n()
-const footerHero = ref({
+const footerHero = useState('home-footer-hero-content', () => ({
   tag: '',
   title_main: '',
   title_highlight: '',
   description: '',
-})
-const homeDownloads = ref({
+}))
+const homeDownloads = useState('home-footer-hero-downloads', () => ({
   appStoreUrl: '',
   googlePlayUrl: '',
   desktopClientUrl: '',
-})
+}))
+const homeFooterHeroLocale = useState('home-footer-hero-locale', () => '')
+const homeFooterHeroDownloadsLocale = useState('home-footer-hero-downloads-locale', () => '')
 
 const footerHeroButtons = computed(() => {
   return [
@@ -118,36 +120,28 @@ const syncHomeDownloadContent = (homeData = {}) => {
   }
 }
 
-const loadFooterHeroContent = () => {
-  getFooter(locale.value).then(
-    response => {
-      syncFooterHeroContent(getFooterContentData(response))
-    },
-    () => {
-      syncFooterHeroContent()
-    }
-  )
-}
-
-const loadHomeDownloadContent = () => {
-  getHomes(locale.value).then(
-    response => {
-      syncHomeDownloadContent(response?.data?.[0] || {})
-    },
-    () => {
-      syncHomeDownloadContent()
-    }
-  )
-}
-
-onMounted(() => {
-  loadFooterHeroContent()
-  loadHomeDownloadContent()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeFooterHeroLocale,
+  load: currentLocale => getFooter(currentLocale),
+  sync: response => {
+    syncFooterHeroContent(getFooterContentData(response))
+  },
+  reset: () => {
+    syncFooterHeroContent()
+  },
 })
 
-watch(locale, () => {
-  loadFooterHeroContent()
-  loadHomeDownloadContent()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeFooterHeroDownloadsLocale,
+  load: currentLocale => getHomes(currentLocale),
+  sync: response => {
+    syncHomeDownloadContent(response?.data?.[0] || {})
+  },
+  reset: () => {
+    syncHomeDownloadContent()
+  },
 })
 </script>
 

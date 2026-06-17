@@ -1,7 +1,7 @@
 <template>
   <section class="auth-brand-panel" aria-labelledby="auth-brand-title">
     <NuxtLink :to="localePath('/')" class="auth-logo">
-      <img src="/images/common/logo.png" alt="" aria-hidden="true">
+      <img src="/images/common/logo.png" alt="" aria-hidden="true" role="presentation">
       <span>Vicast<span>Cam</span></span>
     </NuxtLink>
 
@@ -19,7 +19,7 @@
     <div v-if="visibleFeatures.length" class="auth-feature-list">
       <div v-for="feature in visibleFeatures" :key="feature.key" class="auth-feature">
         <span>
-          <img :src="feature.icon" alt="" aria-hidden="true">
+          <img :src="feature.icon" alt="" aria-hidden="true" role="presentation">
         </span>
         <strong>{{ feature.title }}</strong>
         <small>{{ feature.description }}</small>

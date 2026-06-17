@@ -5,7 +5,7 @@
     <main class="privacy-page-main">
       <section class="privacy-hero-section" aria-labelledby="privacy-hero-title">
         <div class="privacy-hero-inner">
-          <span class="privacy-hero-eyebrow">政策中心</span>
+          <span class="privacy-hero-eyebrow">{{ policyCenterContent.eyebrow }}</span>
 
           <h1 id="privacy-hero-title" class="privacy-hero-title">
             <span>VicastCam</span>
@@ -19,7 +19,7 @@
       </section>
 
       <div class="page-container privacy-layout">
-        <aside class="privacy-sidebar" role="tablist" aria-label="政策目录">
+        <aside class="privacy-sidebar" role="tablist" :aria-label="policyCenterContent.sidebarAriaLabel">
           <button
             v-for="tab in policyTabs"
             :key="tab.key"
@@ -38,13 +38,13 @@
 
         <article class="privacy-content-card" :aria-labelledby="`${activePolicy.key}-policy-title`">
           <header class="privacy-content-header">
-            <nav class="privacy-breadcrumb" aria-label="当前位置">
-              <span>政策中心</span>
+            <nav class="privacy-breadcrumb" :aria-label="policyCenterContent.breadcrumbAriaLabel">
+              <span>{{ policyCenterContent.breadcrumbRoot }}</span>
               <Icon name="lucide:chevron-right" aria-hidden="true" />
               <strong>{{ activePolicy.label }}</strong>
             </nav>
 
-            <button type="button" class="privacy-share-button" aria-label="分享">
+            <button type="button" class="privacy-share-button" :aria-label="policyCenterContent.shareLabel">
               <Icon name="lucide:share-2" aria-hidden="true" />
             </button>
           </header>
@@ -54,7 +54,7 @@
             class="privacy-article"
             role="tabpanel"
           >
-            <h1 :id="`${activePolicy.key}-policy-title`">{{ activePolicy.title }}</h1>
+            <h2 :id="`${activePolicy.key}-policy-title`">{{ activePolicy.title }}</h2>
 
             <section
               v-for="section in activePolicy.sections"
@@ -62,8 +62,8 @@
               :id="section.key"
               class="privacy-section"
             >
-              <h2>{{ section.title }}</h2>
-              <p v-for="paragraph in section.paragraphs" :key="paragraph">{{ paragraph }}</p>
+              <h3>{{ section.title }}</h3>
+              <p v-for="(paragraph, paragraphIndex) in section.paragraphs" :key="`${section.key}-${paragraphIndex}`">{{ paragraph }}</p>
             </section>
           </div>
         </article>
@@ -77,178 +77,222 @@
 <script setup>
 import SiteFooter from './SiteFooter.vue'
 import SiteHeader from './SiteHeader.vue'
+import { getPrivacys } from '../api/request/strapi'
 import { setupPageSeo } from '../utils/seo'
 
 const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
+const { locale } = useI18n()
+const policyCenterContentLocale = useState('policy-center-content-locale', () => '')
 
-const policyTabs = [
-  {
-    key: 'privacy',
-    path: '/privacy',
-    label: '隐私政策',
-    icon: 'lucide:shield-check',
-    title: '隐私政策',
-    heroTitle: '用户隐私与数据保护',
-    heroDescription: '了解我们如何收集、使用、保存和保护您的个人信息。',
-    updatedAt: '2026年5月29日',
-    description: '本政策说明 VicastCam 在您访问网站、注册账号、购买订阅或使用产品服务时，如何处理与保护您的个人信息。',
-    highlights: [
-      { title: '透明收集', text: '仅收集提供服务所需的信息', icon: 'lucide:database' },
-      { title: '安全保护', text: '采用合理措施降低数据风险', icon: 'lucide:lock-keyhole' },
-      { title: '用户权利', text: '支持查询、更正或删除相关信息', icon: 'lucide:user-check' },
-    ],
-    sections: [
-      {
-        key: 'privacy-information',
-        title: '我们收集的信息',
-        paragraphs: [
-          '当您注册账号、提交表单、订阅服务、联系我们或使用 VicastCam 产品时，我们可能会收集您的邮箱、昵称、公司信息、订单信息、设备信息以及必要的日志数据。',
-          '我们也会自动记录访问时间、浏览器类型、设备类型、IP 地址、页面访问路径等信息，用于保障服务稳定、分析产品体验并排查异常问题。',
-        ],
-      },
-      {
-        key: 'privacy-usage',
-        title: '信息使用方式',
-        paragraphs: [
-          '我们会将信息用于账号管理、订单处理、产品交付、客户支持、安全风控、服务优化以及向您发送必要的服务通知。',
-          '未经您的明确同意，我们不会出售您的个人信息。只有在提供支付、云服务、数据分析、客服等必要服务时，才会向合作服务商共享最低限度的信息。',
-        ],
-      },
-      {
-        key: 'privacy-cookies',
-        title: 'Cookie 与同类技术',
-        paragraphs: [
-          '我们可能使用 Cookie 记住您的偏好设置、保持登录状态、统计访问数据并提升网站体验。您可以在浏览器中管理或拒绝 Cookie。',
-          '如果您禁用 Cookie，部分账号、支付或个性化功能可能无法正常使用。',
-        ],
-      },
-      {
-        key: 'privacy-rights',
-        title: '您的权利',
-        paragraphs: [
-          '您可以联系我们查询、更正、删除您的个人信息，或撤回部分授权。我们会在验证身份后，在合理期限内处理您的请求。',
-          '如需发起隐私相关请求，请通过 business@vicastcam.com 与我们联系。',
-        ],
-      },
-    ],
-  },
-  {
-    key: 'terms',
-    path: '/terms',
-    label: '服务条款',
-    icon: 'lucide:file-check-2',
-    title: '服务条款',
-    heroTitle: '服务使用规则',
-    heroDescription: '了解您使用 VicastCam 网站、软件和相关服务时需要遵守的基本规则。',
-    updatedAt: '2026年5月29日',
-    description: '本条款适用于您访问 VicastCam 网站、下载软件、注册账号、购买订阅以及使用我们提供的相关功能与服务。',
-    highlights: [
-      { title: '合法使用', text: '不得用于违法或侵权场景', icon: 'lucide:scale' },
-      { title: '账号安全', text: '请妥善保管登录凭证', icon: 'lucide:key-round' },
-      { title: '服务变更', text: '产品能力可能持续升级调整', icon: 'lucide:refresh-cw' },
-    ],
-    sections: [
-      {
-        key: 'terms-account',
-        title: '账号与使用资格',
-        paragraphs: [
-          '您应确保注册信息真实、准确并保持更新。账号仅供您本人或被授权的团队成员使用，不得恶意共享、转让、出租或出售。',
-          '因您未妥善保管账号、密码或验证码导致的损失，应由您自行承担；如发现异常使用，请及时联系我们处理。',
-        ],
-      },
-      {
-        key: 'terms-acceptable-use',
-        title: '可接受使用',
-        paragraphs: [
-          '您不得利用 VicastCam 服务从事违反法律法规、侵犯他人权益、传播恶意软件、干扰系统运行或绕过安全限制的行为。',
-          '您应对通过本服务制作、上传、投放或直播的内容负责，并确保拥有相应授权。',
-        ],
-      },
-      {
-        key: 'terms-ip',
-        title: '知识产权',
-        paragraphs: [
-          'VicastCam 网站、软件、界面、图标、素材、文档及相关技术成果的知识产权归我们或合法授权方所有。',
-          '除非获得书面许可，您不得复制、修改、反向工程、转售或以其他方式商业化使用我们的软件和内容。',
-        ],
-      },
-      {
-        key: 'terms-liability',
-        title: '免责声明与责任限制',
-        paragraphs: [
-          '我们会努力保障服务稳定，但不承诺服务永不中断或完全无错误。因不可抗力、第三方服务异常、网络故障或您自身操作导致的影响，我们将尽力协助排查。',
-          '在法律允许范围内，我们对间接损失、利润损失、数据损失或业务中断不承担超出已支付服务费用的责任。',
-        ],
-      },
-    ],
-  },
-  {
-    key: 'sales',
-    path: '/sales-policy',
-    label: '销售政策',
-    icon: 'lucide:receipt-text',
-    title: '销售政策',
-    heroTitle: '订阅、付款与退款说明',
-    heroDescription: '了解 VicastCam 套餐购买、订单确认、发票、续费和退款相关规则。',
-    updatedAt: '2026年5月29日',
-    description: '本政策说明您购买 VicastCam 订阅、增值服务或相关产品时的价格、付款、交付、续费、变更及售后规则。',
-    highlights: [
-      { title: '订单确认', text: '付款完成后开通对应权益', icon: 'lucide:badge-check' },
-      { title: '价格透明', text: '页面展示价格为购买依据', icon: 'lucide:badge-dollar-sign' },
-      { title: '售后支持', text: '异常订单可联系邮箱处理', icon: 'lucide:headphones' },
-    ],
-    sections: [
-      {
-        key: 'sales-products',
-        title: '产品与订阅',
-        paragraphs: [
-          'VicastCam 可能提供免费版、月卡、年卡或其他限时套餐。不同套餐包含的权益、有效期、可用平台和功能范围，以购买页面展示为准。',
-          '订阅权益自订单成功或激活完成后开始计算。若因系统延迟导致权益未及时生效，请保留订单信息并联系我们处理。',
-        ],
-      },
-      {
-        key: 'sales-payment',
-        title: '价格与付款',
-        paragraphs: [
-          '购买页面显示的价格、币种、折扣和税费信息为下单时的有效价格。我们可能根据市场、活动或汇率情况调整价格，但不会影响已完成订单的当前周期权益。',
-          '您应使用合法有效的支付方式完成付款。第三方支付渠道可能会根据其规则收取手续费或进行风控审核。',
-        ],
-      },
-      {
-        key: 'sales-refund',
-        title: '退款规则',
-        paragraphs: [
-          '如您因重复扣款、套餐未开通、无法正常激活等原因申请售后，请在发现问题后尽快通过 business@vicastcam.com 联系我们，并提供订单号和支付凭证。',
-          '已正常开通并使用的数字订阅服务通常不支持无理由退款。法律法规或支付平台另有强制规定的，从其规定。',
-        ],
-      },
-      {
-        key: 'sales-invoice',
-        title: '发票与订单支持',
-        paragraphs: [
-          '如需发票、收据或订单证明，请通过官方邮箱提交公司名称、订单号、付款时间和开票信息，我们会在核验后协助处理。',
-          '如您需要升级、续费、变更套餐或处理企业采购，请联系商务支持获取进一步说明。',
-        ],
-      },
-    ],
-  },
-]
+const createDefaultPolicy = ({ key, path, label, icon, title, heroTitle }) => ({
+  key,
+  path,
+  label,
+  icon,
+  title,
+  heroTitle,
+  heroDescription: '',
+  updatedAt: '',
+  description: '',
+  highlights: [],
+  sections: [],
+})
 
-const policyKeySet = new Set(policyTabs.map(tab => tab.key))
+const createDefaultPolicyCenterContent = () => ({
+  eyebrow: '政策中心',
+  breadcrumbRoot: '政策中心',
+  sidebarAriaLabel: '政策目录',
+  breadcrumbAriaLabel: '当前位置',
+  shareLabel: '分享',
+  policies: [
+    createDefaultPolicy({
+      key: 'privacy',
+      path: '/privacy',
+      label: '隐私政策',
+      icon: 'lucide:shield-check',
+      title: '隐私政策',
+      heroTitle: '用户隐私与数据保护',
+    }),
+    createDefaultPolicy({
+      key: 'terms',
+      path: '/terms',
+      label: '用户协议',
+      icon: 'lucide:file-check-2',
+      title: '用户协议',
+      heroTitle: '用户许可与使用规则',
+    }),
+    createDefaultPolicy({
+      key: 'sales',
+      path: '/sales-policy',
+      label: '销售政策',
+      icon: 'lucide:receipt-text',
+      title: '销售政策',
+      heroTitle: '订阅、付款与退款说明',
+    }),
+  ],
+})
+
+const policyCenterContent = useState('policy-center-content', createDefaultPolicyCenterContent)
+
+const defaultPolicyPathMap = {
+  privacy: '/privacy',
+  terms: '/terms',
+  sales: '/sales-policy',
+}
+
 const routePolicyKeyMap = {
   privacy: 'privacy',
   terms: 'terms',
   'sales-policy': 'sales',
 }
 
+const parseStrapiJsonField = (value) => {
+  if (typeof value !== 'string') {
+    return value
+  }
+
+  try {
+    return JSON.parse(value)
+  } catch {
+    return {}
+  }
+}
+
+const normalizeStrapiRecord = (record) => {
+  if (!record || typeof record !== 'object') {
+    return {}
+  }
+
+  const recordData = record.privacys ||
+    record.privacy ||
+    record.attributes?.privacys ||
+    record.attributes?.privacy ||
+    record.attributes ||
+    record
+
+  return {
+    ...recordData,
+    ...(recordData.attributes || {}),
+  }
+}
+
+const getPolicyCenterSource = (response) => {
+  const responseData = response?.data
+  const firstRecord = Array.isArray(responseData)
+    ? responseData[0]
+    : responseData
+  const record = normalizeStrapiRecord(firstRecord || response || {})
+  const fieldValue = record.policyCenter ||
+    record.policy_center ||
+    record.policycenter ||
+    record.content ||
+    record.data ||
+    record
+  const parsedValue = parseStrapiJsonField(fieldValue)
+
+  return parsedValue?.policyCenter || parsedValue?.data?.policyCenter || parsedValue?.data || parsedValue || {}
+}
+
+const normalizeString = value => String(value ?? '').trim()
+
+const normalizeParagraphs = value => {
+  if (Array.isArray(value)) {
+    return value.map(paragraph => normalizeString(paragraph)).filter(Boolean)
+  }
+
+  const text = normalizeString(value)
+
+  return text ? [text] : []
+}
+
+const normalizeHighlights = highlights => Array.isArray(highlights)
+  ? highlights.map((highlight = {}) => ({
+      title: normalizeString(highlight.title),
+      text: normalizeString(highlight.text),
+      icon: normalizeString(highlight.icon) || 'lucide:info',
+    })).filter(highlight => highlight.title || highlight.text)
+  : []
+
+const normalizeSections = sections => Array.isArray(sections)
+  ? sections.map((section = {}, sectionIndex) => ({
+      key: normalizeString(section.key) || `policy-section-${sectionIndex + 1}`,
+      title: normalizeString(section.title),
+      paragraphs: normalizeParagraphs(section.paragraphs),
+    })).filter(section => section.title || section.paragraphs.length)
+  : []
+
+const normalizePolicy = (policy = {}, index) => {
+  const key = normalizeString(policy.key) || `policy-${index + 1}`
+  const defaultPolicy = createDefaultPolicy({
+    key,
+    path: defaultPolicyPathMap[key] || `/${key}`,
+    label: policy.label || policy.title || key,
+    icon: 'lucide:file-text',
+    title: policy.title || policy.label || key,
+    heroTitle: policy.heroTitle || policy.hero_title || policy.title || policy.label || key,
+  })
+
+  return {
+    ...defaultPolicy,
+    path: normalizeString(policy.path) || defaultPolicy.path,
+    label: normalizeString(policy.label) || defaultPolicy.label,
+    icon: normalizeString(policy.icon) || defaultPolicy.icon,
+    title: normalizeString(policy.title) || defaultPolicy.title,
+    heroTitle: normalizeString(policy.heroTitle || policy.hero_title) || defaultPolicy.heroTitle,
+    heroDescription: normalizeString(policy.heroDescription || policy.hero_description),
+    updatedAt: normalizeString(policy.updatedAt || policy.updated_at),
+    description: normalizeString(policy.description),
+    highlights: normalizeHighlights(policy.highlights),
+    sections: normalizeSections(policy.sections),
+  }
+}
+
+const normalizePolicyCenterContent = (source = {}) => {
+  const fallback = createDefaultPolicyCenterContent()
+  const policies = Array.isArray(source.policies)
+    ? source.policies.map(normalizePolicy).filter(policy => policy.key)
+    : []
+
+  return {
+    eyebrow: normalizeString(source.eyebrow) || fallback.eyebrow,
+    breadcrumbRoot: normalizeString(source.breadcrumbRoot || source.breadcrumb_root) || fallback.breadcrumbRoot,
+    sidebarAriaLabel: normalizeString(source.sidebarAriaLabel || source.sidebar_aria_label) || fallback.sidebarAriaLabel,
+    breadcrumbAriaLabel: normalizeString(source.breadcrumbAriaLabel || source.breadcrumb_aria_label) || fallback.breadcrumbAriaLabel,
+    shareLabel: normalizeString(source.shareLabel || source.share_label) || fallback.shareLabel,
+    policies: policies.length ? policies : fallback.policies,
+  }
+}
+
+const syncPolicyCenterContent = (response) => {
+  policyCenterContent.value = normalizePolicyCenterContent(getPolicyCenterSource(response))
+}
+
+const resetPolicyCenterContent = () => {
+  policyCenterContent.value = createDefaultPolicyCenterContent()
+}
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: policyCenterContentLocale,
+  load: currentLocale => getPrivacys(currentLocale),
+  sync: response => {
+    syncPolicyCenterContent(response)
+  },
+  reset: () => {
+    resetPolicyCenterContent()
+  },
+})
+
+const policyTabs = computed(() => policyCenterContent.value.policies)
+const policyKeySet = computed(() => new Set(policyTabs.value.map(tab => tab.key)))
 const getSingleQueryValue = value => Array.isArray(value) ? value[0] : value
 
 const normalizePolicyKey = value => {
   const key = String(value || '').trim()
 
-  return policyKeySet.has(key) ? key : 'privacy'
+  return policyKeySet.value.has(key) ? key : 'privacy'
 }
 
 const getRoutePolicyKey = () => {
@@ -262,12 +306,24 @@ const activePolicyKey = computed(() => {
 })
 
 const activePolicy = computed(() => {
-  return policyTabs.find(tab => tab.key === activePolicyKey.value) || policyTabs[0]
+  return policyTabs.value.find(tab => tab.key === activePolicyKey.value) || policyTabs.value[0] || createDefaultPolicy({
+    key: 'privacy',
+    path: '/privacy',
+    label: '隐私政策',
+    icon: 'lucide:shield-check',
+    title: '隐私政策',
+    heroTitle: '用户隐私与数据保护',
+  })
 })
 
 const selectPolicyTab = (key) => {
   const targetKey = normalizePolicyKey(key)
-  const targetPolicy = policyTabs.find(tab => tab.key === targetKey) || policyTabs[0]
+  const targetPolicy = policyTabs.value.find(tab => tab.key === targetKey) || policyTabs.value[0]
+
+  if (!targetPolicy) {
+    return
+  }
+
   const targetPath = localePath(targetPolicy.path)
 
   if (route.path === targetPath && !route.query.tab) {
@@ -285,14 +341,17 @@ onMounted(() => {
   }
 
   const targetKey = normalizePolicyKey(legacyQueryKey)
-  const targetPolicy = policyTabs.find(tab => tab.key === targetKey)
+  const targetPolicy = policyTabs.value.find(tab => tab.key === targetKey)
 
   if (targetPolicy) {
     router.replace(localePath(targetPolicy.path))
   }
 })
 
-setupPageSeo('privacy')
+setupPageSeo(activePolicyKey, () => ({
+  title: activePolicy.value.title,
+  description: activePolicy.value.description || activePolicy.value.heroDescription,
+}))
 </script>
 
 <style scoped>
@@ -514,7 +573,7 @@ setupPageSeo('privacy')
   color: var(--theme-text-muted);
 }
 
-.privacy-article h1 {
+.privacy-article h2 {
   color: var(--theme-route-card-title, var(--theme-white));
   font-size: 30px;
   font-weight: 900;
@@ -525,7 +584,7 @@ setupPageSeo('privacy')
   margin-top: 18px;
 }
 
-.privacy-section h2 {
+.privacy-section h3 {
   margin-bottom: 8px;
   color: var(--theme-route-card-title, var(--theme-white));
   font-size: 18px;
@@ -533,7 +592,7 @@ setupPageSeo('privacy')
   line-height: 28px;
 }
 
-.privacy-section h2:empty {
+.privacy-section h3:empty {
   display: none;
 }
 
@@ -591,7 +650,7 @@ setupPageSeo('privacy')
     flex-wrap: wrap;
   }
 
-  .privacy-article h1 {
+  .privacy-article h2 {
     font-size: 24px;
     line-height: 32px;
   }

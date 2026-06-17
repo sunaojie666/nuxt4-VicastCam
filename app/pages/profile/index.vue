@@ -17,7 +17,7 @@
             <h1>{{ profileName }}</h1>
             <p>{{ profileEmail }}</p>
             <span v-if="profileVipText" class="profile-vip-badge">
-              <img class="profile-vip-badge-icon" :src="profileVipBadgeIcon" alt="">
+              <img class="profile-vip-badge-icon" :src="profileVipBadgeIcon" alt="" role="presentation">
               <span>VIP</span>
             </span>
           </section>

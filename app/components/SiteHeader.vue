@@ -9,6 +9,7 @@
             src="/images/common/logo.png"
             alt=""
             aria-hidden="true"
+            role="presentation"
           >
           <span class="site-brand-name">
             <span>{{ headerText.brandMain }}</span>
@@ -214,8 +215,9 @@ const { profileBox, loadProfileText } = useProfileText()
 
 // 顶部导航模板只读取普通 ref，避免在模板中直接写翻译逻辑。
 const availableLocales = ref([])
-const navigationItems = ref([])
-const headerText = ref({})
+const navigationItems = useState('site-header-navigation-items', () => [])
+const headerText = useState('site-header-text', () => ({}))
+const siteHeaderNavigationLocale = useState('site-header-navigation-locale', () => '')
 const activeLocale = ref({})
 const localeMenuOpen = ref(false)
 const profileMenuOpen = ref(false)
@@ -605,33 +607,6 @@ const handleLocaleButtonClick = () => {
   closeMobileMenu()
 }
 
-const nonDefaultLocaleCodes = computed(() => {
-  return availableLocales.value
-    .map(item => item.code)
-    .filter(code => code && code !== 'zh-CN')
-})
-
-// 默认中文使用 prefix_except_default，不应该跳到 /zh-CN。
-const createDefaultLocalePath = () => {
-  for (const code of nonDefaultLocaleCodes.value) {
-    const prefix = `/${code}`
-
-    if (route.fullPath === prefix) {
-      return '/'
-    }
-
-    if (route.fullPath.startsWith(`${prefix}/`)) {
-      return route.fullPath.slice(prefix.length) || '/'
-    }
-
-    if (route.fullPath.startsWith(`${prefix}?`)) {
-      return `/${route.fullPath.slice(prefix.length + 1)}`
-    }
-  }
-
-  return route.fullPath || '/'
-}
-
 const switchLanguage = (code) => {
   localeMenuOpen.value = false
 
@@ -639,7 +614,7 @@ const switchLanguage = (code) => {
     return
   }
 
-  const targetPath = code === 'zh-CN' ? createDefaultLocalePath() : switchLocalePath(code)
+  const targetPath = switchLocalePath(code)
 
   navigateTo(targetPath || '/')
 }
@@ -748,26 +723,38 @@ const refreshNavigationItems = (navigationData) => {
 }
 
 // 请求 Strapi 导航栏单类型内容。
-const loadSiteNavigation = () => {
-  getNavigation(locale.value).then((navigationContent) => {
-    refreshNavigationItems(navigationContent?.data?.[0] || {})
-  })
-}
-
 // 初始化顶部导航文案和导航清单。
 const refreshHeaderData = () => {
   availableLocales.value = createAvailableLocales()
   refreshActiveLocale()
-  headerText.value = createSiteHeaderText()
+
+  const nextHeaderText = createSiteHeaderText()
+  if (siteHeaderNavigationLocale.value === locale.value) {
+    nextHeaderText.loginRegister = headerText.value.loginRegister || ''
+  }
+
+  headerText.value = nextHeaderText
 }
 
 refreshHeaderData()
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: siteHeaderNavigationLocale,
+  load: currentLocale => getNavigation(currentLocale),
+  sync: navigationContent => {
+    refreshNavigationItems(navigationContent?.data?.[0] || {})
+  },
+  reset: () => {
+    navigationItems.value = []
+    headerText.value = createSiteHeaderText()
+  },
+})
 
 // 当前语言变化时刷新切换框选中项，并重新请求 Strapi 导航文案。
 watch(locale, () => {
   availableLocales.value = createAvailableLocales()
   refreshActiveLocale()
-  loadSiteNavigation()
   loadProfileText()
 })
 
@@ -794,7 +781,6 @@ let syncScrollSpy = null
 let closeMobileMenuOnOutsideClick = null
 
 onMounted(() => {
-  loadSiteNavigation()
   loadProfileText()
 
   if ('scrollRestoration' in window.history) {

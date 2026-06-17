@@ -4,17 +4,17 @@
       <AuthBrandPanel :login-data="loginContent" />
 
       <NuxtLink :to="localePath('/')" class="auth-mobile-logo">
-        <img src="/images/common/logo.png" alt="" aria-hidden="true">
+        <img src="/images/common/logo.png" alt="" aria-hidden="true" role="presentation">
         <span>Vicast<span>Cam</span></span>
       </NuxtLink>
 
       <section class="auth-card" aria-labelledby="auth-form-title">
         <button type="button" class="auth-card-corner" :aria-label="cornerLabel" @click="toggleLoginView">
-          <img :src="cornerIcon" alt="" aria-hidden="true">
+          <img :src="cornerIcon" alt="" aria-hidden="true" role="presentation">
         </button>
 
         <div class="auth-card-heading">
-          <img :src="headingIcon" alt="" aria-hidden="true">
+          <img :src="headingIcon" alt="" aria-hidden="true" role="presentation">
           <h2 id="auth-form-title">{{ authCardTitle }}</h2>
         </div>
 
@@ -26,7 +26,11 @@
           :toast-box="toastBoxCopy"
           @toggle-login-method="toggleLoginMethod"
         />
-        <AuthScanPanel v-else :login-box="loginBoxCopy" :toast-box="toastBoxCopy" />
+        <AuthScanPanel
+          v-else
+          :login-box="loginBoxCopy"
+          :toast-box="toastBoxCopy"
+        />
       </section>
     </div>
   </main>
@@ -46,8 +50,126 @@ const { locale } = useI18n()
 const loginView = ref('account')
 const loginMethod = ref('code')
 const agreementAccepted = ref(true)
-const loginContent = ref({})
+const loginContent = useState('login-page-content', () => ({}))
+const loginContentLocale = useState('login-page-content-locale', () => '')
 const { setToastText } = useSiteToast()
+const defaultLoginCopyMap = {
+  'zh-CN': {
+    loginPageTitle: '账号登录',
+    codeLoginTab: '验证码登录',
+    pwdLoginTab: '密码登录',
+    qrLoginTab: '扫码登录',
+    emailInputPlaceholder: '请输入邮箱',
+    pwdInputPlaceholder: '请输入密码',
+    verifyCodePlaceholder: '请输入验证码',
+    getVerifyCodeText: '获取验证码',
+    loginBtnText: '登录',
+    qrLoginTip: '请使用 VicastCam App 扫码登录',
+    qrWaitingTip: '等待扫码确认',
+    qrRetryText: '重新获取二维码',
+    qrEmptyText: '二维码暂不可用',
+    qrCodeAlt: '登录二维码',
+    agreeProtocolPrefix: '我已阅读并同意',
+    agreementConnector: '和',
+    userProtocolText: '用户协议',
+    privacyPolicyText: '隐私政策',
+    showPasswordLabel: '显示密码',
+    hidePasswordLabel: '隐藏密码',
+  },
+  'zh-TW': {
+    loginPageTitle: '帳號登入',
+    codeLoginTab: '驗證碼登入',
+    pwdLoginTab: '密碼登入',
+    qrLoginTab: '掃碼登入',
+    emailInputPlaceholder: '請輸入郵箱',
+    pwdInputPlaceholder: '請輸入密碼',
+    verifyCodePlaceholder: '請輸入驗證碼',
+    getVerifyCodeText: '獲取驗證碼',
+    loginBtnText: '登入',
+    qrLoginTip: '請使用 VicastCam App 掃碼登入',
+    qrWaitingTip: '等待掃碼確認',
+    qrRetryText: '重新獲取二維碼',
+    qrEmptyText: '二維碼暫不可用',
+    qrCodeAlt: '登入二維碼',
+    agreeProtocolPrefix: '我已閱讀並同意',
+    agreementConnector: '和',
+    userProtocolText: '使用者協議',
+    privacyPolicyText: '隱私政策',
+    showPasswordLabel: '顯示密碼',
+    hidePasswordLabel: '隱藏密碼',
+  },
+  en: {
+    loginPageTitle: 'Account Login',
+    codeLoginTab: 'Code Login',
+    pwdLoginTab: 'Password Login',
+    qrLoginTab: 'QR Login',
+    emailInputPlaceholder: 'Enter email',
+    pwdInputPlaceholder: 'Enter password',
+    verifyCodePlaceholder: 'Enter verification code',
+    getVerifyCodeText: 'Get Code',
+    loginBtnText: 'Log In',
+    qrLoginTip: 'Scan with the VicastCam app',
+    qrWaitingTip: 'Waiting for confirmation',
+    qrRetryText: 'Refresh QR code',
+    qrEmptyText: 'QR code unavailable',
+    qrCodeAlt: 'Login QR code',
+    agreeProtocolPrefix: 'I have read and agree to',
+    agreementConnector: 'and',
+    userProtocolText: 'User Agreement',
+    privacyPolicyText: 'Privacy Policy',
+    showPasswordLabel: 'Show password',
+    hidePasswordLabel: 'Hide password',
+  },
+}
+const defaultToastCopyMap = {
+  'zh-CN': {
+    closeToastLabel: '关闭提示',
+    requestLoading: '处理中',
+    requestSuccess: '操作成功',
+    requestFail: '操作失败，请稍后重试',
+    passwordRequired: '请输入密码',
+    emailRequired: '请输入有效邮箱',
+    verifyCodeRequired: '请输入验证码',
+    agreeProtocolRequired: '请先同意服务条款和隐私政策',
+    qrcodeExpired: '二维码已失效，请重新获取',
+  },
+  'zh-TW': {
+    closeToastLabel: '關閉提示',
+    requestLoading: '處理中',
+    requestSuccess: '操作成功',
+    requestFail: '操作失敗，請稍後重試',
+    passwordRequired: '請輸入密碼',
+    emailRequired: '請輸入有效郵箱',
+    verifyCodeRequired: '請輸入驗證碼',
+    agreeProtocolRequired: '請先同意服務條款和隱私政策',
+    qrcodeExpired: '二維碼已失效，請重新獲取',
+  },
+  en: {
+    closeToastLabel: 'Close message',
+    requestLoading: 'Processing',
+    requestSuccess: 'Done',
+    requestFail: 'Request failed. Please try again',
+    passwordRequired: 'Enter your password',
+    emailRequired: 'Enter a valid email',
+    verifyCodeRequired: 'Enter the verification code',
+    agreeProtocolRequired: 'Please accept the terms and privacy policy first',
+    qrcodeExpired: 'QR code expired. Please refresh it',
+  },
+}
+
+const getDefaultLoginCopy = () => defaultLoginCopyMap[locale.value] || defaultLoginCopyMap.en
+const getDefaultToastCopy = () => defaultToastCopyMap[locale.value] || defaultToastCopyMap.en
+const getCopyValue = (source, fallback, key, ...aliases) => {
+  for (const field of [key, ...aliases]) {
+    const value = source?.[field]
+
+    if (value !== undefined && value !== null && value !== '') {
+      return value
+    }
+  }
+
+  return fallback[key] || ''
+}
 const loginBoxCopy = reactive({
   loginPageTitle: '',
   codeLoginTab: '',
@@ -156,43 +278,45 @@ const getToastBoxData = (loginData = {}) => {
 
 const syncLoginBoxCopy = (loginData = {}) => {
   const loginBox = getLoginBoxData(loginData)
+  const fallback = getDefaultLoginCopy()
 
-  loginBoxCopy.loginPageTitle = loginBox.loginPageTitle || ''
-  loginBoxCopy.codeLoginTab = loginBox.codeLoginTab || ''
-  loginBoxCopy.pwdLoginTab = loginBox.pwdLoginTab || ''
-  loginBoxCopy.qrLoginTab = loginBox.qrLoginTab || ''
-  loginBoxCopy.emailInputPlaceholder = loginBox.emailInputPlaceholder || ''
-  loginBoxCopy.pwdInputPlaceholder = loginBox.pwdInputPlaceholder || loginBox.passwordInputPlaceholder || ''
-  loginBoxCopy.verifyCodePlaceholder = loginBox.verifyCodePlaceholder || ''
-  loginBoxCopy.getVerifyCodeText = loginBox.getVerifyCodeText || ''
-  loginBoxCopy.loginBtnText = loginBox.loginBtnText || ''
-  loginBoxCopy.qrLoginTip = loginBox.qrLoginTip || ''
-  loginBoxCopy.qrWaitingTip = loginBox.qrWaitingTip || ''
-  loginBoxCopy.qrRetryText = loginBox.qrRetryText || ''
-  loginBoxCopy.qrEmptyText = loginBox.qrEmptyText || ''
-  loginBoxCopy.qrCodeAlt = loginBox.qrCodeAlt || ''
-  loginBoxCopy.agreeProtocolText = loginBox.agreeProtocolText || ''
-  loginBoxCopy.agreeProtocolPrefix = loginBox.agreeProtocolPrefix || ''
-  loginBoxCopy.agreementConnector = loginBox.agreementConnector || ''
-  loginBoxCopy.userProtocolText = loginBox.userProtocolText || ''
-  loginBoxCopy.privacyPolicyText = loginBox.privacyPolicyText || ''
-  loginBoxCopy.showPasswordLabel = loginBox.showPasswordLabel || ''
-  loginBoxCopy.hidePasswordLabel = loginBox.hidePasswordLabel || ''
+  loginBoxCopy.loginPageTitle = getCopyValue(loginBox, fallback, 'loginPageTitle')
+  loginBoxCopy.codeLoginTab = getCopyValue(loginBox, fallback, 'codeLoginTab')
+  loginBoxCopy.pwdLoginTab = getCopyValue(loginBox, fallback, 'pwdLoginTab')
+  loginBoxCopy.qrLoginTab = getCopyValue(loginBox, fallback, 'qrLoginTab')
+  loginBoxCopy.emailInputPlaceholder = getCopyValue(loginBox, fallback, 'emailInputPlaceholder')
+  loginBoxCopy.pwdInputPlaceholder = getCopyValue(loginBox, fallback, 'pwdInputPlaceholder', 'passwordInputPlaceholder')
+  loginBoxCopy.verifyCodePlaceholder = getCopyValue(loginBox, fallback, 'verifyCodePlaceholder')
+  loginBoxCopy.getVerifyCodeText = getCopyValue(loginBox, fallback, 'getVerifyCodeText')
+  loginBoxCopy.loginBtnText = getCopyValue(loginBox, fallback, 'loginBtnText')
+  loginBoxCopy.qrLoginTip = getCopyValue(loginBox, fallback, 'qrLoginTip')
+  loginBoxCopy.qrWaitingTip = getCopyValue(loginBox, fallback, 'qrWaitingTip')
+  loginBoxCopy.qrRetryText = getCopyValue(loginBox, fallback, 'qrRetryText')
+  loginBoxCopy.qrEmptyText = getCopyValue(loginBox, fallback, 'qrEmptyText')
+  loginBoxCopy.qrCodeAlt = getCopyValue(loginBox, fallback, 'qrCodeAlt')
+  loginBoxCopy.agreeProtocolText = getCopyValue(loginBox, fallback, 'agreeProtocolText')
+  loginBoxCopy.agreeProtocolPrefix = getCopyValue(loginBox, fallback, 'agreeProtocolPrefix')
+  loginBoxCopy.agreementConnector = getCopyValue(loginBox, fallback, 'agreementConnector')
+  loginBoxCopy.userProtocolText = getCopyValue(loginBox, fallback, 'userProtocolText')
+  loginBoxCopy.privacyPolicyText = getCopyValue(loginBox, fallback, 'privacyPolicyText')
+  loginBoxCopy.showPasswordLabel = getCopyValue(loginBox, fallback, 'showPasswordLabel')
+  loginBoxCopy.hidePasswordLabel = getCopyValue(loginBox, fallback, 'hidePasswordLabel')
 }
 
 const syncToastBoxCopy = (loginData = {}) => {
   const toastBox = getToastBoxData(loginData)
+  const fallback = getDefaultToastCopy()
 
-  toastBoxCopy.closeToastLabel = toastBox.closeToastLabel || ''
-  toastBoxCopy.requestLoading = toastBox.requestLoading || ''
-  toastBoxCopy.requestSuccess = toastBox.requestSuccess || ''
-  toastBoxCopy.requestFail = toastBox.requestFail || ''
-  toastBoxCopy.passwordLoginNotReady = toastBox.passwordLoginNotReady || ''
-  toastBoxCopy.passwordRequired = toastBox.passwordRequired || ''
-  toastBoxCopy.emailRequired = toastBox.emailRequired || ''
-  toastBoxCopy.verifyCodeRequired = toastBox.verifyCodeRequired || ''
-  toastBoxCopy.agreeProtocolRequired = toastBox.agreeProtocolRequired || ''
-  toastBoxCopy.qrcodeExpired = toastBox.qrcodeExpired || ''
+  toastBoxCopy.closeToastLabel = getCopyValue(toastBox, fallback, 'closeToastLabel')
+  toastBoxCopy.requestLoading = getCopyValue(toastBox, fallback, 'requestLoading')
+  toastBoxCopy.requestSuccess = getCopyValue(toastBox, fallback, 'requestSuccess')
+  toastBoxCopy.requestFail = getCopyValue(toastBox, fallback, 'requestFail')
+  toastBoxCopy.passwordLoginNotReady = getCopyValue(toastBox, fallback, 'passwordLoginNotReady')
+  toastBoxCopy.passwordRequired = getCopyValue(toastBox, fallback, 'passwordRequired')
+  toastBoxCopy.emailRequired = getCopyValue(toastBox, fallback, 'emailRequired')
+  toastBoxCopy.verifyCodeRequired = getCopyValue(toastBox, fallback, 'verifyCodeRequired')
+  toastBoxCopy.agreeProtocolRequired = getCopyValue(toastBox, fallback, 'agreeProtocolRequired')
+  toastBoxCopy.qrcodeExpired = getCopyValue(toastBox, fallback, 'qrcodeExpired')
   setToastText(toastBoxCopy)
 }
 
@@ -202,24 +326,19 @@ const syncLoginContent = (loginData = {}) => {
   syncToastBoxCopy(loginData)
 }
 
+syncLoginContent(loginContent.value)
+
 // 登录页所有语言文案统一从 Strapi 读取，左侧文案和右侧登录框共用这一份数据。
-const loadLoginContent = () => {
-  getLogin(locale.value).then(
-    response => {
-      syncLoginContent(getLoginContentData(response))
-    },
-    () => {
-      syncLoginContent()
-    }
-  )
-}
-
-onMounted(() => {
-  loadLoginContent()
-})
-
-watch(locale, () => {
-  loadLoginContent()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: loginContentLocale,
+  load: currentLocale => getLogin(currentLocale),
+  sync: response => {
+    syncLoginContent(getLoginContentData(response))
+  },
+  reset: () => {
+    syncLoginContent()
+  },
 })
 
 </script>

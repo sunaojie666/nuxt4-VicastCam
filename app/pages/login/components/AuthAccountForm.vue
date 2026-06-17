@@ -1,26 +1,32 @@
 <template>
   <form class="auth-form" @submit.prevent="handleLoginSubmit">
-    <label class="auth-field">
+    <label class="auth-field" for="auth-account-email">
       <span class="auth-input-wrap">
         <Icon name="lucide:mail" aria-hidden="true" />
         <input
+          id="auth-account-email"
           v-model.trim="emailAddress"
+          name="email"
           :type="isPasswordLogin ? 'text' : 'email'"
           :inputmode="isPasswordLogin ? 'text' : 'email'"
           autocomplete="username"
+          :aria-label="accountAriaLabel"
           :placeholder="accountPlaceholder"
         >
       </span>
     </label>
 
-    <label class="auth-field">
+    <label class="auth-field" for="auth-login-credential">
       <span class="auth-input-wrap">
         <Icon name="lucide:lock-keyhole" aria-hidden="true" />
         <input
+          id="auth-login-credential"
           v-model="loginCredential"
+          :name="isPasswordLogin ? 'password' : 'verification_code'"
           :type="credentialInputType"
           :inputmode="isPasswordLogin ? undefined : 'numeric'"
           :autocomplete="isPasswordLogin ? 'current-password' : 'one-time-code'"
+          :aria-label="credentialAriaLabel"
           :placeholder="credentialPlaceholder"
         >
         <button
@@ -52,13 +58,31 @@
       {{ submitButtonText }}
     </button>
 
-    <label class="auth-agreement">
-      <input v-model="agreementModel" type="checkbox">
+    <label class="auth-agreement" for="auth-agreement-accepted">
+      <input
+        id="auth-agreement-accepted"
+        v-model="agreementModel"
+        name="agreement_accepted"
+        type="checkbox"
+        :aria-label="agreementAriaLabel"
+      >
       <span class="auth-agreement-copy">
         <span v-if="loginBox.agreeProtocolPrefix">{{ loginBox.agreeProtocolPrefix }}</span>
-        <span v-if="loginBox.privacyPolicyText" class="auth-agreement-action">《{{ loginBox.privacyPolicyText }}》</span>
+        <NuxtLink
+          v-if="loginBox.privacyPolicyText"
+          :to="localePath('/privacy')"
+          class="auth-agreement-action"
+        >
+          《{{ loginBox.privacyPolicyText }}》
+        </NuxtLink>
         <span v-if="loginBox.privacyPolicyText && loginBox.userProtocolText && agreementConnector">{{ agreementConnector }}</span>
-        <span v-if="loginBox.userProtocolText" class="auth-agreement-action">《{{ loginBox.userProtocolText }}》</span>
+        <NuxtLink
+          v-if="loginBox.userProtocolText"
+          :to="localePath('/terms')"
+          class="auth-agreement-action"
+        >
+          《{{ loginBox.userProtocolText }}》
+        </NuxtLink>
       </span>
     </label>
   </form>
@@ -104,12 +128,13 @@ const props = defineProps({
     default: () => ({}),
   },
 })
+defineEmits(['toggle-login-method'])
 
 const agreementModel = defineModel('agreementAccepted', {
   type: Boolean,
   required: true,
 })
-const { requestLoadingText, showErrorToast, showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+const { requestLoadingText, showErrorToast, showRequestSuccessToast } = useSiteToast()
 const { loginWithEmailCode, loginWithPassword } = useAuth()
 const localePath = useLocalePath()
 const { locale } = useI18n()
@@ -159,6 +184,15 @@ const accountPlaceholder = computed(() => {
 })
 const credentialPlaceholder = computed(() => {
   return isPasswordLogin.value ? loginBox.value.pwdInputPlaceholder : loginBox.value.verifyCodePlaceholder
+})
+const accountAriaLabel = computed(() => accountPlaceholder.value || 'Email')
+const credentialAriaLabel = computed(() => credentialPlaceholder.value || (isPasswordLogin.value ? 'Password' : 'Verification code'))
+const agreementAriaLabel = computed(() => {
+  return [
+    loginBox.value.agreeProtocolPrefix,
+    loginBox.value.privacyPolicyText,
+    loginBox.value.userProtocolText,
+  ].filter(Boolean).join(' ') || 'Accept privacy policy and user agreement'
 })
 const credentialInputType = computed(() => {
   if (!isPasswordLogin.value) {
@@ -220,6 +254,18 @@ const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+const getToastMessage = (key, fallback = '') => {
+  return toastBox.value[key] || fallback
+}
+
+const getRequestErrorMessage = (error, fallback = '') => {
+  return error?.data?.message ||
+    error?.data?.data?.message ||
+    error?.data?.error?.message ||
+    error?.message ||
+    fallback
+}
+
 const normalizeEmailForVerification = email => String(email || '').trim().toLowerCase()
 
 const markCodeLoginHumanVerified = (email) => {
@@ -238,12 +284,12 @@ const validateEmail = () => {
   const email = emailAddress.value.trim()
 
   if (!email) {
-    showErrorToast(toastBox.value.emailRequired || '')
+    showErrorToast(getToastMessage('emailRequired', '请输入有效邮箱'))
     return ''
   }
 
   if (!isValidEmail(email)) {
-    showErrorToast(toastBox.value.emailRequired || '')
+    showErrorToast(getToastMessage('emailRequired', '请输入有效邮箱'))
     return ''
   }
 
@@ -254,7 +300,7 @@ const validateAccount = () => {
   const account = emailAddress.value.trim()
 
   if (!account) {
-    showErrorToast(toastBox.value.emailRequired || '')
+    showErrorToast(getToastMessage('emailRequired', '请输入账号或邮箱'))
     return ''
   }
 
@@ -345,9 +391,9 @@ const sendEmailCodeAfterPuzzle = (email) => {
       showRequestSuccessToast()
       startCodeCountdown()
     },
-    () => {
+    error => {
       isSendingCode.value = false
-      showRequestFailToast()
+      showErrorToast(getRequestErrorMessage(error, getToastMessage('requestFail', '发送失败，请稍后重试')))
     }
   )
 }
@@ -367,12 +413,14 @@ const handleLoginSubmit = () => {
   }
 
   if (!credential) {
-    showErrorToast(isPasswordLogin.value ? (toastBox.value.passwordRequired || '') : (toastBox.value.verifyCodeRequired || ''))
+    showErrorToast(isPasswordLogin.value
+      ? getToastMessage('passwordRequired', '请输入密码')
+      : getToastMessage('verifyCodeRequired', '请输入验证码'))
     return
   }
 
   if (!agreementModel.value) {
-    showErrorToast(toastBox.value.agreeProtocolRequired || '')
+    showErrorToast(getToastMessage('agreeProtocolRequired', '请先同意服务条款和隐私政策'))
     return
   }
 
@@ -409,9 +457,9 @@ const loginAfterPuzzle = ({ account, credential, isPassword }) => {
       showRequestSuccessToast()
       navigateTo(localePath('/'))
     },
-    () => {
+    error => {
       isLoggingIn.value = false
-      showRequestFailToast()
+      showErrorToast(getRequestErrorMessage(error, getToastMessage('requestFail', '登录失败，请稍后重试')))
     }
   )
 }

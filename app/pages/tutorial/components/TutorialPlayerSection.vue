@@ -49,6 +49,7 @@
           <video
             class="tutorial-video-player"
             src="/videos/tutorial-demo.mp4"
+            poster="/images/login/background.png"
             controls
             preload="metadata"
           />

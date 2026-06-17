@@ -75,6 +75,17 @@ export const getLogin = (locale) => {
   })
 }
 
+// 政策中心接口，对应 Strapi 里的 api::privacy.privacy，REST 路由为 /api/privacys。
+export const getPrivacys = (locale) => {
+  return createStrapiRequest().get('/privacys', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 // 首页功能特色接口，对应 Strapi 里的 api::feature.feature。
 export const getFeature = (locale) => {
   return createStrapiRequest().get('/features', {

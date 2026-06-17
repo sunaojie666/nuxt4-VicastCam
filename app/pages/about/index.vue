@@ -9,6 +9,7 @@
           :key="aboutHeroVideoSrc"
           class="about-hero-video"
           :src="aboutHeroVideoSrc"
+          poster="/images/login/background.png"
           autoplay
           muted
           loop
@@ -26,7 +27,7 @@
             <span>{{ aboutBox.hero.titleMain }}</span>
             <span class="theme-gradient-text">
               {{ aboutBox.hero.titleHighlight }}
-              <img class="about-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true">
+              <img class="about-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
             </span>
           </h1>
 
@@ -158,9 +159,8 @@ const config = useRuntimeConfig()
 const localePath = useLocalePath()
 const { locale } = useI18n()
 const activeRoadmapYear = ref('2024')
-const aboutHeroVideoSrc = ref('')
-let aboutRequestId = 0
-let heroVideoRequestId = 0
+const aboutHeroVideoSrc = useState('about-hero-video-src', () => '')
+const aboutHeroVideoLocale = useState('about-hero-video-locale', () => '')
 
 const emptyAboutBox = {
   hero: {
@@ -209,7 +209,8 @@ const createEmptyAboutBox = () => ({
   seo: { ...emptyAboutBox.seo },
 })
 
-const aboutBox = ref(createEmptyAboutBox())
+const aboutBox = useState('about-box', () => createEmptyAboutBox())
+const aboutBoxLocale = useState('about-box-locale', () => '')
 
 const normalizeList = (items) => {
   return Array.isArray(items) ? items.filter(Boolean) : []
@@ -261,27 +262,9 @@ const createStrapiAssetUrl = (url) => {
   return url.startsWith('http') ? url : `${config.public.strapiUrl.replace(/\/+$/, '')}${url}`
 }
 
-const loadAboutHeroVideo = () => {
-  const requestId = ++heroVideoRequestId
-  const currentLocale = locale.value
-
-  getHomes(currentLocale).then(
-    homeContent => {
-      if (requestId !== heroVideoRequestId || currentLocale !== locale.value) {
-        return
-      }
-
-      const videoUrl = homeContent?.data?.[0]?.bgVideo?.[0]?.url || ''
-      aboutHeroVideoSrc.value = createStrapiAssetUrl(videoUrl)
-    },
-    () => {
-      if (requestId !== heroVideoRequestId || currentLocale !== locale.value) {
-        return
-      }
-
-      aboutHeroVideoSrc.value = ''
-    }
-  )
+const syncAboutHeroVideo = (homeContent = {}) => {
+  const videoUrl = homeContent?.data?.[0]?.bgVideo?.[0]?.url || ''
+  aboutHeroVideoSrc.value = createStrapiAssetUrl(videoUrl)
 }
 
 const roadmapItems = computed(() => aboutBox.value.roadmap.items)
@@ -292,28 +275,14 @@ const syncActiveRoadmapYear = () => {
   activeRoadmapYear.value = roadmapItems.value.find(item => item.year === activeRoadmapYear.value)?.year || roadmapItems.value[0]?.year || ''
 }
 
-const loadAboutBox = () => {
-  const requestId = ++aboutRequestId
-  const currentLocale = locale.value
+const syncAboutBox = (aboutContent = {}) => {
+  aboutBox.value = getAboutBoxFromResponse(aboutContent)
+  syncActiveRoadmapYear()
+}
 
-  getAbouts(currentLocale).then(
-    aboutContent => {
-      if (requestId !== aboutRequestId || currentLocale !== locale.value) {
-        return
-      }
-
-      aboutBox.value = getAboutBoxFromResponse(aboutContent)
-      syncActiveRoadmapYear()
-    },
-    () => {
-      if (requestId !== aboutRequestId || currentLocale !== locale.value) {
-        return
-      }
-
-      aboutBox.value = createEmptyAboutBox()
-      syncActiveRoadmapYear()
-    }
-  )
+const resetAboutBox = () => {
+  aboutBox.value = createEmptyAboutBox()
+  syncActiveRoadmapYear()
 }
 
 const handleContactClick = () => {
@@ -327,14 +296,28 @@ const handleContactClick = () => {
   })
 }
 
-onMounted(() => {
-  loadAboutBox()
-  loadAboutHeroVideo()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: aboutBoxLocale,
+  load: currentLocale => getAbouts(currentLocale),
+  sync: aboutContent => {
+    syncAboutBox(aboutContent)
+  },
+  reset: () => {
+    resetAboutBox()
+  },
 })
 
-watch(locale, () => {
-  loadAboutBox()
-  loadAboutHeroVideo()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: aboutHeroVideoLocale,
+  load: currentLocale => getHomes(currentLocale),
+  sync: homeContent => {
+    syncAboutHeroVideo(homeContent)
+  },
+  reset: () => {
+    aboutHeroVideoSrc.value = ''
+  },
 })
 
 setupPageSeo('about', () => aboutBox.value.seo)

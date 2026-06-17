@@ -1,10 +1,54 @@
 import { locales } from './i18n/locales.config'
 
 // 站点正式域名统一从环境变量读取，SEO、sitemap、robots、i18n 都使用同一个值。
-const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NUXT_SITE_URL || 'https://example.com'
+const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NUXT_SITE_URL || 'https://vicastcam.com'
 
 // 站点名称用于 sitemap 展示、默认标题模板和生产环境识别。
 const siteName = process.env.NUXT_SITE_NAME || 'VicastCam'
+
+const defaultLocale = 'zh-CN'
+const noindexRobotsRule = 'noindex, nofollow, noarchive'
+const noindexRoutePaths = ['/login', '/profile', '/checkout']
+const securityHeaders = {
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    "img-src 'self' data: blob: http: https:",
+    "media-src 'self' data: blob: http: https:",
+    "font-src 'self' data: https:",
+    "style-src 'self' 'unsafe-inline' https:",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://www.paypalobjects.com https://*.paypal.com https://*.paypalobjects.com",
+    "connect-src 'self' http: https: ws: wss:",
+    "frame-src 'self' https://www.paypal.com https://*.paypal.com",
+  ].join('; '),
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+}
+const createRouteRule = (rule: Record<string, unknown> = {}) => ({
+  ...rule,
+  headers: {
+    ...securityHeaders,
+    ...((rule.headers as Record<string, string> | undefined) || {}),
+  },
+})
+const localePrefixes = locales
+  .map(locale => locale.code)
+  .filter(code => code && code !== defaultLocale)
+  .map(code => `/${code}`)
+const localizedRoutePaths = (paths: string[]) => {
+  return paths.flatMap(path => [
+    path,
+    ...localePrefixes.map(prefix => `${prefix}${path}`),
+  ])
+}
+const noindexSitemapExcludes = localizedRoutePaths(noindexRoutePaths)
+const noindexRouteRules = Object.fromEntries(
+  noindexSitemapExcludes.map(path => [path, createRouteRule({ robots: noindexRobotsRule, sitemap: false })])
+)
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -14,7 +58,10 @@ export default defineNuxtConfig({
     // VicastCam 业务接口只在 Nuxt 服务端使用，前端通过 server/api 代理访问。
     vicastApiUrl: process.env.NUXT_VICAST_API_URL || 'https://api.vicastcam.com',
     public: {
+      siteUrl,
       strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://192.168.18.100:1337',
+      paypalClientId: process.env.NUXT_PUBLIC_PAYPAL_CLIENT_ID || (process.env.NODE_ENV === 'development' ? 'test' : ''),
+      paypalCurrency: process.env.NUXT_PUBLIC_PAYPAL_CURRENCY || 'USD',
     },
   },
 
@@ -61,6 +108,12 @@ export default defineNuxtConfig({
     },
   },
 
+  // 账号、结算等私有/交易页面统一标记 noindex，并从 sitemap 排除。
+  routeRules: {
+    '/**': createRouteRule(),
+    ...noindexRouteRules,
+  },
+
   hooks: {
     'pages:extend'(pages) {
       const removePageComponents = (routes: typeof pages) => {
@@ -102,8 +155,8 @@ export default defineNuxtConfig({
   sitemap: {
     // sitemap 自动读取 Nuxt 页面路由，并结合 @nuxtjs/i18n 生成多语言链接。
     autoI18n: true,
-    // 登录和个人中心属于账号页面，不进入 sitemap。
-    exclude: ['/login', '/en/login', '/profile', '/en/profile'],
+    // 登录、个人中心和结算页不进入 sitemap。
+    exclude: noindexSitemapExcludes,
     // 生成 sitemap 时自动发现页面中的图片，方便后续图片 SEO。
     discoverImages: true,
     defaults: {

@@ -66,7 +66,7 @@ const { locale } = useI18n()
 const { vipPlans, loadVipTypes } = useVipTypes()
 const { showErrorToast } = useSiteToast()
 
-const pricingContent = ref({
+const pricingContent = useState('home-pricing-content', () => ({
   sectionTag: '',
   titleMain: '',
   titleHighlight: '',
@@ -74,7 +74,8 @@ const pricingContent = ref({
   priceAltSuffix: '',
   freePlanMessage: '',
   plans: [],
-})
+}))
+const homePricingLocale = useState('home-pricing-locale', () => '')
 
 const normalizePlanText = value => String(value || '').trim()
 const normalizePriceValue = value => normalizePlanText(value).replace(/[,¥￥$]/g, '').trim()
@@ -203,16 +204,17 @@ const syncPricingContent = (pricingData = {}) => {
   }
 }
 
-const loadPricingContent = () => {
-  getPricings(locale.value).then(
-    response => {
-      syncPricingContent(getPricingContentData(response))
-    },
-    () => {
-      syncPricingContent()
-    }
-  )
-}
+const { loadContent: loadPricingContent } = useLocalizedAsyncState({
+  locale,
+  loadedLocale: homePricingLocale,
+  load: currentLocale => getPricings(currentLocale),
+  sync: response => {
+    syncPricingContent(getPricingContentData(response))
+  },
+  reset: () => {
+    syncPricingContent()
+  },
+})
 
 const displayPlans = computed(() => {
   return Array.isArray(pricingContent.value.plans)
@@ -229,20 +231,41 @@ const pricingPlans = computed(() => {
   }))
 })
 
+const createCheckoutQuery = (plan = {}) => {
+  const query = {}
+  const queryFields = [
+    ['productId', plan.id],
+    ['productType', plan.type],
+    ['productName', plan.name],
+    ['productDescription', plan.description],
+    ['productPrice', plan.price],
+    ['productUnit', plan.unit],
+  ]
+
+  queryFields.forEach(([key, value]) => {
+    const text = normalizePlanText(value)
+
+    if (text) {
+      query[key] = text
+    }
+  })
+
+  return query
+}
+
 const handlePlanCheckout = (plan = {}) => {
   if (isFreePlan(plan)) {
     showErrorToast(pricingContent.value.freePlanMessage || '')
     return
   }
 
+  const checkoutQuery = createCheckoutQuery(plan)
   const target = {
     path: localePath('/checkout'),
   }
 
-  if (plan.id) {
-    target.query = {
-      productId: plan.id,
-    }
+  if (Object.keys(checkoutQuery).length) {
+    target.query = checkoutQuery
   }
 
   if (!process.client) {
@@ -253,12 +276,7 @@ const handlePlanCheckout = (plan = {}) => {
 }
 
 onMounted(() => {
-  loadPricingContent()
   loadVipTypes()
-})
-
-watch(locale, () => {
-  loadPricingContent()
 })
 </script>
 

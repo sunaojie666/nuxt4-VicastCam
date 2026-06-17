@@ -16,9 +16,28 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import FaqContentSection from './components/FaqContentSection.vue'
 import FaqHeroSection from './components/FaqHeroSection.vue'
-import { setupPageSeo } from '../../utils/seo'
+import { createAbsoluteUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
 
 setupPageSeo('faq')
+
+const config = useRuntimeConfig()
+const siteUrl = String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, '')
+
+setupStructuredData({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '如何下载与安装VicastCam',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '打开 VicastCam 后进入直播预览界面，确认摄像头和麦克风权限已开启，然后选择合适的背景效果和画面比例即可快速完成基础设置。',
+      },
+    },
+  ],
+  url: createAbsoluteUrl('/faq', siteUrl),
+}, { id: 'faq-jsonld' })
 </script>
 
 <style scoped>

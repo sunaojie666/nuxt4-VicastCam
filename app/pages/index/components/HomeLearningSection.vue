@@ -41,7 +41,7 @@
 
       <NuxtLink :to="localePath('/tutorial')" class="home-learning-more theme-more-link" target="_blank" rel="noopener noreferrer">
         <span>{{ tutorialContent.buttonText }}</span>
-        <img src="/images/common/arrow-right.png" alt="" aria-hidden="true">
+        <img src="/images/common/arrow-right.png" alt="" aria-hidden="true" role="presentation">
       </NuxtLink>
 
     </div>
@@ -61,15 +61,17 @@ const activeLocaleDir = computed(() => {
   return activeLocale?.dir || 'ltr'
 })
 
-const tutorialContent = ref({
+const tutorialContent = useState('home-learning-tutorial-content', () => ({
   sectionTag: '',
   titleMain: '',
   titleHighlight: '',
   description: '',
   buttonText: '',
-})
+}))
 
-const learningCards = ref([])
+const learningCards = useState('home-learning-cards', () => [])
+const homeLearningTutorialLocale = useState('home-learning-tutorial-locale', () => '')
+const homeLearningCardsLocale = useState('home-learning-cards-locale', () => '')
 
 const createLearningCardKey = (course, index) => {
   return `${locale.value}-${course.id || course.title || index}`
@@ -141,17 +143,6 @@ const syncTutorialContent = (content = {}) => {
   }
 }
 
-const loadTutorialContent = () => {
-  getTutorials(locale.value).then(
-    response => {
-      syncTutorialContent(getTutorialContentData(response))
-    },
-    () => {
-      syncTutorialContent()
-    }
-  )
-}
-
 const syncLearningCards = (cards = []) => {
   learningCards.value = cards.map((card, index) => ({
     id: card.id || `${index}-${card.title || ''}`,
@@ -163,25 +154,28 @@ const syncLearningCards = (cards = []) => {
   })).filter(card => card.title || card.tag1 || card.tag2 || card.coverImg)
 }
 
-const loadLearningCards = () => {
-  getCards(locale.value).then(
-    response => {
-      syncLearningCards(getStrapiCollectionData(response))
-    },
-    () => {
-      syncLearningCards()
-    }
-  )
-}
-
-onMounted(() => {
-  loadTutorialContent()
-  loadLearningCards()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeLearningTutorialLocale,
+  load: currentLocale => getTutorials(currentLocale),
+  sync: response => {
+    syncTutorialContent(getTutorialContentData(response))
+  },
+  reset: () => {
+    syncTutorialContent()
+  },
 })
 
-watch(locale, () => {
-  loadTutorialContent()
-  loadLearningCards()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeLearningCardsLocale,
+  load: currentLocale => getCards(currentLocale),
+  sync: response => {
+    syncLearningCards(getStrapiCollectionData(response))
+  },
+  reset: () => {
+    syncLearningCards()
+  },
 })
 </script>
 

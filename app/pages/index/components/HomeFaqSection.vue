@@ -47,7 +47,7 @@
 
       <NuxtLink :to="localePath('/faq')" class="home-faq-more theme-more-link" target="_blank" rel="noopener noreferrer">
         <span>{{ viewMoreText }}</span>
-        <img src="/images/common/arrow-right.png" alt="" aria-hidden="true">
+        <img src="/images/common/arrow-right.png" alt="" aria-hidden="true" role="presentation">
       </NuxtLink>
     </div>
   </section>
@@ -59,8 +59,8 @@ import { getFaq } from '../../../api/request/strapi'
 const localePath = useLocalePath()
 const { locale } = useI18n()
 
-const activeFaqIndex = ref(0)
-const faqSection = ref({
+const activeFaqIndex = useState('home-faq-active-index', () => 0)
+const faqSection = useState('home-faq-section', () => ({
   tag: '',
   title_main: '',
   title_highlight: '',
@@ -69,7 +69,8 @@ const faqSection = ref({
   view_more: {
     text: '',
   },
-})
+}))
+const homeFaqLocale = useState('home-faq-locale', () => '')
 
 const faqItems = computed(() => {
   return Array.isArray(faqSection.value.questions)
@@ -103,27 +104,20 @@ const syncFaqContent = (faqData = {}) => {
   activeFaqIndex.value = faqItems.value.length ? 0 : -1
 }
 
-const loadFaqContent = () => {
-  getFaq(locale.value).then(
-    response => {
-      syncFaqContent(getFaqContentData(response))
-    },
-    () => {
-      syncFaqContent()
-    }
-  )
-}
-
 const toggleFaqItem = (index) => {
   activeFaqIndex.value = activeFaqIndex.value === index ? -1 : index
 }
 
-onMounted(() => {
-  loadFaqContent()
-})
-
-watch(locale, () => {
-  loadFaqContent()
+const { loadContent: loadFaqContent } = useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeFaqLocale,
+  load: currentLocale => getFaq(currentLocale),
+  sync: response => {
+    syncFaqContent(getFaqContentData(response))
+  },
+  reset: () => {
+    syncFaqContent()
+  },
 })
 </script>
 

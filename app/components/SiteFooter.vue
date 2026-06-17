@@ -9,6 +9,7 @@
             src="/images/common/logo.png"
             alt=""
             aria-hidden="true"
+            role="presentation"
           >
           <span class="site-footer-brand-name">
             <span>{{ footerText.brandMain }}</span>
@@ -188,8 +189,12 @@ const footerLinkTextActionMap = {
   'privacypolicy': 'privacy',
   'privacy': 'privacy',
   '服务条款': 'terms',
+  '用户协议': 'terms',
+  '用户许可协议': 'terms',
   'termsofservice': 'terms',
   'termsofuse': 'terms',
+  'useragreement': 'terms',
+  'userlicenseagreement': 'terms',
   '销售政策': 'salesPolicy',
   'salespolicy': 'salesPolicy',
   '文档': 'docs',
@@ -205,13 +210,14 @@ const footerLinkTextActionMap = {
   'contact': 'contact',
 }
 
-const footerColumns = ref([])
-const footerContent = ref({
+const footerColumns = useState('site-footer-columns', () => [])
+const footerContent = useState('site-footer-content', () => ({
   brand: {
     name: '',
     description: '',
   },
-})
+}))
+const siteFooterContentLocale = useState('site-footer-content-locale', () => '')
 
 const footerText = computed(() => {
   const brandName = footerContent.value.brand?.name || ''
@@ -342,32 +348,6 @@ const toggleFooterLocaleMenu = () => {
   footerLocaleMenuOpen.value = !footerLocaleMenuOpen.value
 }
 
-const nonDefaultFooterLocaleCodes = computed(() => {
-  return footerLocales.value
-    .map(item => item.code)
-    .filter(code => code && code !== 'zh-CN')
-})
-
-const createDefaultFooterLocalePath = () => {
-  for (const code of nonDefaultFooterLocaleCodes.value) {
-    const prefix = `/${code}`
-
-    if (route.fullPath === prefix) {
-      return '/'
-    }
-
-    if (route.fullPath.startsWith(`${prefix}/`)) {
-      return route.fullPath.slice(prefix.length) || '/'
-    }
-
-    if (route.fullPath.startsWith(`${prefix}?`)) {
-      return `/${route.fullPath.slice(prefix.length + 1)}`
-    }
-  }
-
-  return route.fullPath || '/'
-}
-
 const switchFooterLanguage = (code) => {
   footerLocaleMenuOpen.value = false
 
@@ -375,7 +355,7 @@ const switchFooterLanguage = (code) => {
     return
   }
 
-  const targetPath = code === 'zh-CN' ? createDefaultFooterLocalePath() : switchLocalePath(code)
+  const targetPath = switchLocalePath(code)
 
   navigateTo(targetPath || '/')
 }
@@ -527,20 +507,20 @@ const syncFooterContent = (footerData = {}) => {
     : []
 }
 
-const loadFooterContent = () => {
-  getFooter(locale.value).then(
-    response => {
-      syncFooterContent(getFooterContentData(response))
-    },
-    () => {
-      syncFooterContent()
-    }
-  )
-}
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: siteFooterContentLocale,
+  load: currentLocale => getFooter(currentLocale),
+  sync: response => {
+    syncFooterContent(getFooterContentData(response))
+  },
+  reset: () => {
+    syncFooterContent()
+  },
+})
 
 onMounted(() => {
   initTheme()
-  loadFooterContent()
 
   closeFooterLocaleMenuOnOutsideClick = (event) => {
     if (!footerLocaleMenuOpen.value) {
@@ -562,10 +542,6 @@ onBeforeUnmount(() => {
   if (closeFooterLocaleMenuOnOutsideClick) {
     document.removeEventListener('click', closeFooterLocaleMenuOnOutsideClick)
   }
-})
-
-watch(locale, () => {
-  loadFooterContent()
 })
 
 </script>

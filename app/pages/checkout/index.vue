@@ -6,111 +6,41 @@
       <div class="checkout-shell">
         <section class="checkout-panel checkout-payment-panel" aria-labelledby="checkout-title">
           <header class="checkout-panel-header">
-            <h1 id="checkout-title">选择支付方式</h1>
+            <h1 id="checkout-title">PayPal 安全付款</h1>
           </header>
-
-          <div class="checkout-method-grid" role="radiogroup" aria-label="支付方式">
-            <button
-              v-for="method in paymentMethods"
-              :key="method.id"
-              type="button"
-              class="checkout-method"
-              :class="{ 'is-active': selectedPayment === method.id }"
-              role="radio"
-              :aria-checked="selectedPayment === method.id"
-              @click="selectedPayment = method.id"
-            >
-              <span class="checkout-method-icon" :class="{ 'is-paypal': method.id === 'paypal' }" aria-hidden="true">
-                <span v-if="method.id === 'paypal'" class="checkout-paypal-mark">P</span>
-                <Icon v-else :name="method.icon" />
-              </span>
-              <span class="checkout-method-copy">
-                <strong>{{ method.label }}</strong>
-                <small>{{ method.description }}</small>
-              </span>
-              <span class="checkout-radio" aria-hidden="true" />
-            </button>
-          </div>
 
           <form
             class="checkout-detail-card"
-            :class="{ 'is-paypal': selectedPayment === 'paypal' }"
-            :aria-labelledby="`${activePayment.id}-info-title`"
+            aria-labelledby="paypal-payment-title"
             @submit.prevent
           >
-            <div class="checkout-detail-header">
-              <h2 :id="`${activePayment.id}-info-title`">{{ activePayment.panelTitle }}</h2>
-              <p>{{ activePayment.helperText }}</p>
-            </div>
-
-            <template v-if="selectedPayment === 'paypal'">
-              <section class="checkout-detail-group" aria-labelledby="paypal-payment-title">
-                <h3 id="paypal-payment-title">PayPal 付款</h3>
-                <div class="checkout-payment-message">
-                  <p>已选择 PayPal。提交后，系统将跳转，在新的页面安全地完成后续步骤。</p>
-                  <Icon name="lucide:badge-check" aria-hidden="true" />
+            <section class="checkout-provider-widget checkout-paypal-widget" aria-labelledby="paypal-payment-title">
+              <header class="checkout-provider-header">
+                <span class="checkout-provider-logo checkout-provider-logo-paypal" aria-hidden="true">P</span>
+                <div>
+                  <h3 id="paypal-payment-title">PayPal</h3>
+                  <p>通过 PayPal 官方组件安全付款</p>
                 </div>
-              </section>
+              </header>
 
-              <section class="checkout-detail-group" aria-labelledby="billing-address-title">
-                <h3 id="billing-address-title">账单地址</h3>
-                <div class="checkout-field-grid">
-                  <label class="checkout-field" for="checkout-name">
-                    <span>姓名</span>
-                    <input id="checkout-name" type="text" autocomplete="name" placeholder="付款人姓名">
-                  </label>
-
-                  <label class="checkout-field" for="checkout-country">
-                    <span>国家和地区</span>
-                    <span class="checkout-select-wrap">
-                      <select id="checkout-country" autocomplete="country-name">
-                        <option>请选择</option>
-                        <option>中国</option>
-                        <option>美国</option>
-                        <option>新加坡</option>
-                        <option>日本</option>
-                      </select>
-                      <Icon class="checkout-select-icon" name="lucide:chevron-down" aria-hidden="true" />
-                    </span>
-                  </label>
-
-                  <label class="checkout-field checkout-field-wide" for="checkout-address">
-                    <span>详细地址</span>
-                    <input id="checkout-address" type="text" autocomplete="street-address" placeholder="街道、门牌号、城市">
-                  </label>
-
-                  <label class="checkout-field checkout-field-wide" for="checkout-postcode">
-                    <span>邮政编码</span>
-                    <input id="checkout-postcode" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="邮政编码">
-                  </label>
+              <div class="checkout-paypal-official">
+                <div ref="paypalContainer" class="checkout-paypal-sdk-container" />
+                <div
+                  v-if="paypalSdkMessage"
+                  class="checkout-paypal-sdk-state"
+                  :class="`is-${paypalSdkStatus}`"
+                  aria-live="polite"
+                >
+                  <Icon :name="paypalSdkStatus === 'error' ? 'lucide:circle-alert' : 'lucide:loader-circle'" aria-hidden="true" />
+                  <span>{{ paypalSdkMessage }}</span>
                 </div>
-              </section>
-            </template>
+              </div>
+            </section>
 
-            <template v-else>
-              <section class="checkout-detail-group" aria-labelledby="card-account-title">
-                <h3 id="card-account-title">银行卡账户</h3>
-                <div class="checkout-field-grid">
-                  <label class="checkout-field checkout-field-wide" for="checkout-card-number">
-                    <span>卡号</span>
-                    <input id="checkout-card-number" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="1234 1234 1234 1234 123">
-                  </label>
-
-                  <label class="checkout-field" for="checkout-card-expiry">
-                    <span>有效期</span>
-                    <input id="checkout-card-expiry" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="月 / 年">
-                  </label>
-
-                  <label class="checkout-field" for="checkout-card-cvc">
-                    <span>安全码</span>
-                    <span class="checkout-select-wrap">
-                      <input id="checkout-card-cvc" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC">
-                      <Icon class="checkout-select-icon" name="lucide:chevron-down" aria-hidden="true" />
-                    </span>
-                  </label>
-                </div>
-              </section>
-            </template>
+            <p v-if="paymentActionMessage" class="checkout-provider-feedback" aria-live="polite">
+              <Icon name="lucide:info" aria-hidden="true" />
+              <span>{{ paymentActionMessage }}</span>
+            </p>
           </form>
         </section>
 
@@ -131,7 +61,7 @@
             </div>
             <div>
               <dt>支付方式</dt>
-              <dd>Weixin Pay</dd>
+              <dd>{{ orderSummary.paymentMethod }}</dd>
             </div>
           </dl>
 
@@ -140,7 +70,7 @@
             <strong>{{ orderSummary.amount }}</strong>
           </div>
 
-          <button class="checkout-submit-button" type="button">{{ orderSummary.submitLabel }}</button>
+          <button class="checkout-submit-button" type="button" @click="handleOrderSubmit">{{ orderSummary.submitLabel }}</button>
 
           <p class="checkout-summary-note">
             点击订阅即表示你同意服务条款和隐私政策，订单信息提交前仍可修改。
@@ -157,38 +87,328 @@
 import SiteHeader from '../../components/SiteHeader.vue'
 import SiteFooter from '../../components/SiteFooter.vue'
 
+const route = useRoute()
+const runtimeConfig = useRuntimeConfig()
+const { vipPlans, loadVipTypes } = useVipTypes()
+
 const paymentMethods = [
   {
     id: 'card',
-    label: '银行卡',
-    description: '使用银行卡支付',
+    label: '银行卡/信用卡',
+    description: '使用银行卡或信用卡支付',
     icon: 'lucide:credit-card',
-    panelTitle: '付款信息',
-    helperText: '填写新的信用卡资料 Apply Pay',
   },
   {
     id: 'paypal',
     label: 'PayPal',
-    description: '使用PayPal支付',
+    description: '使用 PayPal 支付',
     icon: 'lucide:wallet-cards',
-    panelTitle: 'PayPal 付款信息',
-    helperText: '填写订单信息以确定 Apple Pay',
   },
 ]
 
-const orderSummary = {
-  productName: '专业版',
-  description: '解锁高清虚拟背景、直播增强和多平台创作能力。',
-  period: '1年',
-  amount: '$69.99',
-  submitLabel: '订阅',
-}
-
 const selectedPayment = ref('paypal')
+const paymentActionMessage = ref('')
+const paypalContainer = ref(null)
+const paypalSdkStatus = ref('idle')
+const paypalSdkMessage = ref('')
+let paypalScriptRequest = null
+let paypalRenderSignature = ''
 
 const activePayment = computed(() => {
   return paymentMethods.find(method => method.id === selectedPayment.value) || paymentMethods[0]
 })
+
+const selectPayment = (paymentId) => {
+  selectedPayment.value = paymentId
+  paymentActionMessage.value = ''
+}
+
+const handleOrderSubmit = () => {
+  paymentActionMessage.value = selectedPayment.value === 'paypal'
+    ? '请使用 PayPal 官方组件完成付款。'
+    : '请在银行卡安全支付组件中完成付款。'
+}
+
+const normalizeCheckoutValue = (value, fallback = '') => {
+  const sourceValue = Array.isArray(value) ? value[0] : value
+  const text = String(sourceValue || '').trim()
+
+  return text || fallback
+}
+
+const normalizePlanType = (value) => {
+  const text = normalizeCheckoutValue(value).toLowerCase()
+
+  if (['month', 'monthly', 'm', 'monthly-plan'].includes(text) || text.includes('月')) {
+    return 'month'
+  }
+
+  if (['year', 'yearly', 'annual', 'y', 'yearly-plan'].includes(text) || text.includes('年')) {
+    return 'year'
+  }
+
+  if (
+    ['life', 'lifetime', 'permanent', 'l', 'lifetime-plan'].includes(text) ||
+    text.includes('终身') ||
+    text.includes('永久')
+  ) {
+    return 'life'
+  }
+
+  return text
+}
+
+const checkoutProductId = computed(() => normalizeCheckoutValue(route.query.productId))
+
+const queryPlan = computed(() => {
+  return {
+    id: checkoutProductId.value,
+    type: normalizeCheckoutValue(route.query.productType),
+    name: normalizeCheckoutValue(route.query.productName),
+    description: normalizeCheckoutValue(route.query.productDescription),
+    price: normalizeCheckoutValue(route.query.productPrice),
+    unit: normalizeCheckoutValue(route.query.productUnit),
+  }
+})
+
+const sourcePlan = computed(() => {
+  const plans = Array.isArray(vipPlans.value) ? vipPlans.value : []
+  const productId = checkoutProductId.value
+
+  if (productId) {
+    return plans.find(plan => {
+      return normalizeCheckoutValue(plan.id) === productId || normalizeCheckoutValue(plan.productId) === productId
+    }) || null
+  }
+
+  return plans.find(plan => plan.featured) || plans[0] || null
+})
+
+const currentPlan = computed(() => {
+  const plan = queryPlan.value
+  const fallbackPlan = sourcePlan.value || {}
+  const fallbackType = normalizePlanType(
+    fallbackPlan.type ||
+    fallbackPlan.planType ||
+    fallbackPlan.productType ||
+    fallbackPlan.termType ||
+    fallbackPlan.id ||
+    fallbackPlan.name ||
+    fallbackPlan.unit
+  )
+
+  return {
+    id: plan.id || normalizeCheckoutValue(fallbackPlan.id),
+    type: normalizePlanType(plan.type || fallbackType),
+    name: plan.name || normalizeCheckoutValue(fallbackPlan.name, '未选择套餐'),
+    description: plan.description || normalizeCheckoutValue(fallbackPlan.description || fallbackPlan.subtitle, '请返回首页选择一个会员套餐。'),
+    price: plan.price || normalizeCheckoutValue(fallbackPlan.price, '-'),
+    unit: plan.unit || normalizeCheckoutValue(fallbackPlan.unit),
+  }
+})
+
+const currentPlanPeriod = computed(() => {
+  const plan = currentPlan.value
+  const planType = normalizePlanType(plan.type || plan.name || plan.unit)
+  const unit = normalizeCheckoutValue(plan.unit).replace(/^\//, '')
+
+  if (planType === 'month') {
+    return '1个月'
+  }
+
+  if (planType === 'year') {
+    return '1年'
+  }
+
+  if (planType === 'life') {
+    return '终身'
+  }
+
+  if (unit === '月') {
+    return '1个月'
+  }
+
+  if (unit === '年') {
+    return '1年'
+  }
+
+  return unit || '-'
+})
+
+const orderSummary = computed(() => {
+  return {
+    productName: currentPlan.value.name,
+    description: currentPlan.value.description,
+    period: currentPlanPeriod.value,
+    paymentMethod: activePayment.value.label,
+    amount: currentPlan.value.price,
+    submitLabel: '订阅',
+  }
+})
+
+const paypalClientId = computed(() => {
+  return normalizeCheckoutValue(runtimeConfig.public.paypalClientId)
+})
+
+const paypalCurrency = computed(() => {
+  return normalizeCheckoutValue(runtimeConfig.public.paypalCurrency, 'USD').toUpperCase()
+})
+
+const paypalAmountValue = computed(() => {
+  const amountText = normalizeCheckoutValue(currentPlan.value.price).replace(/[^0-9.]/g, '')
+  const amountNumber = Number.parseFloat(amountText)
+
+  if (!Number.isFinite(amountNumber) || amountNumber <= 0) {
+    return '0.01'
+  }
+
+  return amountNumber.toFixed(2)
+})
+
+const createPaypalSdkUrl = () => {
+  const params = new URLSearchParams({
+    'client-id': paypalClientId.value,
+    currency: paypalCurrency.value,
+    components: 'buttons',
+    intent: 'capture',
+  })
+
+  return `https://www.paypal.com/sdk/js?${params.toString()}`
+}
+
+const loadPaypalSdk = () => {
+  if (!process.client) {
+    return Promise.reject(new Error('PayPal SDK only loads in browser.'))
+  }
+
+  if (window.paypal?.Buttons) {
+    return Promise.resolve(window.paypal)
+  }
+
+  if (paypalScriptRequest) {
+    return paypalScriptRequest
+  }
+
+  const existingScript = document.querySelector('script[data-vicast-paypal-sdk="true"]')
+
+  if (existingScript) {
+    paypalScriptRequest = new Promise((resolve, reject) => {
+      existingScript.addEventListener('load', () => resolve(window.paypal), { once: true })
+      existingScript.addEventListener('error', reject, { once: true })
+    })
+
+    return paypalScriptRequest
+  }
+
+  paypalScriptRequest = new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+
+    script.src = createPaypalSdkUrl()
+    script.async = true
+    script.dataset.vicastPaypalSdk = 'true'
+    script.addEventListener('load', () => resolve(window.paypal), { once: true })
+    script.addEventListener('error', reject, { once: true })
+    document.head.appendChild(script)
+  })
+
+  return paypalScriptRequest
+}
+
+const renderPaypalOfficialComponent = async () => {
+  if (!process.client || selectedPayment.value !== 'paypal') {
+    return
+  }
+
+  await nextTick()
+
+  if (!paypalContainer.value) {
+    return
+  }
+
+  if (!paypalClientId.value) {
+    paypalSdkStatus.value = 'error'
+    paypalSdkMessage.value = 'PayPal Client ID 未配置。'
+    paypalContainer.value.innerHTML = ''
+    paypalRenderSignature = ''
+    return
+  }
+
+  const renderSignature = [
+    paypalClientId.value,
+    paypalCurrency.value,
+    paypalAmountValue.value,
+    currentPlan.value.id,
+  ].join('|')
+
+  if (paypalRenderSignature === renderSignature && paypalContainer.value.childElementCount) {
+    return
+  }
+
+  paypalContainer.value.innerHTML = ''
+  paypalSdkStatus.value = 'loading'
+  paypalSdkMessage.value = '正在加载 PayPal 官方组件...'
+
+  try {
+    const paypal = await loadPaypalSdk()
+    const buttons = paypal.Buttons({
+      style: {
+        layout: 'vertical',
+        color: 'gold',
+        shape: 'rect',
+        label: 'paypal',
+        height: 45,
+      },
+      createOrder(data, actions) {
+        paymentActionMessage.value = 'PayPal 订单已创建，付款确认仍需接入后端接口。'
+
+        return actions.order.create({
+          purchase_units: [
+            {
+              description: currentPlan.value.name,
+              amount: {
+                currency_code: paypalCurrency.value,
+                value: paypalAmountValue.value,
+              },
+            },
+          ],
+        })
+      },
+      onApprove() {
+        paymentActionMessage.value = 'PayPal 已授权，后续需要后端确认订单并开通会员。'
+      },
+      onCancel() {
+        paymentActionMessage.value = 'PayPal 付款已取消。'
+      },
+      onError() {
+        paypalSdkStatus.value = 'error'
+        paypalSdkMessage.value = 'PayPal 官方组件加载失败，请稍后重试。'
+      },
+    })
+
+    if (buttons.isEligible && !buttons.isEligible()) {
+      paypalSdkStatus.value = 'error'
+      paypalSdkMessage.value = '当前环境不支持 PayPal 官方组件。'
+      return
+    }
+
+    await buttons.render(paypalContainer.value)
+    paypalRenderSignature = renderSignature
+    paypalSdkStatus.value = 'ready'
+    paypalSdkMessage.value = ''
+  } catch (error) {
+    paypalSdkStatus.value = 'error'
+    paypalSdkMessage.value = 'PayPal 官方组件加载失败，请检查网络或 Client ID。'
+  }
+}
+
+onMounted(() => {
+  loadVipTypes()
+  renderPaypalOfficialComponent()
+})
+
+watch([selectedPayment, paypalAmountValue, paypalCurrency], () => {
+  renderPaypalOfficialComponent()
+}, { flush: 'post' })
 
 useSeoMeta({
   title: '订阅结算',
@@ -432,125 +652,216 @@ useSeoMeta({
   background: color-mix(in srgb, var(--checkout-panel) 94%, var(--checkout-control));
 }
 
-.checkout-detail-header {
-  display: flex;
+.checkout-provider-widget {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.checkout-provider-header {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
-.checkout-detail-header h2,
-.checkout-detail-group h3 {
+.checkout-provider-logo {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--checkout-accent);
+  background: var(--checkout-icon-background);
+}
+
+.checkout-provider-logo :deep(svg) {
+  width: 21px;
+  height: 21px;
+}
+
+.checkout-provider-logo-paypal {
+  color: #ffffff;
+  background: #2b65d9;
+  font-size: 24px;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1;
+}
+
+.checkout-provider-header h3 {
   color: var(--checkout-text);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
-  line-height: 18px;
+  line-height: 21px;
 }
 
-.checkout-detail-header p {
+.checkout-provider-header p {
+  margin-top: 2px;
   color: var(--checkout-muted);
-  font-size: 11px;
-  line-height: 16px;
-  text-align: right;
+  font-size: 12px;
+  line-height: 17px;
 }
 
-.checkout-detail-group {
+.checkout-paypal-official {
+  min-width: 0;
   display: grid;
   gap: 10px;
 }
 
-.checkout-payment-message p {
-  color: var(--checkout-muted);
+.checkout-paypal-sdk-container {
+  min-width: 0;
+  min-height: 45px;
+}
+
+.checkout-paypal-sdk-state {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--checkout-message-border);
+  border-radius: 7px;
+  color: var(--checkout-muted-strong);
+  background: var(--checkout-control);
   font-size: 12px;
   line-height: 18px;
 }
 
-.checkout-payment-message {
-  min-height: 50px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 18px;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--checkout-border);
-  border-radius: 7px;
+.checkout-paypal-sdk-state :deep(svg) {
+  width: 18px;
+  height: 18px;
+  color: var(--checkout-accent);
+}
+
+.checkout-paypal-sdk-state.is-loading :deep(svg) {
+  animation: checkout-spin 0.9s linear infinite;
+}
+
+.checkout-paypal-sdk-state.is-error {
+  border-color: color-mix(in srgb, #ef4444 42%, var(--checkout-border));
   color: var(--checkout-muted-strong);
+}
+
+.checkout-paypal-sdk-state.is-error :deep(svg) {
+  color: #ef4444;
+}
+
+.checkout-card-element {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--checkout-border);
+  border-radius: 8px;
   background: var(--checkout-control);
 }
 
-.checkout-payment-message :deep(svg) {
-  width: 18px;
-  height: 18px;
+.checkout-card-row {
+  min-width: 0;
+  min-height: 46px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 9px 12px;
+  border: 1px solid var(--checkout-border-soft);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--checkout-panel) 76%, var(--checkout-control));
+}
+
+.checkout-card-row-wide {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) 18px;
+  align-items: center;
+}
+
+.checkout-card-row span {
+  color: var(--checkout-muted);
+  font-size: 11px;
+  line-height: 15px;
+}
+
+.checkout-card-row strong {
+  min-width: 0;
+  color: var(--checkout-muted-strong);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkout-card-row-wide span,
+.checkout-card-row-wide strong {
+  grid-column: 1;
+}
+
+.checkout-card-row-wide :deep(svg) {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 17px;
+  height: 17px;
+  justify-self: end;
   color: var(--checkout-muted);
 }
 
-.checkout-field-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px 16px;
-}
-
-.checkout-field {
-  display: grid;
+.checkout-card-brands {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.checkout-field span:first-child {
-  color: var(--checkout-muted-strong);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 17px;
+.checkout-card-brands span {
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid var(--checkout-border-soft);
+  border-radius: 5px;
+  color: var(--checkout-muted);
+  background: color-mix(in srgb, var(--checkout-panel) 70%, transparent);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
 }
 
-.checkout-field-wide {
-  grid-column: 1 / -1;
-}
-
-.checkout-field input,
-.checkout-field select {
-  width: 100%;
-  height: 42px;
-  border: 1px solid var(--checkout-border);
+.checkout-provider-feedback {
+  min-height: 40px;
+  display: grid;
+  grid-template-columns: 17px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-top: -6px;
+  padding: 10px 12px;
+  border: 1px solid var(--checkout-message-border);
   border-radius: 7px;
-  color: var(--checkout-text);
-  background: var(--checkout-control);
+  color: var(--checkout-muted-strong);
+  background: var(--checkout-panel-soft);
   font-size: 12px;
   line-height: 18px;
 }
 
-.checkout-field input {
-  padding: 0 14px;
+.checkout-provider-feedback :deep(svg) {
+  width: 17px;
+  height: 17px;
+  color: var(--checkout-accent);
 }
 
-.checkout-field input::placeholder {
-  color: var(--checkout-placeholder);
+.checkout-provider-feedback span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-.checkout-field input:focus,
-.checkout-field select:focus {
-  border-color: var(--checkout-accent);
-  box-shadow: 0 0 0 3px var(--checkout-focus);
-}
-
-.checkout-select-wrap {
-  position: relative;
-  display: block;
-}
-
-.checkout-select-wrap select {
-  appearance: none;
-  padding: 0 42px 0 14px;
-}
-
-.checkout-select-icon {
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  width: 18px;
-  height: 18px;
-  color: var(--checkout-muted);
-  transform: translateY(-50%);
-  pointer-events: none;
+@keyframes checkout-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .checkout-summary-panel {
@@ -690,20 +1001,6 @@ useSeoMeta({
   }
 
   .checkout-method-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .checkout-detail-header {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .checkout-detail-header p {
-    text-align: left;
-  }
-
-  .checkout-field-grid {
     grid-template-columns: 1fr;
   }
 

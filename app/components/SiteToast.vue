@@ -1,11 +1,18 @@
 <template>
   <Teleport to="body">
-    <div v-if="toastItems.length" class="site-toast-viewport" aria-live="polite" aria-atomic="false">
-      <TransitionGroup name="site-toast" tag="div" class="site-toast-list">
+    <div class="site-toast-viewport" aria-live="polite" aria-atomic="false">
+      <div class="site-toast-list">
         <div
           v-for="item in toastItems"
           :key="item.id"
-          :class="['site-toast-item', `site-toast-item-${item.type}`]"
+          :class="[
+            'site-toast-item',
+            `site-toast-item-${item.type}`,
+            {
+              'site-toast-item-visible': item.visible,
+              'site-toast-item-leaving': item.leaving,
+            },
+          ]"
           role="status"
         >
           <Icon class="site-toast-icon" :name="getToastIcon(item.type)" aria-hidden="true" />
@@ -14,7 +21,7 @@
             <Icon name="lucide:x" aria-hidden="true" />
           </button>
         </div>
-      </TransitionGroup>
+      </div>
     </div>
   </Teleport>
 </template>
@@ -38,7 +45,7 @@ const getToastIcon = (type) => {
 <style scoped>
 .site-toast-viewport {
   position: fixed;
-  top: max(18px, calc(env(safe-area-inset-top) + 14px));
+  top: calc(var(--page-header-height) + 14px);
   left: 0;
   z-index: 9999;
   width: 100%;
@@ -72,7 +79,28 @@ const getToastIcon = (type) => {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   pointer-events: auto;
-  animation: site-toast-pop 0.22s cubic-bezier(0.2, 0.9, 0.24, 1.18) both;
+  transform-origin: top center;
+  will-change: transform, opacity, filter;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translate3d(0, 130px, 0) scale(0.94);
+  transition:
+    opacity 0.68s ease,
+    filter 0.68s ease,
+    transform 0.68s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-toast-item-visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.site-toast-item-leaving {
+  opacity: 0;
+  filter: blur(5px);
+  transform: translate3d(0, -18px, 0) scale(0.96);
+  transition-duration: 0.32s;
 }
 
 .site-toast-item::before {
@@ -158,30 +186,6 @@ const getToastIcon = (type) => {
   height: 16px;
 }
 
-.site-toast-enter-active,
-.site-toast-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
-}
-
-.site-toast-enter-from,
-.site-toast-leave-to {
-  opacity: 0;
-  filter: blur(3px);
-  transform: translateY(-12px) scale(0.96);
-}
-
-@keyframes site-toast-pop {
-  from {
-    opacity: 0;
-    transform: translateY(-12px) scale(0.96);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 @keyframes site-toast-icon-pop {
   0% {
     opacity: 0;
@@ -227,18 +231,15 @@ const getToastIcon = (type) => {
 
 @media (max-width: 520px) {
   .site-toast-viewport {
-    top: max(12px, calc(env(safe-area-inset-top) + 10px));
+    top: calc(var(--page-header-height) + 10px);
     padding: 0 12px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-toast-item,
   .site-toast-item::before,
   .site-toast-item::after,
-  .site-toast-icon,
-  .site-toast-enter-active,
-  .site-toast-leave-active {
+  .site-toast-icon {
     animation: none;
     transition: none;
   }

@@ -19,6 +19,32 @@ import TutorialPlayerSection from './components/TutorialPlayerSection.vue'
 import { setupPageSeo } from '../../utils/seo'
 
 setupPageSeo('tutorial')
+
+const config = useRuntimeConfig()
+const siteUrl = String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, '')
+const createAbsoluteUrl = path => /^https?:\/\//.test(path) ? path : `${siteUrl}${path.startsWith('/') ? path : `/${path}`}`
+
+const tutorialVideoPath = '/videos/tutorial-demo.mp4'
+const tutorialVideoPosterPath = '/images/login/background.png'
+
+useHead({
+  script: [
+    {
+      id: 'tutorial-video-jsonld',
+      type: 'application/ld+json',
+      textContent: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'VideoObject',
+        name: 'VicastCam Tutorial: Download and Install',
+        description: 'A VicastCam tutorial video that introduces how to download, install, and start using VicastCam.',
+        thumbnailUrl: [createAbsoluteUrl(tutorialVideoPosterPath)],
+        uploadDate: '2026-06-09T09:03:25+08:00',
+        duration: 'PT10S',
+        contentUrl: createAbsoluteUrl(tutorialVideoPath),
+      }),
+    },
+  ],
+})
 </script>
 
 <style scoped>

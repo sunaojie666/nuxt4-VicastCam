@@ -19,7 +19,7 @@
     </div>
 
     <p class="auth-scan-tip">
-      <img src="/images/login/scan-code-icon.png" alt="" aria-hidden="true">
+      <img src="/images/login/scan-code-icon.png" alt="" aria-hidden="true" role="presentation">
       <span>{{ loginBox.qrLoginTip }}</span>
     </p>
 
@@ -27,9 +27,21 @@
 
     <p class="auth-scan-agreement">
       <span v-if="loginBox.agreeProtocolPrefix">{{ loginBox.agreeProtocolPrefix }}</span>
-      <span v-if="loginBox.privacyPolicyText" class="auth-scan-agreement-action">《{{ loginBox.privacyPolicyText }}》</span>
+      <NuxtLink
+        v-if="loginBox.privacyPolicyText"
+        :to="localePath('/privacy')"
+        class="auth-scan-agreement-action"
+      >
+        《{{ loginBox.privacyPolicyText }}》
+      </NuxtLink>
       <span v-if="loginBox.privacyPolicyText && loginBox.userProtocolText && agreementConnector">{{ agreementConnector }}</span>
-      <span v-if="loginBox.userProtocolText" class="auth-scan-agreement-action">《{{ loginBox.userProtocolText }}》</span>
+      <NuxtLink
+        v-if="loginBox.userProtocolText"
+        :to="localePath('/terms')"
+        class="auth-scan-agreement-action"
+      >
+        《{{ loginBox.userProtocolText }}》
+      </NuxtLink>
     </p>
   </div>
 </template>

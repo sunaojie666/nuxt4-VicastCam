@@ -54,9 +54,35 @@ import HomePricingSection from './components/HomePricingSection.vue'
 import HomeFaqSection from './components/HomeFaqSection.vue'
 import HomeLearningSection from './components/HomeLearningSection.vue'
 import HomeFooterHeroSection from './components/HomeFooterHeroSection.vue'
-import { setupPageSeo } from '../../utils/seo'
+import { createAbsoluteUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
 
 setupPageSeo('home')
+
+const config = useRuntimeConfig()
+const { locale, locales } = useI18n()
+
+const activeLocaleConfig = computed(() => {
+  return locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
+})
+const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+
+setupStructuredData(() => [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'VicastCam',
+    url: siteUrl.value,
+    logo: createAbsoluteUrl('/images/common/logo.png', siteUrl.value),
+    description: 'VicastCam provides virtual camera, virtual background, screen casting, and live streaming tools for creators, meetings, and multi-platform production.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'VicastCam',
+    url: siteUrl.value,
+    inLanguage: activeLocaleConfig.value.language || locale.value,
+  },
+], { id: 'home-jsonld' })
 
 const showBackToTop = ref(false)
 

@@ -18,7 +18,23 @@ export const useSiteToast = () => {
   }))
 
   const removeToast = (id) => {
-    toastItems.value = toastItems.value.filter(item => item.id !== id)
+    const targetToast = toastItems.value.find(item => item.id === id)
+
+    if (!targetToast) {
+      return
+    }
+
+    toastItems.value = toastItems.value.map(item => {
+      return item.id === id ? { ...item, visible: false, leaving: true } : item
+    })
+
+    if (process.client) {
+      window.setTimeout(() => {
+        toastItems.value = toastItems.value.filter(item => item.id !== id)
+      }, 360)
+    } else {
+      toastItems.value = toastItems.value.filter(item => item.id !== id)
+    }
   }
 
   const setToastText = (text = {}) => {
@@ -48,10 +64,22 @@ export const useSiteToast = () => {
       message: toastMessage,
       type,
       duration,
+      visible: false,
+      leaving: false,
     }
 
     // 最多保留 3 条，避免连续接口提示把页面遮住。
     toastItems.value = [...toastItems.value, toast].slice(-3)
+
+    if (process.client) {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          toastItems.value = toastItems.value.map(item => {
+            return item.id === toast.id ? { ...item, visible: true } : item
+          })
+        })
+      })
+    }
 
     if (process.client && duration > 0) {
       window.setTimeout(() => {

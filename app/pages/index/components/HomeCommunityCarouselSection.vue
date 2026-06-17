@@ -107,7 +107,7 @@ import { getCommunity, getForm, getStreamers } from '../../../api/request/strapi
 
 const { locale, locales } = useI18n()
 const config = useRuntimeConfig()
-const creators = ref([])
+const creators = useState('home-community-creators', () => [])
 
 const activeLocaleDir = computed(() => {
   const activeLocale = locales.value.find(item => typeof item !== 'string' && item.code === locale.value)
@@ -115,20 +115,23 @@ const activeLocaleDir = computed(() => {
   return activeLocale?.dir || 'ltr'
 })
 
-const communitySection = ref({
+const communitySection = useState('home-community-section-content', () => ({
   tag: '',
   title_main: '',
   title_highlight: '',
   desc: '',
-})
-const multiPlatformSection = ref({
+}))
+const multiPlatformSection = useState('home-community-platform-section', () => ({
   tag: '',
   title_main: '',
   title_highlight: '',
   description: '',
-})
+}))
 
-const stats = ref([])
+const stats = useState('home-community-stats', () => [])
+const homeCommunityContentLocale = useState('home-community-content-locale', () => '')
+const homeCommunityFormLocale = useState('home-community-form-locale', () => '')
+const homeCommunityStreamersLocale = useState('home-community-streamers-locale', () => '')
 
 const platformCatalog = [
   { name: '抖音', icon: '/images/platforms/platform-douyin.png' },
@@ -294,49 +297,40 @@ const syncStreamers = (streamerItems = []) => {
   })).filter(item => item.name || item.username || item.followers || item.location || item.avatar)
 }
 
-const loadFormContent = () => {
-  getForm(locale.value).then(
-    response => {
-      syncFormContent(getFormContentData(response))
-    },
-    () => {
-      syncFormContent()
-    }
-  )
-}
-
-const loadCommunityContent = () => {
-  getCommunity(locale.value).then(
-    response => {
-      syncCommunityContent(getCommunityContentData(response))
-    },
-    () => {
-      syncCommunityContent()
-    }
-  )
-}
-
-const loadStreamers = () => {
-  getStreamers(locale.value).then(
-    response => {
-      syncStreamers(getStrapiCollectionData(response))
-    },
-    () => {
-      syncStreamers()
-    }
-  )
-}
-
-onMounted(() => {
-  loadCommunityContent()
-  loadFormContent()
-  loadStreamers()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeCommunityFormLocale,
+  load: currentLocale => getForm(currentLocale),
+  sync: response => {
+    syncFormContent(getFormContentData(response))
+  },
+  reset: () => {
+    syncFormContent()
+  },
 })
 
-watch(locale, () => {
-  loadCommunityContent()
-  loadFormContent()
-  loadStreamers()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeCommunityContentLocale,
+  load: currentLocale => getCommunity(currentLocale),
+  sync: response => {
+    syncCommunityContent(getCommunityContentData(response))
+  },
+  reset: () => {
+    syncCommunityContent()
+  },
+})
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeCommunityStreamersLocale,
+  load: currentLocale => getStreamers(currentLocale),
+  sync: response => {
+    syncStreamers(getStrapiCollectionData(response))
+  },
+  reset: () => {
+    syncStreamers()
+  },
 })
 </script>
 
@@ -577,6 +571,35 @@ watch(locale, () => {
   font-size: 16px;
   font-weight: 800;
   line-height: 20px;
+}
+
+:root[data-theme="light"] .home-community-card {
+  border-color: rgba(148, 163, 184, 0.22);
+  background-color: var(--theme-white);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .home-community-card-body {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+}
+
+:root[data-theme="light"] .home-community-card-name {
+  color: rgba(17, 24, 39, 1);
+}
+
+:root[data-theme="light"] .home-community-handle,
+:root[data-theme="light"] .home-community-location,
+:root[data-theme="light"] .home-community-fans {
+  color: rgba(75, 85, 99, 1);
+}
+
+:root[data-theme="light"] .home-community-location svg {
+  color: rgba(107, 114, 128, 1);
+}
+
+:root[data-theme="light"] .home-community-fans strong {
+  color: rgba(6, 182, 212, 1);
 }
 
 .home-community-stats {

@@ -32,7 +32,7 @@
               }"
             >
               <span class="download-platform-icon" aria-hidden="true">
-                <img :src="platform.mobileIcon" alt="">
+                <img :src="platform.mobileIcon" alt="" role="presentation">
               </span>
 
               <div class="download-card-title">
@@ -69,8 +69,8 @@
                 class="download-primary-button"
                 @click="handleDownload(platform)"
               >
-                <img class="download-desktop-action-icon" :src="platform.desktopActionIcon" alt="" aria-hidden="true">
-                <img class="download-mobile-action-icon" :src="platform.actionIcon" alt="" aria-hidden="true">
+                <img class="download-desktop-action-icon" :src="platform.desktopActionIcon" alt="" aria-hidden="true" role="presentation">
+                <img class="download-mobile-action-icon" :src="platform.actionIcon" alt="" aria-hidden="true" role="presentation">
                 <span>{{ platform.actionLabel }}</span>
               </button>
 
@@ -88,7 +88,7 @@
                   </button>
 
                   <div class="download-qr-code" aria-hidden="true">
-                    <img :src="platform.qrImage" alt="">
+                    <img :src="platform.qrImage" alt="" role="presentation">
                   </div>
 
                   <strong>{{ platform.qrTitle }}</strong>
@@ -128,10 +128,14 @@
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import { getDownloads } from '../../api/request/strapi'
-import { setupPageSeo } from '../../utils/seo'
+import { createAbsoluteUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
 
-const { locale } = useI18n()
-let downloadRequestId = 0
+const config = useRuntimeConfig()
+const { locale, locales } = useI18n()
+const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+const activeLocaleConfig = computed(() => {
+  return locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
+})
 
 const emptyDownloadBox = {
   hero: {
@@ -215,7 +219,8 @@ const createEmptyDownloadBox = () => ({
   seo: { ...emptyDownloadBox.seo },
 })
 
-const downloadBox = ref(createEmptyDownloadBox())
+const downloadBox = useState('download-box', () => createEmptyDownloadBox())
+const downloadBoxLocale = useState('download-box-locale', () => '')
 
 const normalizeList = (items) => {
   return Array.isArray(items) ? items.filter(Boolean) : []
@@ -279,20 +284,6 @@ const reasonCards = computed(() => {
   })
 })
 
-const loadDownloadBox = () => {
-  const requestId = ++downloadRequestId
-  const currentLocale = locale.value
-
-  getDownloads(currentLocale).then(response => {
-    if (requestId !== downloadRequestId || currentLocale !== locale.value) {
-      return
-    }
-
-    downloadBox.value = getDownloadBoxFromResponse(response)
-    closeDownloadQr()
-  })
-}
-
 const handleDownload = (platform) => {
   if (!process.client) {
     return
@@ -309,15 +300,49 @@ const closeDownloadQr = () => {
   activeQrPlatform.value = ''
 }
 
-onMounted(() => {
-  loadDownloadBox()
-})
-
-watch(locale, () => {
-  loadDownloadBox()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: downloadBoxLocale,
+  load: currentLocale => getDownloads(currentLocale),
+  sync: response => {
+    downloadBox.value = getDownloadBoxFromResponse(response)
+    closeDownloadQr()
+  },
+  reset: () => {
+    downloadBox.value = createEmptyDownloadBox()
+    closeDownloadQr()
+  },
 })
 
 setupPageSeo('download', () => downloadBox.value.seo)
+
+setupStructuredData(() => {
+  const applicationItems = platforms.value.map(platform => ({
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: platform.name || `VicastCam ${platform.key}`,
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: platform.system || platform.name || platform.key,
+    description: platform.subtitle || downloadBox.value.platform.description || downloadBox.value.seo.description,
+    url: createAbsoluteUrl('/download', siteUrl.value),
+    image: createAbsoluteUrl(platform.mobileIcon || platform.image || '/images/common/og-default.png', siteUrl.value),
+    inLanguage: activeLocaleConfig.value.language || locale.value,
+  }))
+
+  return applicationItems.length
+    ? applicationItems
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'VicastCam',
+        applicationCategory: 'MultimediaApplication',
+        operatingSystem: 'Windows, iOS, Android',
+        description: downloadBox.value.seo.description || 'Download VicastCam for Windows, iOS, and Android.',
+        url: createAbsoluteUrl('/download', siteUrl.value),
+        image: createAbsoluteUrl('/images/common/og-default.png', siteUrl.value),
+        inLanguage: activeLocaleConfig.value.language || locale.value,
+      }
+}, { id: 'download-software-jsonld' })
 </script>
 
 <style scoped>

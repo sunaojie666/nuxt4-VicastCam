@@ -5,6 +5,7 @@
       :key="heroVideoSrc"
       class="home-hero-video"
       :src="heroVideoSrc"
+      poster="/images/login/background.png"
       autoplay
       muted
       loop
@@ -19,7 +20,7 @@
       <div class="home-hero-content">
         <div class="home-hero-main">
           <div v-if="heroBadgeText" :key="heroBadgeText" class="home-hero-eyebrow">
-            <img src="/images/common/badge-star.png" alt="" aria-hidden="true">
+            <img src="/images/common/badge-star.png" alt="" aria-hidden="true" role="presentation">
             <b>{{ heroBadgeText }}</b>
           </div>
 
@@ -27,7 +28,7 @@
             <span>{{ heroTitle }}</span>
             <span class="theme-gradient-text">
               {{ heroSubtitle }}
-              <img class="home-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true">
+              <img class="home-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
             </span>
           </h1>
 
@@ -39,24 +40,24 @@
           <div class="home-hero-actions" aria-label="下载VicastCam">
             <a href="#" class="home-hero-download home-hero-download-light">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
-                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/apple-default.svg" alt="">
-                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/apple-active.svg" alt="">
+                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/apple-default.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/apple-active.svg" alt="" role="presentation">
               </span>
               <span>{{ appStoreUrl }}</span>
             </a>
 
             <a href="#" class="home-hero-download home-hero-download-light">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
-                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/android-default.svg" alt="">
-                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/android-active.svg" alt="">
+                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/android-default.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/android-active.svg" alt="" role="presentation">
               </span>
               <span>{{ googlePlayUrl }}</span>
             </a>
 
             <a href="#" class="home-hero-download home-hero-download-primary">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
-                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/windows-default.svg" alt="">
-                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/windows-active.svg" alt="">
+                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/windows-default.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/windows-active.svg" alt="" role="presentation">
               </span>
               <span>{{ desktopClientUrl }}</span>
             </a>
@@ -76,14 +77,14 @@
 
           <div class="home-hero-metric">
             <span class="home-hero-score-icons" aria-hidden="true">
-              <img v-for="star in 5" :key="star" src="/images/common/rating-star.png" alt="">
+              <img v-for="star in 5" :key="star" src="/images/common/rating-star.png" alt="" role="presentation">
             </span>
             <strong>4.9</strong>
             <span>{{ ratingLabel }}</span>
           </div>
 
           <div class="home-hero-metric">
-            <img class="home-hero-download-icon" src="/images/common/download-metric.png" alt="" aria-hidden="true">
+            <img class="home-hero-download-icon" src="/images/common/download-metric.png" alt="" aria-hidden="true" role="presentation">
             <strong>10万+</strong>
             <span>{{ downloadCountLabel }}</span>
           </div>
@@ -112,18 +113,19 @@ import { getHomes } from '../../../api/request/strapi'
 
 const config = useRuntimeConfig()
 const { locale } = useI18n()
-const heroVideoSrc = ref('')
-const topBadge = ref('')
-const heroTitle = ref('')
-const heroSubtitle = ref('')
-const heroDescription1 = ref('')
-const heroDescription2 = ref('')
-const userCountLabel = ref('')
-const ratingLabel = ref('')
-const downloadCountLabel = ref('')
-const appStoreUrl = ref('')
-const googlePlayUrl = ref('')
-const desktopClientUrl = ref('')
+const heroVideoSrc = useState('home-hero-video-src', () => '')
+const topBadge = useState('home-hero-top-badge', () => '')
+const heroTitle = useState('home-hero-title', () => '')
+const heroSubtitle = useState('home-hero-subtitle', () => '')
+const heroDescription1 = useState('home-hero-description-1', () => '')
+const heroDescription2 = useState('home-hero-description-2', () => '')
+const userCountLabel = useState('home-hero-user-count-label', () => '')
+const ratingLabel = useState('home-hero-rating-label', () => '')
+const downloadCountLabel = useState('home-hero-download-count-label', () => '')
+const appStoreUrl = useState('home-hero-app-store-url', () => '')
+const googlePlayUrl = useState('home-hero-google-play-url', () => '')
+const desktopClientUrl = useState('home-hero-desktop-client-url', () => '')
+const homeHeroLocale = useState('home-hero-locale', () => '')
 const { setToastText } = useSiteToast()
 const heroBadgeText = computed(() => String(topBadge.value || '').trim())
 const isLongHeroTitle = computed(() => `${heroTitle.value || ''}${heroSubtitle.value || ''}`.length > 56)
@@ -160,23 +162,16 @@ const syncHomeHero = (homeData = {}) => {
 }
 
 // 客户端通过封装好的 axios 请求 Strapi 首页背景视频。
-const loadHomeHero = () => {
-  getHomes(locale.value).then(
-    homeContent => {
-      syncHomeHero(homeContent?.data?.[0] || {})
-    },
-    () => {
-      syncHomeHero()
-    }
-  )
-}
-
-onMounted(() => {
-  loadHomeHero()
-})
-
-watch(locale, () => {
-  loadHomeHero()
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: homeHeroLocale,
+  load: currentLocale => getHomes(currentLocale),
+  sync: homeContent => {
+    syncHomeHero(homeContent?.data?.[0] || {})
+  },
+  reset: () => {
+    syncHomeHero()
+  },
 })
 </script>
 
