@@ -3,6 +3,10 @@ import { createRequest } from './index'
 
 // Strapi REST 接口统一挂在 /api 下，这里兼容配置里是否带尾部斜杠。
 const normalizeStrapiApiBaseURL = (url) => {
+  if (process.client) {
+    return '/api/strapi'
+  }
+
   const baseURL = url || 'http://192.168.18.100:1337'
   return `${baseURL.replace(/\/+$/, '')}/api`
 }
@@ -188,6 +192,17 @@ export const getCards = (locale) => {
 // 首页订阅模块文案接口，对应 Strapi 里的 api::pricing.pricing，REST 路由为 /api/pricings。
 export const getPricings = (locale) => {
   return createStrapiRequest().get('/pricings', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 订阅结算页文案接口，对应 Strapi 里的 api::checkout.checkout，REST 路由为 /api/checkouts。
+export const getCheckouts = (locale) => {
+  return createStrapiRequest().get('/checkouts', {
     ...homeRequestOptions,
     params: {
       locale,

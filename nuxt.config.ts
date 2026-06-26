@@ -6,7 +6,7 @@ const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NUXT_SITE_URL ||
 // 站点名称用于 sitemap 展示、默认标题模板和生产环境识别。
 const siteName = process.env.NUXT_SITE_NAME || 'VicastCam'
 
-const defaultLocale = 'zh-CN'
+const defaultLocale = 'en'
 const noindexRobotsRule = 'noindex, nofollow, noarchive'
 const noindexRoutePaths = ['/login', '/profile', '/checkout']
 const securityHeaders = {
@@ -140,16 +140,12 @@ export default defineNuxtConfig({
     baseUrl: siteUrl,
     // 语言清单从独立文件导入，方便未来扩展到多个国家。
     locales,
-    // 默认语言是简体中文，默认语言路由不加前缀。
-    defaultLocale: 'zh-CN',
-    // 默认语言走 /，其他语言走 /语言代码，例如 /en。
+    // 默认语言是英文，默认语言路由不加前缀。
+    defaultLocale,
+    // 默认语言走 /，其他语言走 /语言代码，例如 /zh-CN。
     strategy: 'prefix_except_default',
-    // 首次访问根路径时，根据浏览器语言和 cookie 处理跳转。
-    detectBrowserLanguage: {
-      useCookie: true,
-      cookieKey: 'i18n_redirected_locale',
-      redirectOn: 'root',
-    },
+    // 根路径稳定使用默认英文，不再根据浏览器语言或旧 cookie 自动跳转。
+    detectBrowserLanguage: false,
   },
 
   sitemap: {

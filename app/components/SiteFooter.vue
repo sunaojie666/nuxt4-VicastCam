@@ -136,7 +136,7 @@ const footerLocaleMenuOpen = ref(false)
 let closeFooterLocaleMenuOnOutsideClick = null
 const businessEmail = 'business@vicastcam.com'
 const businessEmailHref = `mailto:${businessEmail}`
-const copyrightText = 'Copyright © 2025 VICAST INTERNATIONAL LIMITED Copyright © 2026 VICAST LTD'
+const copyrightText = 'Copyright © 2026 VicastCam'
 
 const footerLinkActionsByKey = {
   features: { sectionId: 'home-features-anchor' },

@@ -275,13 +275,13 @@ const navigationDropdownItemsMap = {
   faq: [
     {
       key: 'graphic-tutorial',
-      label: '图文教程',
+      labelKey: 'graphicTutorial',
       path: '/faq',
       icon: 'lucide:file-text',
     },
     {
       key: 'video-tutorial',
-      label: '视频教程',
+      labelKey: 'videoTutorial',
       path: '/tutorial',
       icon: 'lucide:play-circle',
     },
@@ -289,26 +289,197 @@ const navigationDropdownItemsMap = {
   sdk: [
     {
       key: 'audio-sdk',
-      label: '虚拟声卡SDK',
+      labelKey: 'audioSdk',
       path: '/sdk',
       query: { sdkTarget: 'audio' },
       icon: 'lucide:volume-2',
     },
     {
       key: 'camera-sdk',
-      label: '虚拟相机SDK',
+      labelKey: 'cameraSdk',
       path: '/sdk',
       query: { sdkTarget: 'camera' },
       icon: 'lucide:camera',
     },
     {
       key: 'cast-sdk',
-      label: '手机投屏SDK',
+      labelKey: 'castSdk',
       path: '/sdk',
       query: { sdkTarget: 'cast' },
       icon: 'lucide:screen-share',
     },
   ],
+}
+
+const navigationDropdownLabels = {
+  en: {
+    graphicTutorial: 'Graphic Tutorial',
+    videoTutorial: 'Video Tutorial',
+    audioSdk: 'Virtual Audio SDK',
+    cameraSdk: 'Virtual Camera SDK',
+    castSdk: 'Mobile Screen Casting SDK',
+  },
+  'zh-CN': {
+    graphicTutorial: '图文教程',
+    videoTutorial: '视频教程',
+    audioSdk: '虚拟声卡SDK',
+    cameraSdk: '虚拟相机SDK',
+    castSdk: '手机投屏SDK',
+  },
+  'zh-TW': {
+    graphicTutorial: '圖文教程',
+    videoTutorial: '影片教程',
+    audioSdk: '虛擬聲卡SDK',
+    cameraSdk: '虛擬相機SDK',
+    castSdk: '手機投屏SDK',
+  },
+  id: {
+    graphicTutorial: 'Tutorial Gambar dan Teks',
+    videoTutorial: 'Tutorial Video',
+    audioSdk: 'SDK Audio Virtual',
+    cameraSdk: 'SDK Kamera Virtual',
+    castSdk: 'SDK Casting Layar Seluler',
+  },
+  ms: {
+    graphicTutorial: 'Tutorial Bergambar',
+    videoTutorial: 'Tutorial Video',
+    audioSdk: 'SDK Audio Maya',
+    cameraSdk: 'SDK Kamera Maya',
+    castSdk: 'SDK Siaran Skrin Mudah Alih',
+  },
+  th: {
+    graphicTutorial: 'บทช่วยสอนแบบภาพและข้อความ',
+    videoTutorial: 'บทช่วยสอนวิดีโอ',
+    audioSdk: 'SDK เสียงเสมือน',
+    cameraSdk: 'SDK กล้องเสมือน',
+    castSdk: 'SDK ส่งหน้าจอมือถือ',
+  },
+  vi: {
+    graphicTutorial: 'Hướng dẫn bằng hình ảnh',
+    videoTutorial: 'Hướng dẫn video',
+    audioSdk: 'SDK âm thanh ảo',
+    cameraSdk: 'SDK camera ảo',
+    castSdk: 'SDK truyền màn hình di động',
+  },
+  fil: {
+    graphicTutorial: 'Tutorial na may Larawan at Teksto',
+    videoTutorial: 'Tutorial sa Video',
+    audioSdk: 'Virtual Audio SDK',
+    cameraSdk: 'Virtual Camera SDK',
+    castSdk: 'Mobile Screen Casting SDK',
+  },
+  es: {
+    graphicTutorial: 'Tutorial gráfico',
+    videoTutorial: 'Tutorial en video',
+    audioSdk: 'SDK de audio virtual',
+    cameraSdk: 'SDK de cámara virtual',
+    castSdk: 'SDK de transmisión de pantalla móvil',
+  },
+  pt: {
+    graphicTutorial: 'Tutorial gráfico',
+    videoTutorial: 'Tutorial em vídeo',
+    audioSdk: 'SDK de áudio virtual',
+    cameraSdk: 'SDK de câmera virtual',
+    castSdk: 'SDK de transmissão de tela móvel',
+  },
+  ar: {
+    graphicTutorial: 'دليل مصور',
+    videoTutorial: 'دليل فيديو',
+    audioSdk: 'SDK الصوت الافتراضي',
+    cameraSdk: 'SDK الكاميرا الافتراضية',
+    castSdk: 'SDK بث شاشة الهاتف',
+  },
+  ja: {
+    graphicTutorial: '画像付きチュートリアル',
+    videoTutorial: '動画チュートリアル',
+    audioSdk: '仮想オーディオSDK',
+    cameraSdk: '仮想カメラSDK',
+    castSdk: 'モバイル画面キャストSDK',
+  },
+  tr: {
+    graphicTutorial: 'Görsel Anlatım',
+    videoTutorial: 'Video Eğitimi',
+    audioSdk: 'Sanal Ses SDK',
+    cameraSdk: 'Sanal Kamera SDK',
+    castSdk: 'Mobil Ekran Yansıtma SDK',
+  },
+  it: {
+    graphicTutorial: 'Tutorial illustrato',
+    videoTutorial: 'Tutorial video',
+    audioSdk: 'SDK audio virtuale',
+    cameraSdk: 'SDK fotocamera virtuale',
+    castSdk: 'SDK casting schermo mobile',
+  },
+  de: {
+    graphicTutorial: 'Bild-Tutorial',
+    videoTutorial: 'Video-Tutorial',
+    audioSdk: 'SDK für virtuelles Audio',
+    cameraSdk: 'SDK für virtuelle Kamera',
+    castSdk: 'SDK für mobile Bildschirmübertragung',
+  },
+  fr: {
+    graphicTutorial: 'Tutoriel illustré',
+    videoTutorial: 'Tutoriel vidéo',
+    audioSdk: 'SDK audio virtuel',
+    cameraSdk: 'SDK caméra virtuelle',
+    castSdk: 'SDK de diffusion d’écran mobile',
+  },
+  ko: {
+    graphicTutorial: '이미지 튜토리얼',
+    videoTutorial: '동영상 튜토리얼',
+    audioSdk: '가상 오디오 SDK',
+    cameraSdk: '가상 카메라 SDK',
+    castSdk: '모바일 화면 캐스팅 SDK',
+  },
+  ru: {
+    graphicTutorial: 'Графическое руководство',
+    videoTutorial: 'Видеоинструкция',
+    audioSdk: 'SDK виртуального аудио',
+    cameraSdk: 'SDK виртуальной камеры',
+    castSdk: 'SDK трансляции экрана телефона',
+  },
+  pl: {
+    graphicTutorial: 'Samouczek graficzny',
+    videoTutorial: 'Samouczek wideo',
+    audioSdk: 'SDK wirtualnego audio',
+    cameraSdk: 'SDK wirtualnej kamery',
+    castSdk: 'SDK przesyłania ekranu telefonu',
+  },
+  nl: {
+    graphicTutorial: 'Grafische tutorial',
+    videoTutorial: 'Videotutorial',
+    audioSdk: 'Virtuele audio-SDK',
+    cameraSdk: 'Virtuele camera-SDK',
+    castSdk: 'SDK voor mobiele schermcasting',
+  },
+  hi: {
+    graphicTutorial: 'चित्रात्मक ट्यूटोरियल',
+    videoTutorial: 'वीडियो ट्यूटोरियल',
+    audioSdk: 'वर्चुअल ऑडियो SDK',
+    cameraSdk: 'वर्चुअल कैमरा SDK',
+    castSdk: 'मोबाइल स्क्रीन कास्टिंग SDK',
+  },
+  ur: {
+    graphicTutorial: 'تصویری رہنما',
+    videoTutorial: 'ویڈیو رہنما',
+    audioSdk: 'ورچوئل آڈیو SDK',
+    cameraSdk: 'ورچوئل کیمرا SDK',
+    castSdk: 'موبائل اسکرین کاسٹنگ SDK',
+  },
+  bn: {
+    graphicTutorial: 'চিত্রসহ টিউটোরিয়াল',
+    videoTutorial: 'ভিডিও টিউটোরিয়াল',
+    audioSdk: 'ভার্চুয়াল অডিও SDK',
+    cameraSdk: 'ভার্চুয়াল ক্যামেরা SDK',
+    castSdk: 'মোবাইল স্ক্রিন কাস্টিং SDK',
+  },
+  fa: {
+    graphicTutorial: 'راهنمای تصویری',
+    videoTutorial: 'آموزش ویدیویی',
+    audioSdk: 'SDK صدای مجازی',
+    cameraSdk: 'SDK دوربین مجازی',
+    castSdk: 'SDK انتقال صفحه موبایل',
+  },
 }
 
 const normalizePath = path => {
@@ -520,7 +691,12 @@ const hasNavigationDropdown = (key) => {
 }
 
 const getNavigationDropdownItems = (key) => {
-  return navigationDropdownItemsMap[key] || []
+  const labels = navigationDropdownLabels[locale.value] || navigationDropdownLabels.en
+
+  return (navigationDropdownItemsMap[key] || []).map(item => ({
+    ...item,
+    label: labels[item.labelKey] || navigationDropdownLabels.en[item.labelKey] || item.label || '',
+  }))
 }
 
 const openNavigationDropdown = (key) => {

@@ -3,6 +3,7 @@
 Keep static images grouped by the page or module that owns them.
 
 - `common/`: shared logo, badge, arrows, ticks, and page hero backgrounds.
+- `about/`: about page social platform icons.
 - `home/`: homepage-only assets, grouped by section.
 - `download/`: download page platform cards, mobile backgrounds, and reason icons.
 - `login/`: login page background and auth mode icons.

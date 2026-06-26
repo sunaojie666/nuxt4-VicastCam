@@ -119,7 +119,7 @@
             <span class="theme-gradient-text">{{ aboutBox.social.titleHighlight }}</span>
           </h2>
 
-          <p class="about-social-subtitle">
+          <p v-if="aboutBox.social.description" class="about-social-subtitle">
             {{ aboutBox.social.description }}
           </p>
 
@@ -133,11 +133,11 @@
               rel="noopener noreferrer"
             >
               <span class="about-social-icon" aria-hidden="true">
-                <Icon v-if="item.icon" :name="item.icon" />
+                <img :src="item.icon" alt="" role="presentation">
               </span>
               <span class="about-social-copy">
                 <strong>{{ item.title }}</strong>
-                <small>{{ item.description }}</small>
+                <small v-if="item.description">{{ item.description }}</small>
               </span>
             </a>
           </div>
@@ -267,9 +267,41 @@ const syncAboutHeroVideo = (homeContent = {}) => {
   aboutHeroVideoSrc.value = createStrapiAssetUrl(videoUrl)
 }
 
+const socialItems = [
+  {
+    key: 'tiktok',
+    title: 'TikTok',
+    href: 'https://www.tiktok.com/',
+    icon: '/images/about/social/tiktok.png',
+  },
+  {
+    key: 'youtube',
+    title: 'YouTube',
+    href: 'https://www.youtube.com/',
+    icon: '/images/about/social/youtube.png',
+  },
+  {
+    key: 'facebook',
+    title: 'Facebook',
+    href: 'https://www.facebook.com/',
+    icon: '/images/about/social/facebook.png',
+  },
+  {
+    key: 'instagram',
+    title: 'Instagram',
+    href: 'https://www.instagram.com/',
+    icon: '/images/about/social/instagram.png',
+  },
+  {
+    key: 'twitch',
+    title: 'Twitch',
+    href: 'https://www.twitch.tv/',
+    icon: '/images/about/social/twitch.png',
+  },
+]
+
 const roadmapItems = computed(() => aboutBox.value.roadmap.items)
 const aboutStats = computed(() => aboutBox.value.innovation.stats)
-const socialItems = computed(() => aboutBox.value.social.items)
 
 const syncActiveRoadmapYear = () => {
   activeRoadmapYear.value = roadmapItems.value.find(item => item.year === activeRoadmapYear.value)?.year || roadmapItems.value[0]?.year || ''
@@ -831,6 +863,7 @@ setupPageSeo('about', () => aboutBox.value.seo)
   line-height: 24px;
   text-align: center;
   overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
 .about-social-grid {
@@ -875,9 +908,12 @@ setupPageSeo('about', () => aboutBox.value.seo)
   background: var(--theme-white);
 }
 
+.about-social-icon img,
 .about-social-icon svg {
   width: 24px;
   height: 24px;
+  display: block;
+  object-fit: contain;
 }
 
 .about-social-copy {

@@ -6,46 +6,53 @@
       <div class="checkout-shell">
         <section class="checkout-panel checkout-payment-panel" aria-labelledby="checkout-title">
           <header class="checkout-panel-header">
-            <h1 id="checkout-title">PayPal 安全付款</h1>
+            <h1 id="checkout-title">{{ checkoutContent.title }}</h1>
           </header>
 
           <form
             class="checkout-detail-card"
-            aria-labelledby="paypal-payment-title"
+            aria-labelledby="checkout-payment-status-title"
             @submit.prevent
           >
-            <section class="checkout-provider-widget checkout-paypal-widget" aria-labelledby="paypal-payment-title">
+            <section class="checkout-provider-widget" aria-labelledby="checkout-payment-status-title">
               <header class="checkout-provider-header">
-                <span class="checkout-provider-logo checkout-provider-logo-paypal" aria-hidden="true">P</span>
+                <span class="checkout-provider-logo" aria-hidden="true">
+                  <Icon name="lucide:lock-keyhole" />
+                </span>
                 <div>
-                  <h3 id="paypal-payment-title">PayPal</h3>
-                  <p>通过 PayPal 官方组件安全付款</p>
+                  <h3 id="checkout-payment-status-title">{{ checkoutContent.payment.providerName }}</h3>
+                  <p>{{ checkoutContent.payment.providerDescription }}</p>
                 </div>
               </header>
 
-              <div class="checkout-paypal-official">
-                <div ref="paypalContainer" class="checkout-paypal-sdk-container" />
-                <div
-                  v-if="paypalSdkMessage"
-                  class="checkout-paypal-sdk-state"
-                  :class="`is-${paypalSdkStatus}`"
-                  aria-live="polite"
-                >
-                  <Icon :name="paypalSdkStatus === 'error' ? 'lucide:circle-alert' : 'lucide:loader-circle'" aria-hidden="true" />
-                  <span>{{ paypalSdkMessage }}</span>
+              <div class="checkout-payment-status-body">
+                <div class="checkout-payment-status is-unavailable" role="status" aria-live="polite">
+                  <Icon name="lucide:construction" aria-hidden="true" />
+                  <span>{{ checkoutContent.payment.unavailableTitle }}</span>
                 </div>
+
+                <p class="checkout-unavailable-copy">
+                  {{ checkoutContent.payment.unavailableDescription }}
+                </p>
+
+                <ul v-if="checkoutContent.payment.unavailableItems.length" class="checkout-unavailable-list">
+                  <li v-for="item in checkoutContent.payment.unavailableItems" :key="item">
+                    <Icon name="lucide:check" aria-hidden="true" />
+                    <span>{{ item }}</span>
+                  </li>
+                </ul>
               </div>
             </section>
 
-            <p v-if="paymentActionMessage" class="checkout-provider-feedback" aria-live="polite">
+            <p v-if="checkoutContent.payment.feedback" class="checkout-provider-feedback" aria-live="polite">
               <Icon name="lucide:info" aria-hidden="true" />
-              <span>{{ paymentActionMessage }}</span>
+              <span>{{ checkoutContent.payment.feedback }}</span>
             </p>
           </form>
         </section>
 
         <aside class="checkout-panel checkout-summary-panel" aria-labelledby="checkout-summary-title">
-          <h2 id="checkout-summary-title">订单摘要</h2>
+          <h2 id="checkout-summary-title">{{ checkoutContent.summary.title }}</h2>
 
           <div class="checkout-summary-product">
             <div>
@@ -56,24 +63,24 @@
 
           <dl class="checkout-summary-list">
             <div>
-              <dt>会员周期</dt>
+              <dt>{{ checkoutContent.summary.periodLabel }}</dt>
               <dd>{{ orderSummary.period }}</dd>
             </div>
             <div>
-              <dt>支付方式</dt>
+              <dt>{{ checkoutContent.summary.paymentMethodLabel }}</dt>
               <dd>{{ orderSummary.paymentMethod }}</dd>
             </div>
           </dl>
 
           <div class="checkout-summary-total">
-            <span>应付金额</span>
+            <span>{{ checkoutContent.summary.amountLabel }}</span>
             <strong>{{ orderSummary.amount }}</strong>
           </div>
 
-          <button class="checkout-submit-button" type="button" @click="handleOrderSubmit">{{ orderSummary.submitLabel }}</button>
+          <button class="checkout-submit-button" type="button" disabled aria-disabled="true">{{ orderSummary.submitLabel }}</button>
 
           <p class="checkout-summary-note">
-            点击订阅即表示你同意服务条款和隐私政策，订单信息提交前仍可修改。
+            {{ checkoutContent.summary.note }}
           </p>
         </aside>
       </div>
@@ -86,54 +93,64 @@
 <script setup>
 import SiteHeader from '../../components/SiteHeader.vue'
 import SiteFooter from '../../components/SiteFooter.vue'
+import { getCheckouts } from '../../api/request/strapi'
 
 const route = useRoute()
-const runtimeConfig = useRuntimeConfig()
+const { locale } = useI18n()
 const { vipPlans, loadVipTypes } = useVipTypes()
+const checkoutContentLocale = useState('checkout-page-content-locale', () => '')
 
-const paymentMethods = [
-  {
-    id: 'card',
-    label: '银行卡/信用卡',
-    description: '使用银行卡或信用卡支付',
-    icon: 'lucide:credit-card',
+const createDefaultCheckoutContent = () => ({
+  title: '',
+  payment: {
+    providerName: '',
+    providerDescription: '',
+    unavailableTitle: '',
+    unavailableDescription: '',
+    unavailableItems: [],
+    feedback: '',
   },
-  {
-    id: 'paypal',
-    label: 'PayPal',
-    description: '使用 PayPal 支付',
-    icon: 'lucide:wallet-cards',
+  summary: {
+    title: '',
+    periodLabel: '',
+    paymentMethodLabel: '',
+    amountLabel: '',
+    submitLabel: '',
+    note: '',
+    unavailablePaymentMethod: '',
+    fallbackProductName: '',
+    fallbackProductDescription: '',
+    periodMonth: '',
+    periodYear: '',
+    periodLife: '',
+    emptyValue: '',
   },
-]
-
-const selectedPayment = ref('paypal')
-const paymentActionMessage = ref('')
-const paypalContainer = ref(null)
-const paypalSdkStatus = ref('idle')
-const paypalSdkMessage = ref('')
-let paypalScriptRequest = null
-let paypalRenderSignature = ''
-
-const activePayment = computed(() => {
-  return paymentMethods.find(method => method.id === selectedPayment.value) || paymentMethods[0]
+  seo: {
+    title: '',
+    description: '',
+  },
+  plans: [],
 })
 
-const selectPayment = (paymentId) => {
-  selectedPayment.value = paymentId
-  paymentActionMessage.value = ''
-}
-
-const handleOrderSubmit = () => {
-  paymentActionMessage.value = selectedPayment.value === 'paypal'
-    ? '请使用 PayPal 官方组件完成付款。'
-    : '请在银行卡安全支付组件中完成付款。'
-}
+const checkoutContent = useState('checkout-page-content', createDefaultCheckoutContent)
 
 const normalizeCheckoutValue = (value, fallback = '') => {
   const sourceValue = Array.isArray(value) ? value[0] : value
   const text = String(sourceValue || '').trim()
 
   return text || fallback
+}
+
+const normalizeCheckoutArray = (value, fallback = []) => {
+  if (Array.isArray(value)) {
+    const items = value.map(item => normalizeCheckoutValue(item)).filter(Boolean)
+
+    return items.length ? items : fallback
+  }
+
+  const text = normalizeCheckoutValue(value)
+
+  return text ? [text] : fallback
 }
 
 const normalizePlanType = (value) => {
@@ -157,6 +174,132 @@ const normalizePlanType = (value) => {
 
   return text
 }
+
+const normalizeCheckoutPlans = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((plan = {}) => ({
+      id: normalizeCheckoutValue(plan.id || plan.productId || plan.product_id),
+      type: normalizePlanType(plan.type || plan.planType || plan.plan_type || plan.key),
+      name: normalizeCheckoutValue(plan.name || plan.title),
+      description: normalizeCheckoutValue(plan.description || plan.subtitle),
+    })).filter(plan => plan.id || plan.type || plan.name || plan.description)
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.entries(value).map(([key, plan = {}]) => ({
+      id: normalizeCheckoutValue(plan.id || plan.productId || plan.product_id),
+      type: normalizePlanType(plan.type || plan.planType || plan.plan_type || key),
+      name: normalizeCheckoutValue(plan.name || plan.title),
+      description: normalizeCheckoutValue(plan.description || plan.subtitle),
+    })).filter(plan => plan.id || plan.type || plan.name || plan.description)
+  }
+
+  return []
+}
+
+const parseStrapiJsonField = (value) => {
+  if (typeof value !== 'string') {
+    return value
+  }
+
+  try {
+    return JSON.parse(value)
+  } catch {
+    return {}
+  }
+}
+
+const normalizeStrapiRecord = (record) => {
+  if (!record || typeof record !== 'object') {
+    return {}
+  }
+
+  const recordData = record.checkouts ||
+    record.checkout ||
+    record.attributes?.checkouts ||
+    record.attributes?.checkout ||
+    record.attributes ||
+    record
+
+  return {
+    ...recordData,
+    ...(recordData.attributes || {}),
+  }
+}
+
+const getCheckoutContentData = (response) => {
+  const responseData = response?.data
+  const firstRecord = Array.isArray(responseData)
+    ? responseData[0]
+    : responseData
+  const record = normalizeStrapiRecord(firstRecord || {})
+  const fieldValue = record.data
+  const parsedValue = parseStrapiJsonField(fieldValue)
+
+  return parsedValue?.checkout ||
+    parsedValue?.data?.checkout ||
+    parsedValue?.data ||
+    parsedValue ||
+    {}
+}
+
+const createCheckoutContent = (content = {}) => {
+  const source = content.checkout || content.checkoutBox || content.checkout_box || content
+  const payment = source.payment || source.paymentBox || source.payment_box || {}
+  const summary = source.summary || source.orderSummary || source.order_summary || {}
+  const seo = source.seo || {}
+  const plans = source.plans || source.planTranslations || source.plan_translations || source.products || []
+
+  return {
+    title: normalizeCheckoutValue(source.title),
+    payment: {
+      providerName: normalizeCheckoutValue(payment.providerName || payment.provider_name || payment.title),
+      providerDescription: normalizeCheckoutValue(payment.providerDescription || payment.provider_description || payment.description),
+      unavailableTitle: normalizeCheckoutValue(payment.unavailableTitle || payment.unavailable_title || payment.statusTitle),
+      unavailableDescription: normalizeCheckoutValue(payment.unavailableDescription || payment.unavailable_description || payment.statusDescription),
+      unavailableItems: normalizeCheckoutArray(payment.unavailableItems || payment.unavailable_items || payment.statusItems),
+      feedback: normalizeCheckoutValue(payment.feedback || payment.notice),
+    },
+    summary: {
+      title: normalizeCheckoutValue(summary.title),
+      periodLabel: normalizeCheckoutValue(summary.periodLabel || summary.period_label),
+      paymentMethodLabel: normalizeCheckoutValue(summary.paymentMethodLabel || summary.payment_method_label),
+      amountLabel: normalizeCheckoutValue(summary.amountLabel || summary.amount_label),
+      submitLabel: normalizeCheckoutValue(summary.submitLabel || summary.submit_label),
+      note: normalizeCheckoutValue(summary.note),
+      unavailablePaymentMethod: normalizeCheckoutValue(summary.unavailablePaymentMethod || summary.unavailable_payment_method),
+      fallbackProductName: normalizeCheckoutValue(summary.fallbackProductName || summary.fallback_product_name),
+      fallbackProductDescription: normalizeCheckoutValue(summary.fallbackProductDescription || summary.fallback_product_description),
+      periodMonth: normalizeCheckoutValue(summary.periodMonth || summary.period_month),
+      periodYear: normalizeCheckoutValue(summary.periodYear || summary.period_year),
+      periodLife: normalizeCheckoutValue(summary.periodLife || summary.period_life),
+      emptyValue: normalizeCheckoutValue(summary.emptyValue || summary.empty_value),
+    },
+    seo: {
+      title: normalizeCheckoutValue(seo.title),
+      description: normalizeCheckoutValue(seo.description),
+    },
+    plans: normalizeCheckoutPlans(plans),
+  }
+}
+
+const syncCheckoutContent = (content = {}) => {
+  checkoutContent.value = createCheckoutContent(content)
+}
+
+syncCheckoutContent(checkoutContent.value)
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: checkoutContentLocale,
+  load: currentLocale => getCheckouts(currentLocale),
+  sync: response => {
+    syncCheckoutContent(getCheckoutContentData(response))
+  },
+  reset: () => {
+    syncCheckoutContent()
+  },
+})
 
 const checkoutProductId = computed(() => normalizeCheckoutValue(route.query.productId))
 
@@ -184,9 +327,34 @@ const sourcePlan = computed(() => {
   return plans.find(plan => plan.featured) || plans[0] || null
 })
 
+const checkoutPlanTranslation = computed(() => {
+  const plan = queryPlan.value
+  const fallbackPlan = sourcePlan.value || {}
+  const planType = normalizePlanType(
+    plan.type ||
+    fallbackPlan.type ||
+    fallbackPlan.planType ||
+    fallbackPlan.productType ||
+    fallbackPlan.termType ||
+    fallbackPlan.id ||
+    fallbackPlan.name ||
+    fallbackPlan.unit
+  )
+  const planId = normalizeCheckoutValue(plan.id || fallbackPlan.id || fallbackPlan.productId)
+  const plans = Array.isArray(checkoutContent.value.plans) ? checkoutContent.value.plans : []
+
+  return plans.find(item => {
+    const itemId = normalizeCheckoutValue(item.id)
+    const itemType = normalizePlanType(item.type)
+
+    return (itemId && itemId === planId) || (itemType && itemType === planType)
+  }) || {}
+})
+
 const currentPlan = computed(() => {
   const plan = queryPlan.value
   const fallbackPlan = sourcePlan.value || {}
+  const translation = checkoutPlanTranslation.value
   const fallbackType = normalizePlanType(
     fallbackPlan.type ||
     fallbackPlan.planType ||
@@ -200,9 +368,9 @@ const currentPlan = computed(() => {
   return {
     id: plan.id || normalizeCheckoutValue(fallbackPlan.id),
     type: normalizePlanType(plan.type || fallbackType),
-    name: plan.name || normalizeCheckoutValue(fallbackPlan.name, '未选择套餐'),
-    description: plan.description || normalizeCheckoutValue(fallbackPlan.description || fallbackPlan.subtitle, '请返回首页选择一个会员套餐。'),
-    price: plan.price || normalizeCheckoutValue(fallbackPlan.price, '-'),
+    name: translation.name || plan.name || normalizeCheckoutValue(fallbackPlan.name, checkoutContent.value.summary.fallbackProductName),
+    description: translation.description || plan.description || normalizeCheckoutValue(fallbackPlan.description || fallbackPlan.subtitle, checkoutContent.value.summary.fallbackProductDescription),
+    price: plan.price || normalizeCheckoutValue(fallbackPlan.price, checkoutContent.value.summary.emptyValue),
     unit: plan.unit || normalizeCheckoutValue(fallbackPlan.unit),
   }
 })
@@ -213,26 +381,26 @@ const currentPlanPeriod = computed(() => {
   const unit = normalizeCheckoutValue(plan.unit).replace(/^\//, '')
 
   if (planType === 'month') {
-    return '1个月'
+    return checkoutContent.value.summary.periodMonth
   }
 
   if (planType === 'year') {
-    return '1年'
+    return checkoutContent.value.summary.periodYear
   }
 
   if (planType === 'life') {
-    return '终身'
+    return checkoutContent.value.summary.periodLife
   }
 
   if (unit === '月') {
-    return '1个月'
+    return checkoutContent.value.summary.periodMonth
   }
 
   if (unit === '年') {
-    return '1年'
+    return checkoutContent.value.summary.periodYear
   }
 
-  return unit || '-'
+  return unit || checkoutContent.value.summary.emptyValue
 })
 
 const orderSummary = computed(() => {
@@ -240,179 +408,22 @@ const orderSummary = computed(() => {
     productName: currentPlan.value.name,
     description: currentPlan.value.description,
     period: currentPlanPeriod.value,
-    paymentMethod: activePayment.value.label,
+    paymentMethod: checkoutContent.value.summary.unavailablePaymentMethod,
     amount: currentPlan.value.price,
-    submitLabel: '订阅',
+    submitLabel: checkoutContent.value.summary.submitLabel,
   }
 })
-
-const paypalClientId = computed(() => {
-  return normalizeCheckoutValue(runtimeConfig.public.paypalClientId)
-})
-
-const paypalCurrency = computed(() => {
-  return normalizeCheckoutValue(runtimeConfig.public.paypalCurrency, 'USD').toUpperCase()
-})
-
-const paypalAmountValue = computed(() => {
-  const amountText = normalizeCheckoutValue(currentPlan.value.price).replace(/[^0-9.]/g, '')
-  const amountNumber = Number.parseFloat(amountText)
-
-  if (!Number.isFinite(amountNumber) || amountNumber <= 0) {
-    return '0.01'
-  }
-
-  return amountNumber.toFixed(2)
-})
-
-const createPaypalSdkUrl = () => {
-  const params = new URLSearchParams({
-    'client-id': paypalClientId.value,
-    currency: paypalCurrency.value,
-    components: 'buttons',
-    intent: 'capture',
-  })
-
-  return `https://www.paypal.com/sdk/js?${params.toString()}`
-}
-
-const loadPaypalSdk = () => {
-  if (!process.client) {
-    return Promise.reject(new Error('PayPal SDK only loads in browser.'))
-  }
-
-  if (window.paypal?.Buttons) {
-    return Promise.resolve(window.paypal)
-  }
-
-  if (paypalScriptRequest) {
-    return paypalScriptRequest
-  }
-
-  const existingScript = document.querySelector('script[data-vicast-paypal-sdk="true"]')
-
-  if (existingScript) {
-    paypalScriptRequest = new Promise((resolve, reject) => {
-      existingScript.addEventListener('load', () => resolve(window.paypal), { once: true })
-      existingScript.addEventListener('error', reject, { once: true })
-    })
-
-    return paypalScriptRequest
-  }
-
-  paypalScriptRequest = new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-
-    script.src = createPaypalSdkUrl()
-    script.async = true
-    script.dataset.vicastPaypalSdk = 'true'
-    script.addEventListener('load', () => resolve(window.paypal), { once: true })
-    script.addEventListener('error', reject, { once: true })
-    document.head.appendChild(script)
-  })
-
-  return paypalScriptRequest
-}
-
-const renderPaypalOfficialComponent = async () => {
-  if (!process.client || selectedPayment.value !== 'paypal') {
-    return
-  }
-
-  await nextTick()
-
-  if (!paypalContainer.value) {
-    return
-  }
-
-  if (!paypalClientId.value) {
-    paypalSdkStatus.value = 'error'
-    paypalSdkMessage.value = 'PayPal Client ID 未配置。'
-    paypalContainer.value.innerHTML = ''
-    paypalRenderSignature = ''
-    return
-  }
-
-  const renderSignature = [
-    paypalClientId.value,
-    paypalCurrency.value,
-    paypalAmountValue.value,
-    currentPlan.value.id,
-  ].join('|')
-
-  if (paypalRenderSignature === renderSignature && paypalContainer.value.childElementCount) {
-    return
-  }
-
-  paypalContainer.value.innerHTML = ''
-  paypalSdkStatus.value = 'loading'
-  paypalSdkMessage.value = '正在加载 PayPal 官方组件...'
-
-  try {
-    const paypal = await loadPaypalSdk()
-    const buttons = paypal.Buttons({
-      style: {
-        layout: 'vertical',
-        color: 'gold',
-        shape: 'rect',
-        label: 'paypal',
-        height: 45,
-      },
-      createOrder(data, actions) {
-        paymentActionMessage.value = 'PayPal 订单已创建，付款确认仍需接入后端接口。'
-
-        return actions.order.create({
-          purchase_units: [
-            {
-              description: currentPlan.value.name,
-              amount: {
-                currency_code: paypalCurrency.value,
-                value: paypalAmountValue.value,
-              },
-            },
-          ],
-        })
-      },
-      onApprove() {
-        paymentActionMessage.value = 'PayPal 已授权，后续需要后端确认订单并开通会员。'
-      },
-      onCancel() {
-        paymentActionMessage.value = 'PayPal 付款已取消。'
-      },
-      onError() {
-        paypalSdkStatus.value = 'error'
-        paypalSdkMessage.value = 'PayPal 官方组件加载失败，请稍后重试。'
-      },
-    })
-
-    if (buttons.isEligible && !buttons.isEligible()) {
-      paypalSdkStatus.value = 'error'
-      paypalSdkMessage.value = '当前环境不支持 PayPal 官方组件。'
-      return
-    }
-
-    await buttons.render(paypalContainer.value)
-    paypalRenderSignature = renderSignature
-    paypalSdkStatus.value = 'ready'
-    paypalSdkMessage.value = ''
-  } catch (error) {
-    paypalSdkStatus.value = 'error'
-    paypalSdkMessage.value = 'PayPal 官方组件加载失败，请检查网络或 Client ID。'
-  }
-}
 
 onMounted(() => {
   loadVipTypes()
-  renderPaypalOfficialComponent()
 })
 
-watch([selectedPayment, paypalAmountValue, paypalCurrency], () => {
-  renderPaypalOfficialComponent()
-}, { flush: 'post' })
+const seoTitle = computed(() => checkoutContent.value.seo.title)
+const seoDescription = computed(() => checkoutContent.value.seo.description)
 
 useSeoMeta({
-  title: '订阅结算',
-  description: 'VicastCam 订阅结算页面。',
+  title: seoTitle,
+  description: seoDescription,
   robots: 'noindex, nofollow, noarchive',
 })
 </script>
@@ -428,14 +439,8 @@ useSeoMeta({
   --checkout-panel: #111827;
   --checkout-panel-soft: #172033;
   --checkout-control: #0f172a;
-  --checkout-method-background: #0d1424;
-  --checkout-method-active-background: #0c2030;
   --checkout-icon-background: rgba(56, 189, 248, 0.12);
   --checkout-message-border: rgba(56, 189, 248, 0.24);
-  --checkout-radio-border: #4b5d78;
-  --checkout-placeholder: #64748b;
-  --checkout-product-icon: #facc15;
-  --checkout-product-icon-background: rgba(250, 204, 21, 0.12);
   --checkout-border: #273449;
   --checkout-border-soft: #203047;
   --checkout-text: #f8fafc;
@@ -470,14 +475,8 @@ useSeoMeta({
   --checkout-panel: #ffffff;
   --checkout-panel-soft: #f0f9ff;
   --checkout-control: #ffffff;
-  --checkout-method-background: #ffffff;
-  --checkout-method-active-background: #eef8ff;
   --checkout-icon-background: rgba(14, 165, 233, 0.12);
   --checkout-message-border: rgba(14, 165, 233, 0.24);
-  --checkout-radio-border: #cbd5e1;
-  --checkout-placeholder: #94a3b8;
-  --checkout-product-icon: #ca8a04;
-  --checkout-product-icon-background: rgba(250, 204, 21, 0.18);
   --checkout-border: #dbe4ef;
   --checkout-border-soft: #e5edf6;
   --checkout-text: #0f172a;
@@ -520,126 +519,11 @@ useSeoMeta({
 }
 
 .checkout-panel-header h1,
-.checkout-form-heading h2,
-.checkout-billing-form h2,
 .checkout-summary-panel h2 {
   color: var(--checkout-text);
   font-size: 20px;
   font-weight: 800;
   line-height: 28px;
-}
-
-.checkout-method-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.checkout-method {
-  position: relative;
-  min-width: 0;
-  min-height: 84px;
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 16px;
-  align-items: center;
-  gap: 13px;
-  padding: 16px;
-  border: 1px solid var(--checkout-border);
-  border-radius: 8px;
-  color: var(--checkout-text);
-  background: var(--checkout-method-background);
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.checkout-method:hover,
-.checkout-method:focus {
-  border-color: rgba(56, 189, 248, 0.56);
-  box-shadow: 0 0 0 3px var(--checkout-focus);
-  transform: translateY(-1px);
-}
-
-.checkout-method.is-active {
-  border-color: var(--checkout-accent);
-  background: var(--checkout-method-active-background);
-  box-shadow: inset 0 0 0 1px var(--checkout-accent);
-}
-
-.checkout-method-icon {
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  color: var(--checkout-accent);
-  background: var(--checkout-icon-background);
-  flex: 0 0 40px;
-}
-
-.checkout-paypal-mark {
-  width: 20px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 21px;
-  font-weight: 900;
-  font-style: italic;
-  line-height: 24px;
-  transform: translateY(1px);
-}
-
-.checkout-method-icon.is-paypal {
-  background: #2b65d9;
-}
-
-.checkout-method-icon :deep(svg) {
-  width: 20px;
-  height: 20px;
-}
-
-.checkout-method-copy {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-  align-content: center;
-}
-
-.checkout-method-copy strong,
-.checkout-method-copy small {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.checkout-method-copy strong {
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 21px;
-}
-
-.checkout-method-copy small {
-  color: var(--checkout-muted);
-  font-size: 12px;
-  line-height: 17px;
-}
-
-.checkout-radio {
-  width: 14px;
-  height: 14px;
-  justify-self: end;
-  border: 1px solid var(--checkout-radio-border);
-  border-radius: 50%;
-}
-
-.checkout-method.is-active .checkout-radio {
-  border: 4px solid var(--checkout-accent);
-  background: var(--checkout-panel);
 }
 
 .checkout-detail-card {
@@ -682,15 +566,6 @@ useSeoMeta({
   height: 21px;
 }
 
-.checkout-provider-logo-paypal {
-  color: #ffffff;
-  background: #2b65d9;
-  font-size: 24px;
-  font-weight: 900;
-  font-style: italic;
-  line-height: 1;
-}
-
 .checkout-provider-header h3 {
   color: var(--checkout-text);
   font-size: 15px;
@@ -705,18 +580,13 @@ useSeoMeta({
   line-height: 17px;
 }
 
-.checkout-paypal-official {
+.checkout-payment-status-body {
   min-width: 0;
   display: grid;
   gap: 10px;
 }
 
-.checkout-paypal-sdk-container {
-  min-width: 0;
-  min-height: 45px;
-}
-
-.checkout-paypal-sdk-state {
+.checkout-payment-status {
   min-height: 44px;
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr);
@@ -731,104 +601,46 @@ useSeoMeta({
   line-height: 18px;
 }
 
-.checkout-paypal-sdk-state :deep(svg) {
+.checkout-payment-status :deep(svg) {
   width: 18px;
   height: 18px;
   color: var(--checkout-accent);
 }
 
-.checkout-paypal-sdk-state.is-loading :deep(svg) {
-  animation: checkout-spin 0.9s linear infinite;
+.checkout-payment-status.is-unavailable {
+  border-color: color-mix(in srgb, var(--checkout-accent) 44%, var(--checkout-border));
 }
 
-.checkout-paypal-sdk-state.is-error {
-  border-color: color-mix(in srgb, #ef4444 42%, var(--checkout-border));
-  color: var(--checkout-muted-strong);
-}
-
-.checkout-paypal-sdk-state.is-error :deep(svg) {
-  color: #ef4444;
-}
-
-.checkout-card-element {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--checkout-border);
-  border-radius: 8px;
-  background: var(--checkout-control);
-}
-
-.checkout-card-row {
-  min-width: 0;
-  min-height: 46px;
-  display: grid;
-  align-content: center;
-  gap: 3px;
-  padding: 9px 12px;
-  border: 1px solid var(--checkout-border-soft);
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--checkout-panel) 76%, var(--checkout-control));
-}
-
-.checkout-card-row-wide {
-  grid-column: 1 / -1;
-  grid-template-columns: minmax(0, 1fr) 18px;
-  align-items: center;
-}
-
-.checkout-card-row span {
+.checkout-unavailable-copy {
+  margin: 0;
   color: var(--checkout-muted);
-  font-size: 11px;
-  line-height: 15px;
-}
-
-.checkout-card-row strong {
-  min-width: 0;
-  color: var(--checkout-muted-strong);
   font-size: 13px;
-  font-weight: 700;
+  line-height: 20px;
+}
+
+.checkout-unavailable-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checkout-unavailable-list li {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 17px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  color: var(--checkout-muted-strong);
+  font-size: 12px;
   line-height: 18px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.checkout-card-row-wide span,
-.checkout-card-row-wide strong {
-  grid-column: 1;
-}
-
-.checkout-card-row-wide :deep(svg) {
-  grid-column: 2;
-  grid-row: 1 / span 2;
+.checkout-unavailable-list :deep(svg) {
   width: 17px;
   height: 17px;
-  justify-self: end;
-  color: var(--checkout-muted);
-}
-
-.checkout-card-brands {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.checkout-card-brands span {
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 8px;
-  border: 1px solid var(--checkout-border-soft);
-  border-radius: 5px;
-  color: var(--checkout-muted);
-  background: color-mix(in srgb, var(--checkout-panel) 70%, transparent);
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 1;
+  color: var(--checkout-accent);
 }
 
 .checkout-provider-feedback {
@@ -856,12 +668,6 @@ useSeoMeta({
 .checkout-provider-feedback span {
   min-width: 0;
   overflow-wrap: anywhere;
-}
-
-@keyframes checkout-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .checkout-summary-panel {
@@ -962,6 +768,23 @@ useSeoMeta({
   transform: translateY(-1px);
 }
 
+.checkout-submit-button:disabled,
+.checkout-submit-button[aria-disabled="true"] {
+  color: var(--checkout-muted-strong);
+  background: var(--checkout-control);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.checkout-submit-button:disabled:hover,
+.checkout-submit-button:disabled:focus,
+.checkout-submit-button[aria-disabled="true"]:hover,
+.checkout-submit-button[aria-disabled="true"]:focus {
+  box-shadow: none;
+  transform: none;
+}
+
 .checkout-summary-note {
   margin-top: 18px;
   padding: 14px;
@@ -1000,12 +823,5 @@ useSeoMeta({
     max-width: calc(100vw - 28px);
   }
 
-  .checkout-method-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .checkout-method {
-    min-height: 76px;
-  }
 }
 </style>
