@@ -802,6 +802,7 @@ const navigationFieldMap = [
   { key: 'pricing', field: 'navPricing' },
   { key: 'faq', field: 'navFaq' },
   { key: 'sdk', label: 'SDK' },
+  { key: 'team', field: 'navTeam' },
 ]
 
 const scrollToSection = (sectionId, behavior = 'smooth') => {
@@ -865,6 +866,11 @@ const handleNavigationClick = (key) => {
 
   if (key === 'sdk') {
     openPageInNewTab(createLocalizedPath({ path: '/sdk' }))
+    return
+  }
+
+  if (key === 'team') {
+    openPageInNewTab(createLocalizedPath({ path: '/team' }))
     return
   }
 
@@ -1216,8 +1222,10 @@ onBeforeUnmount(() => {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 164px;
+  min-height: 36px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   border-radius: 4px;
   border: 0;
@@ -1227,15 +1235,15 @@ onBeforeUnmount(() => {
   font-size: 16px;
   font-weight: 500;
   line-height: 20px;
-  white-space: nowrap;
+  text-align: center;
+  white-space: normal;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .site-nav-link-label {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .site-nav-link::after {
@@ -1313,11 +1321,11 @@ onBeforeUnmount(() => {
   z-index: 1;
   width: 100%;
   min-width: 158px;
-  height: 38px;
+  min-height: 38px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 9px;
-  padding: 0 10px;
+  padding: 9px 10px;
   border: 0;
   border-radius: 6px;
   color: var(--theme-header-dropdown-text, var(--theme-text));
@@ -1331,9 +1339,8 @@ onBeforeUnmount(() => {
 
 .site-nav-dropdown-item span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .site-nav-dropdown-item svg {
@@ -1413,21 +1420,22 @@ onBeforeUnmount(() => {
 .site-select-button {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
-  width: 146px;
+  width: auto;
   min-width: 146px;
-  max-width: 146px;
-  height: 36px;
-  padding: 0 10px;
+  max-width: min(240px, calc(100vw - 32px));
+  min-height: 36px;
+  padding: 7px 10px;
   border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
   border-radius: 6px;
   color: var(--theme-header-text);
   background-color: transparent;
   font-size: 14px;
   font-weight: 500;
-  line-height: 36px;
-  white-space: nowrap;
+  line-height: 20px;
+  text-align: left;
+  white-space: normal;
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
@@ -1439,8 +1447,7 @@ onBeforeUnmount(() => {
 
 .site-select-button span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .site-select-mobile-label {
@@ -1646,13 +1653,13 @@ onBeforeUnmount(() => {
   min-width: 176px;
   min-height: 48px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 7px 14px;
   color: var(--theme-header-dropdown-text, var(--theme-text));
   font-size: 14px;
   line-height: 20px;
-  white-space: nowrap;
+  white-space: normal;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -1664,6 +1671,7 @@ onBeforeUnmount(() => {
 
 .site-select-option-copy {
   min-width: 0;
+  max-width: min(320px, calc(100vw - 96px));
   display: grid;
   gap: 2px;
   text-align: left;
@@ -1676,8 +1684,7 @@ onBeforeUnmount(() => {
 .site-select-option-copy > span,
 .site-select-option-copy > small {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .site-select-option-copy > small {
@@ -1749,6 +1756,7 @@ onBeforeUnmount(() => {
 .locale-chevron-icon {
   width: 14px;
   height: 14px;
+  flex: 0 0 auto;
   color: var(--theme-text-muted);
   transition: transform 0.2s ease;
 }
@@ -1814,9 +1822,9 @@ onBeforeUnmount(() => {
   }
 
   .site-select-button {
-    width: 126px;
+    width: auto;
     min-width: 126px;
-    max-width: 126px;
+    max-width: min(190px, calc(100vw - 32px));
   }
 
   .site-profile-link {
@@ -1951,7 +1959,8 @@ onBeforeUnmount(() => {
   .site-mobile-link {
     position: relative;
     z-index: 1;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 

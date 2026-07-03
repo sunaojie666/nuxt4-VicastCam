@@ -16,14 +16,17 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import FaqContentSection from './components/FaqContentSection.vue'
 import FaqHeroSection from './components/FaqHeroSection.vue'
-import { createAbsoluteUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
+import { createLocalizedUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
 
 setupPageSeo('faq')
 
 const config = useRuntimeConfig()
-const siteUrl = String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, '')
+const { locale } = useI18n()
+const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+const defaultLocale = computed(() => config.public.i18n?.defaultLocale || 'en')
+const faqPageUrl = computed(() => createLocalizedUrl('/faq', locale.value, siteUrl.value, defaultLocale.value))
 
-setupStructuredData({
+setupStructuredData(() => ({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
   mainEntity: [
@@ -36,8 +39,8 @@ setupStructuredData({
       },
     },
   ],
-  url: createAbsoluteUrl('/faq', siteUrl),
-}, { id: 'faq-jsonld' })
+  url: faqPageUrl.value,
+}), { id: 'faq-jsonld' })
 </script>
 
 <style scoped>

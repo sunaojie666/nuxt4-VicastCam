@@ -128,11 +128,13 @@
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import { getDownloads } from '../../api/request/strapi'
-import { createAbsoluteUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
+import { createAbsoluteUrl, createLocalizedUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
 
 const config = useRuntimeConfig()
 const { locale, locales } = useI18n()
 const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+const defaultLocale = computed(() => config.public.i18n?.defaultLocale || 'en')
+const downloadPageUrl = computed(() => createLocalizedUrl('/download', locale.value, siteUrl.value, defaultLocale.value))
 const activeLocaleConfig = computed(() => {
   return locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
 })
@@ -324,7 +326,7 @@ setupStructuredData(() => {
     applicationCategory: 'MultimediaApplication',
     operatingSystem: platform.system || platform.name || platform.key,
     description: platform.subtitle || downloadBox.value.platform.description || downloadBox.value.seo.description,
-    url: createAbsoluteUrl('/download', siteUrl.value),
+    url: downloadPageUrl.value,
     image: createAbsoluteUrl(platform.mobileIcon || platform.image || '/images/common/og-default.png', siteUrl.value),
     inLanguage: activeLocaleConfig.value.language || locale.value,
   }))
@@ -338,7 +340,7 @@ setupStructuredData(() => {
         applicationCategory: 'MultimediaApplication',
         operatingSystem: 'Windows, iOS, Android',
         description: downloadBox.value.seo.description || 'Download VicastCam for Windows, iOS, and Android.',
-        url: createAbsoluteUrl('/download', siteUrl.value),
+        url: downloadPageUrl.value,
         image: createAbsoluteUrl('/images/common/og-default.png', siteUrl.value),
         inLanguage: activeLocaleConfig.value.language || locale.value,
       }

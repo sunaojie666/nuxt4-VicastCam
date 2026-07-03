@@ -78,10 +78,12 @@
           {{ footerText.description }}
         </p>
 
+        <!--
         <a class="site-footer-email" :href="businessEmailHref" aria-label="business email">
           <Icon name="lucide:mail" aria-hidden="true" />
           <span>{{ businessEmail }}</span>
         </a>
+        -->
 
         <div v-if="footerText.socials.length" class="site-footer-socials" :aria-label="footerText.brand">
           <button
@@ -134,8 +136,8 @@ const route = useRoute()
 const { currentTheme, initTheme, setTheme } = createThemeContext()
 const footerLocaleMenuOpen = ref(false)
 let closeFooterLocaleMenuOnOutsideClick = null
-const businessEmail = 'business@vicastcam.com'
-const businessEmailHref = `mailto:${businessEmail}`
+// const businessEmail = 'business@vicastcam.com'
+// const businessEmailHref = `mailto:${businessEmail}`
 const copyrightText = 'Copyright © 2026 VicastCam'
 
 const footerLinkActionsByKey = {
@@ -549,7 +551,7 @@ onBeforeUnmount(() => {
 <style>
 .site-footer {
   width: 100%;
-  height: var(--page-footer-height);
+  min-height: var(--page-footer-height);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -559,13 +561,14 @@ onBeforeUnmount(() => {
 
 .site-footer-inner {
   position: relative;
-  height: var(--page-footer-height);
+  min-height: var(--page-footer-height);
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   gap: 0;
   padding-top: 64px;
-  overflow: hidden;
+  padding-bottom: 96px;
+  overflow: visible;
   min-width: 0;
 }
 .site-footer-brand {
@@ -677,21 +680,22 @@ onBeforeUnmount(() => {
 
 .site-footer-locale-button {
   width: auto;
-  max-width: min(214px, calc(100vw - 32px));
-  height: 36px;
+  max-width: min(260px, calc(100vw - 32px));
+  min-height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  padding: 0 12px;
+  padding: 7px 12px;
   border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
   border-radius: 6px;
   color: var(--theme-footer-title);
   background-color: transparent;
   font-size: 14px;
   font-weight: 500;
-  line-height: 36px;
-  white-space: nowrap;
+  line-height: 20px;
+  text-align: left;
+  white-space: normal;
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
@@ -703,8 +707,7 @@ onBeforeUnmount(() => {
 
 .site-footer-locale-button span {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .site-footer-locale-button:hover,
@@ -786,13 +789,13 @@ onBeforeUnmount(() => {
   min-width: 176px;
   min-height: 48px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 7px 14px;
   color: var(--theme-header-dropdown-text, var(--theme-text));
   font-size: 14px;
   line-height: 20px;
-  white-space: nowrap;
+  white-space: normal;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -804,6 +807,7 @@ onBeforeUnmount(() => {
 
 .site-footer-locale-copy {
   min-width: 0;
+  max-width: min(320px, calc(100vw - 96px));
   display: grid;
   gap: 2px;
   text-align: left;
@@ -816,8 +820,7 @@ onBeforeUnmount(() => {
 .site-footer-locale-copy > span,
 .site-footer-locale-copy > small {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .site-footer-locale-copy > small {
@@ -906,7 +909,7 @@ onBeforeUnmount(() => {
 .site-footer-columns {
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: repeat(4, minmax(80px, 1fr));
+  grid-template-columns: repeat(5, minmax(80px, 1fr));
   column-gap: clamp(36px, 5vw, 84px);
   margin-left: 130px;
   min-width: 0;
@@ -924,11 +927,7 @@ onBeforeUnmount(() => {
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
-  overflow: hidden;
   overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 .site-footer-link {
   max-width: 100%;
@@ -938,11 +937,7 @@ onBeforeUnmount(() => {
   font-weight: 400;
   line-height: 22px;
   text-align: left;
-  overflow: hidden;
   overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   cursor: pointer;
   transition: color 0.2s ease;
 }
@@ -970,12 +965,10 @@ onBeforeUnmount(() => {
 }
 @media (max-width: 900px) {
   .site-footer {
-    height: auto;
     min-height: var(--page-footer-height);
   }
 
   .site-footer-inner {
-    height: auto;
     min-height: auto;
     flex-direction: column;
     gap: 36px;

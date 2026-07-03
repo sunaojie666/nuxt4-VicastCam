@@ -8,6 +8,10 @@ const fallbackPageSeoCopy = {
     title: 'About VicastCam',
     description: 'Learn about VicastCam, a creator-focused virtual camera and live streaming tool for virtual backgrounds, screen casting, and multi-platform video workflows.',
   },
+  team: {
+    title: 'Business Cooperation',
+    description: 'Partner with VicastCam for channel agency, OEM, SDK, and enterprise cooperation in virtual camera and live streaming workflows.',
+  },
   terms: {
     title: 'User Agreement',
     description: 'Review the VicastCam User Agreement for software licensing, account, subscription, and product usage rules.',

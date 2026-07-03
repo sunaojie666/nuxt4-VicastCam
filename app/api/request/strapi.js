@@ -58,6 +58,17 @@ export const getDownloads = (locale) => {
   })
 }
 
+// 商务合作页文案接口，对应 Strapi 里的 api::team.team。
+export const getTeams = (locale) => {
+  return createStrapiRequest().get('/teams', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 // 导航栏接口，对应 Strapi 里的 api::navigation.navigation，REST 路由为 /api/navigations。
 export const getNavigation = (locale) => {
   return createStrapiRequest().get('/navigations', {

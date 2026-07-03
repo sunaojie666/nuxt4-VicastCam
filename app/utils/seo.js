@@ -1,4 +1,4 @@
-import { computed, unref, useHead, useI18n, useLocaleHead, useRuntimeConfig, useSeoMeta } from '#imports'
+import { computed, unref, useHead, useI18n, useLocaleHead, useRoute, useRuntimeConfig, useSeoMeta } from '#imports'
 import { defaultDescription, defaultRobots, defaultSeoImage, getPageSeoCopy } from './seo-copy'
 
 const siteName = 'VicastCam'
@@ -9,6 +9,37 @@ const isNoindexRobots = (robots = '') => {
 
 const createOgLocale = (language = '') => {
   return String(language || '').replace('-', '_')
+}
+
+const normalizePath = (path = '/') => {
+  const urlPath = String(path || '/').split('?')[0].split('#')[0]
+  const normalizedPath = urlPath.startsWith('/') ? urlPath : `/${urlPath}`
+  const withoutTrailingSlash = normalizedPath.length > 1 ? normalizedPath.replace(/\/+$/, '') : normalizedPath
+
+  return withoutTrailingSlash || '/'
+}
+
+const getLocaleCode = locale => typeof locale === 'string' ? locale : locale?.code
+
+const getLocaleLanguage = locale => {
+  if (typeof locale === 'string') {
+    return locale
+  }
+
+  return locale?.language || locale?.code || ''
+}
+
+const removeLocalePrefix = (path, localeCodes = []) => {
+  const normalizedPath = normalizePath(path)
+  const segments = normalizedPath.split('/').filter(Boolean)
+
+  if (!segments.length || !localeCodes.includes(segments[0])) {
+    return normalizedPath
+  }
+
+  const baseSegments = segments.slice(1)
+
+  return baseSegments.length ? `/${baseSegments.join('/')}` : '/'
 }
 
 const normalizeStructuredDataEntries = (value) => {
@@ -35,8 +66,23 @@ export const createAbsoluteUrl = (path, siteUrl = 'https://vicastcam.com') => {
   return `${normalizedSiteUrl}${normalizedPath}`
 }
 
+export const createLocalizedPath = (path = '/', localeCode = '', defaultLocale = 'en') => {
+  const normalizedPath = normalizePath(path)
+
+  if (!localeCode || localeCode === defaultLocale) {
+    return normalizedPath
+  }
+
+  return normalizePath(`/${localeCode}${normalizedPath === '/' ? '' : normalizedPath}`)
+}
+
+export const createLocalizedUrl = (path = '/', localeCode = '', siteUrl = 'https://vicastcam.com', defaultLocale = 'en') => {
+  return createAbsoluteUrl(createLocalizedPath(path, localeCode, defaultLocale), siteUrl)
+}
+
 export const setupPageSeo = (pageKey, options = {}) => {
   const config = useRuntimeConfig()
+  const route = useRoute()
   const { locale, locales } = useI18n()
   const localeHead = useLocaleHead({
     seo: {
@@ -67,8 +113,38 @@ export const setupPageSeo = (pageKey, options = {}) => {
   })
 
   const shouldIndexPage = computed(() => !isNoindexRobots(pageSeo.value.robots))
+  const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+  const defaultLocale = computed(() => config.public.i18n?.defaultLocale || 'en')
+  const localeCodes = computed(() => locales.value.map(getLocaleCode).filter(Boolean))
+  const routeBasePath = computed(() => removeLocalePrefix(route.path, localeCodes.value))
+  const pageCanonicalUrl = computed(() => {
+    return createLocalizedUrl(routeBasePath.value, locale.value, siteUrl.value, defaultLocale.value)
+  })
+  const localeAlternateLinks = computed(() => {
+    const links = locales.value
+      .map(item => ({
+        code: getLocaleCode(item),
+        language: getLocaleLanguage(item),
+      }))
+      .filter(item => item.code && item.language)
+      .map(item => ({
+        key: `alternate-${item.language}`,
+        rel: 'alternate',
+        hreflang: item.language,
+        href: createLocalizedUrl(routeBasePath.value, item.code, siteUrl.value, defaultLocale.value),
+      }))
+
+    links.push({
+      key: 'alternate-x-default',
+      rel: 'alternate',
+      hreflang: 'x-default',
+      href: createLocalizedUrl(routeBasePath.value, defaultLocale.value, siteUrl.value, defaultLocale.value),
+    })
+
+    return links
+  })
   const pageSeoImage = computed(() => {
-    return createAbsoluteUrl(pageSeo.value.image || defaultSeoImage, config.public.siteUrl)
+    return createAbsoluteUrl(pageSeo.value.image || defaultSeoImage, siteUrl.value)
   })
   const ogLocale = computed(() => {
     return createOgLocale(activeLocaleConfig.value.language || locale.value)
@@ -90,7 +166,12 @@ export const setupPageSeo = (pageKey, options = {}) => {
           }))
         : []),
     ],
-    link: shouldIndexPage.value ? localeHead.value.link : [],
+    link: shouldIndexPage.value
+      ? [
+          { key: 'canonical', rel: 'canonical', href: pageCanonicalUrl.value },
+          ...localeAlternateLinks.value,
+        ]
+      : [],
     htmlAttrs: {
       ...localeHead.value.htmlAttrs,
       dir: activeLocaleConfig.value.dir || 'ltr',
@@ -106,6 +187,7 @@ export const setupPageSeo = (pageKey, options = {}) => {
     ogType: () => shouldIndexPage.value ? 'website' : undefined,
     ogSiteName: () => shouldIndexPage.value ? pageSeo.value.siteName : undefined,
     ogLocale: () => shouldIndexPage.value ? ogLocale.value : undefined,
+    ogUrl: () => shouldIndexPage.value ? pageCanonicalUrl.value : undefined,
     ogImage: () => shouldIndexPage.value ? pageSeoImage.value : undefined,
     ogImageAlt: () => shouldIndexPage.value ? (pageSeo.value.imageAlt || pageSeo.value.title || pageSeo.value.siteName) : undefined,
     twitterCard: () => shouldIndexPage.value ? 'summary_large_image' : undefined,
