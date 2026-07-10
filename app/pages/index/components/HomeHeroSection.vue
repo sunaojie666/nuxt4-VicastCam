@@ -71,7 +71,7 @@
               <span></span>
               <span></span>
             </span>
-            <strong>50万+</strong>
+            <strong>5M+</strong>
             <span>{{ userCountLabel }}</span>
           </div>
 
@@ -85,7 +85,7 @@
 
           <div class="home-hero-metric">
             <img class="home-hero-download-icon" src="/images/common/download-metric.png" alt="" aria-hidden="true" role="presentation">
-            <strong>10万+</strong>
+            <strong>10M+</strong>
             <span>{{ downloadCountLabel }}</span>
           </div>
         </div>
@@ -543,8 +543,9 @@ useLocalizedAsyncState({
 }
 .home-hero-metric strong {
   color: var(--theme-white);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 900;
+  line-height: 24px;
 }
 .home-hero-score-icons {
   display: inline-flex;

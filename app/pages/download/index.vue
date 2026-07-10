@@ -423,7 +423,7 @@ setupStructuredData(() => {
 }
 
 .download-platform-section {
-  padding: 40px 0 60px;
+  padding: 80px 0 140px;
   background: var(--page-route-background);
 }
 
@@ -470,7 +470,7 @@ setupStructuredData(() => {
 
 .download-reasons {
   width: 100%;
-  margin-top: 40px;
+  margin-top: 80px;
 }
 
 .download-reasons h2 {
@@ -860,7 +860,7 @@ setupStructuredData(() => {
   }
 
   .download-platform-section {
-    padding: 24px 0 52px;
+    padding: 40px 0;
     background: transparent;
   }
 

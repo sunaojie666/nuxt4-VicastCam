@@ -927,7 +927,8 @@ onBeforeUnmount(() => {
   font-size: 16px;
   font-weight: 700;
   line-height: 22px;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 .site-footer-link {
   max-width: 100%;
@@ -937,7 +938,8 @@ onBeforeUnmount(() => {
   font-weight: 400;
   line-height: 22px;
   text-align: left;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow-wrap: normal;
   cursor: pointer;
   transition: color 0.2s ease;
 }

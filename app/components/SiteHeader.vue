@@ -800,9 +800,9 @@ const navigationFieldMap = [
   { key: 'clientDownload', field: 'navClientDownload' },
   { key: 'features', field: 'navFeatures' },
   { key: 'pricing', field: 'navPricing' },
+  { key: 'team', field: 'navTeam' },
   { key: 'faq', field: 'navFaq' },
   { key: 'sdk', label: 'SDK' },
-  { key: 'team', field: 'navTeam' },
 ]
 
 const scrollToSection = (sectionId, behavior = 'smooth') => {
@@ -1195,7 +1195,7 @@ onBeforeUnmount(() => {
 .site-nav {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 1.55vw, 25px);
+  gap: clamp(8px, 1.2vw, 20px);
   flex: 1 1 auto;
   justify-content: center;
   min-width: 0;
@@ -1205,7 +1205,7 @@ onBeforeUnmount(() => {
   position: relative;
   display: inline-flex;
   align-items: center;
-  min-width: 0;
+  min-width: max-content;
 }
 
 .site-nav-item::after {
@@ -1219,9 +1219,8 @@ onBeforeUnmount(() => {
 
 .site-nav-link {
   position: relative;
-  flex: 0 1 auto;
-  min-width: 0;
-  max-width: 164px;
+  flex: 0 0 auto;
+  min-width: max-content;
   min-height: 36px;
   display: inline-flex;
   align-items: center;
@@ -1236,14 +1235,14 @@ onBeforeUnmount(() => {
   font-weight: 500;
   line-height: 20px;
   text-align: center;
-  white-space: normal;
+  white-space: nowrap;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .site-nav-link-label {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 
 .site-nav-link::after {
@@ -1779,7 +1778,6 @@ onBeforeUnmount(() => {
   }
 
   .site-nav-link {
-    max-width: 136px;
     font-size: 14px;
   }
 
@@ -1795,11 +1793,10 @@ onBeforeUnmount(() => {
   }
 
   .site-nav {
-    gap: clamp(6px, 1vw, 12px);
+    gap: clamp(4px, 0.8vw, 10px);
   }
 
   .site-nav-link {
-    max-width: 118px;
     padding-left: 6px;
     padding-right: 6px;
   }
@@ -1960,7 +1957,7 @@ onBeforeUnmount(() => {
     position: relative;
     z-index: 1;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 }
 

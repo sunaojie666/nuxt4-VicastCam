@@ -555,16 +555,14 @@ onMounted(() => {
 
 .home-pricing-card-description {
   margin-top: 10px;
+  min-height: 60px;
   color: var(--home-pricing-card-copy);
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
-  overflow: hidden;
+  overflow: visible;
   overflow-wrap: anywhere;
   hyphens: auto;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 
 .home-pricing-price {

@@ -58,6 +58,17 @@ export const getDownloads = (locale) => {
   })
 }
 
+// SDK 页文案接口，对应 Strapi 里的 api::sdk.sdk。
+export const getSdks = (locale) => {
+  return createStrapiRequest().get('/sdks', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 // 商务合作页文案接口，对应 Strapi 里的 api::team.team。
 export const getTeams = (locale) => {
   return createStrapiRequest().get('/teams', {
