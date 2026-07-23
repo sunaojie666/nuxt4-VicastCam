@@ -86,6 +86,35 @@ const localePath = useLocalePath()
 const { locale } = useI18n()
 const policyCenterContentLocale = useState('policy-center-content-locale', () => '')
 
+const policyCenterCommonCopyMap = {
+  'zh-CN': { policyCenter: '政策中心', sidebarAriaLabel: '政策目录', breadcrumbAriaLabel: '当前位置', shareLabel: '分享' },
+  'zh-TW': { policyCenter: '政策中心', sidebarAriaLabel: '政策目錄', breadcrumbAriaLabel: '目前位置', shareLabel: '分享' },
+  en: { policyCenter: 'Policy Center', sidebarAriaLabel: 'Policy navigation', breadcrumbAriaLabel: 'Breadcrumb', shareLabel: 'Share' },
+  id: { policyCenter: 'Pusat Kebijakan', sidebarAriaLabel: 'Navigasi kebijakan', breadcrumbAriaLabel: 'Breadcrumb', shareLabel: 'Bagikan' },
+  ms: { policyCenter: 'Pusat Dasar', sidebarAriaLabel: 'Navigasi dasar', breadcrumbAriaLabel: 'Jejak navigasi', shareLabel: 'Kongsi' },
+  th: { policyCenter: 'ศูนย์นโยบาย', sidebarAriaLabel: 'เมนูนโยบาย', breadcrumbAriaLabel: 'เส้นทางนำทาง', shareLabel: 'แชร์' },
+  vi: { policyCenter: 'Trung tâm chính sách', sidebarAriaLabel: 'Điều hướng chính sách', breadcrumbAriaLabel: 'Đường dẫn điều hướng', shareLabel: 'Chia sẻ' },
+  fil: { policyCenter: 'Sentro ng Patakaran', sidebarAriaLabel: 'Nabigasyon ng patakaran', breadcrumbAriaLabel: 'Breadcrumb', shareLabel: 'Ibahagi' },
+  es: { policyCenter: 'Centro de políticas', sidebarAriaLabel: 'Navegación de políticas', breadcrumbAriaLabel: 'Ruta de navegación', shareLabel: 'Compartir' },
+  pt: { policyCenter: 'Centro de Políticas', sidebarAriaLabel: 'Navegação de políticas', breadcrumbAriaLabel: 'Percurso de navegação', shareLabel: 'Partilhar' },
+  ar: { policyCenter: 'مركز السياسات', sidebarAriaLabel: 'التنقل بين السياسات', breadcrumbAriaLabel: 'مسار التنقل', shareLabel: 'مشاركة' },
+  ja: { policyCenter: 'ポリシーセンター', sidebarAriaLabel: 'ポリシーナビゲーション', breadcrumbAriaLabel: 'パンくずリスト', shareLabel: '共有' },
+  tr: { policyCenter: 'Politika Merkezi', sidebarAriaLabel: 'Politika navigasyonu', breadcrumbAriaLabel: 'İçerik haritası', shareLabel: 'Paylaş' },
+  it: { policyCenter: 'Centro norme', sidebarAriaLabel: 'Navigazione delle norme', breadcrumbAriaLabel: 'Percorso di navigazione', shareLabel: 'Condividi' },
+  de: { policyCenter: 'Richtliniencenter', sidebarAriaLabel: 'Richtliniennavigation', breadcrumbAriaLabel: 'Brotkrümelnavigation', shareLabel: 'Teilen' },
+  fr: { policyCenter: 'Centre des politiques', sidebarAriaLabel: 'Navigation des politiques', breadcrumbAriaLabel: "Fil d'Ariane", shareLabel: 'Partager' },
+  ko: { policyCenter: '정책 센터', sidebarAriaLabel: '정책 탐색', breadcrumbAriaLabel: '이동 경로', shareLabel: '공유' },
+  ru: { policyCenter: 'Центр политик', sidebarAriaLabel: 'Навигация по политикам', breadcrumbAriaLabel: 'Навигационная цепочка', shareLabel: 'Поделиться' },
+  pl: { policyCenter: 'Centrum zasad', sidebarAriaLabel: 'Nawigacja po zasadach', breadcrumbAriaLabel: 'Ścieżka nawigacji', shareLabel: 'Udostępnij' },
+  nl: { policyCenter: 'Beleidscentrum', sidebarAriaLabel: 'Beleidsnavigatie', breadcrumbAriaLabel: 'Kruimelpad', shareLabel: 'Delen' },
+  hi: { policyCenter: 'नीति केंद्र', sidebarAriaLabel: 'नीति नेविगेशन', breadcrumbAriaLabel: 'नेविगेशन पथ', shareLabel: 'साझा करें' },
+  ur: { policyCenter: 'پالیسی مرکز', sidebarAriaLabel: 'پالیسی نیویگیشن', breadcrumbAriaLabel: 'نیویگیشن پاتھ', shareLabel: 'شیئر کریں' },
+  bn: { policyCenter: 'নীতিমালা কেন্দ্র', sidebarAriaLabel: 'নীতিমালা নেভিগেশন', breadcrumbAriaLabel: 'নেভিগেশন পথ', shareLabel: 'শেয়ার করুন' },
+  fa: { policyCenter: 'مرکز سیاست‌ها', sidebarAriaLabel: 'پیمایش سیاست‌ها', breadcrumbAriaLabel: 'مسیر پیمایش', shareLabel: 'اشتراک‌گذاری' },
+}
+
+const getPolicyCenterCommonCopy = currentLocale => policyCenterCommonCopyMap[currentLocale] || policyCenterCommonCopyMap.en
+
 const createDefaultPolicy = ({ key, path, label, icon, title, heroTitle }) => ({
   key,
   path,
@@ -100,12 +129,12 @@ const createDefaultPolicy = ({ key, path, label, icon, title, heroTitle }) => ({
   sections: [],
 })
 
-const createDefaultPolicyCenterContent = () => ({
-  eyebrow: '政策中心',
-  breadcrumbRoot: '政策中心',
-  sidebarAriaLabel: '政策目录',
-  breadcrumbAriaLabel: '当前位置',
-  shareLabel: '分享',
+const createDefaultPolicyCenterContent = (currentLocale = locale.value) => ({
+  eyebrow: getPolicyCenterCommonCopy(currentLocale).policyCenter,
+  breadcrumbRoot: getPolicyCenterCommonCopy(currentLocale).policyCenter,
+  sidebarAriaLabel: getPolicyCenterCommonCopy(currentLocale).sidebarAriaLabel,
+  breadcrumbAriaLabel: getPolicyCenterCommonCopy(currentLocale).breadcrumbAriaLabel,
+  shareLabel: getPolicyCenterCommonCopy(currentLocale).shareLabel,
   policies: [
     createDefaultPolicy({
       key: 'privacy',
