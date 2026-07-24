@@ -23,7 +23,7 @@
 
       <section class="sdk-content-section">
         <div class="page-container sdk-content-layout">
-          <aside class="sdk-sidebar" aria-label="SDK目录">
+          <aside class="sdk-sidebar" :aria-label="cameraLabels.sidebarAriaLabel">
             <section
               v-for="group in leadingStandaloneGroups"
               :key="group.key"
@@ -95,16 +95,19 @@
               </button>
             </section>
 
-            <div class="sdk-help-panel">
-              <h2>需要帮助？</h2>
-              <p>如果在接入过程中遇到问题，请随时联系我们的技术支持团队。</p>
-              <button type="button">联系技术支持</button>
+            <div
+              v-if="sdkBox.help.title || sdkBox.help.description || sdkBox.help.buttonText"
+              class="sdk-help-panel"
+            >
+              <h2 v-if="sdkBox.help.title">{{ sdkBox.help.title }}</h2>
+              <p v-if="sdkBox.help.description">{{ sdkBox.help.description }}</p>
+              <button v-if="sdkBox.help.buttonText" type="button">{{ sdkBox.help.buttonText }}</button>
             </div>
           </aside>
 
           <section class="sdk-download-panel" aria-labelledby="sdk-content-title">
-            <nav class="sdk-breadcrumb" aria-label="当前位置">
-              <span>SDK文档</span>
+            <nav class="sdk-breadcrumb" :aria-label="cameraLabels.breadcrumbAriaLabel">
+              <span>{{ cameraLabels.breadcrumbRoot }}</span>
               <Icon name="lucide:chevron-right" aria-hidden="true" />
               <span>{{ activeGroupTitle }}</span>
               <template v-if="activeItemTitle">
@@ -114,10 +117,10 @@
             </nav>
 
             <template v-if="isDemoDownloadView">
-              <h2 id="sdk-content-title">Demo下载</h2>
-              <p class="sdk-download-copy">选择对应业务场景的示例工程，快速验证 VicastCam SDK 的虚拟相机、虚拟声卡和投屏能力。</p>
+              <h2 id="sdk-content-title">{{ demoContent.title }}</h2>
+              <p class="sdk-download-copy">{{ demoContent.description }}</p>
 
-              <div class="sdk-demo-list">
+              <div class="sdk-demo-list" :aria-label="demoContent.listAriaLabel">
                 <article
                   v-for="demo in demoDownloads"
                   :key="demo.key"
@@ -132,7 +135,7 @@
 
                     <button type="button" class="sdk-download-button" @click="handleDemoDownload(demo)">
                       <Icon name="lucide:download" aria-hidden="true" />
-                      <span>立即下载</span>
+                      <span>{{ demoContent.downloadButtonText }}</span>
                     </button>
                   </div>
                 </article>
@@ -140,7 +143,7 @@
             </template>
 
             <div v-else-if="isNoticeView" class="sdk-notice-doc">
-              <h3 class="sdk-language-title">开发语言</h3>
+              <h3 class="sdk-language-title">{{ cameraLabels.developmentLanguage }}</h3>
               <div class="sdk-code-tabs sdk-language-tabs" role="tablist" aria-label="Notice language">
                 <button
                   v-for="tab in sdkLanguageTabs"
@@ -157,7 +160,7 @@
               <p class="sdk-download-copy">{{ activeNoticeDoc.description }}</p>
               <button type="button" class="sdk-notice-download-button">
                 <Icon name="lucide:download" aria-hidden="true" />
-                <span>下载SDK组件</span>
+                <span>{{ cameraLabels.downloadComponent }}</span>
               </button>
 
               <section
@@ -191,7 +194,10 @@
                   </div>
                 </div>
 
-                <div v-if="section.table" class="sdk-notice-table">
+                <div
+                  v-if="section.table"
+                  :class="['sdk-notice-table', `sdk-notice-table-${section.table.headers.length}-columns`]"
+                >
                   <div class="sdk-notice-table-row sdk-notice-table-head">
                     <span v-for="header in section.table.headers" :key="header">{{ header }}</span>
                   </div>
@@ -215,7 +221,7 @@
                       <button
                         type="button"
                         class="sdk-code-copy-button"
-                        aria-label="复制代码"
+                        :aria-label="cameraLabels.copyCode"
                         @click="copyCode(block.code)"
                       >
                         <Icon name="lucide:copy" aria-hidden="true" />
@@ -230,7 +236,7 @@
             <div v-else-if="isEmptyContentView" id="sdk-content-title" class="sdk-empty-doc"></div>
 
             <div v-else class="sdk-api-doc">
-              <h3 class="sdk-language-title">开发语言</h3>
+              <h3 class="sdk-language-title">{{ cameraLabels.developmentLanguage }}</h3>
               <div class="sdk-code-tabs sdk-language-tabs" role="tablist" aria-label="Function language">
                 <button
                   v-for="tab in apiDoc.codeTabs"
@@ -243,11 +249,11 @@
                 </button>
               </div>
 
-              <h2 id="sdk-content-title">调用函数</h2>
+              <h2 id="sdk-content-title">{{ cameraLabels.callFunction }}</h2>
               <div class="sdk-api-path">{{ activeFunctionPath }}</div>
 
               <section class="sdk-doc-section" aria-labelledby="sdk-function-params-title">
-                <h3 id="sdk-function-params-title">函数参数</h3>
+                <h3 id="sdk-function-params-title">{{ cameraLabels.functionParameters }}</h3>
                 <div class="sdk-table">
                   <div v-for="(param, index) in apiDoc.params" :key="`${param.name}-${index}`" class="sdk-table-row">
                     <span v-if="param.name" class="sdk-param-name">{{ param.name }}</span>
@@ -258,7 +264,7 @@
               </section>
 
               <section class="sdk-doc-section" aria-labelledby="sdk-code-title">
-                <h3 id="sdk-code-title">调用示例代码</h3>
+                <h3 id="sdk-code-title">{{ cameraLabels.exampleCode }}</h3>
                 <div class="sdk-code-block">
                   <button
                     type="button"
@@ -273,7 +279,7 @@
               </section>
 
               <section class="sdk-doc-section" aria-labelledby="sdk-return-title">
-                <h3 id="sdk-return-title">返回值及其含义</h3>
+                <h3 id="sdk-return-title">{{ cameraLabels.returnValues }}</h3>
                 <div class="sdk-response-card">
                   <div class="sdk-response-body">
                     <div class="sdk-response-fields">
@@ -299,8 +305,7 @@
 <script setup>
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
-import { getSdks } from '../../api/request/strapi'
-import { sdkCameraDocs } from '../../data/sdk-camera-docs'
+import { getCameras, getExamples, getSdks, getSoundcards } from '../../api/request/strapi'
 import { setupPageSeo } from '../../utils/seo'
 
 const { showRequestSuccessToast, showRequestFailToast } = useSiteToast()
@@ -308,10 +313,10 @@ const route = useRoute()
 const { locale } = useI18n()
 
 const sdkFeatureAssets = [
-  { key: 'compatible', icon: '/images/sdk/feature-compatible.png' },
-  { key: 'support', icon: '/images/sdk/feature-support.png' },
-  { key: 'api', icon: '/images/sdk/feature-api.png' },
-  { key: 'secure', icon: '/images/sdk/feature-secure.png' },
+  { key: 'compatible', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/feature-compatible.png' },
+  { key: 'support', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/feature-support.png' },
+  { key: 'api', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/feature-api.png' },
+  { key: 'secure', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/feature-secure.png' },
 ]
 
 const createEmptySdkBox = () => ({
@@ -322,6 +327,11 @@ const createEmptySdkBox = () => ({
     featuresAriaLabel: '',
     features: [],
   },
+  help: {
+    title: '',
+    description: '',
+    buttonText: '',
+  },
   seo: {
     title: '',
     description: '',
@@ -330,6 +340,12 @@ const createEmptySdkBox = () => ({
 
 const sdkBox = useState('sdk-page-box', createEmptySdkBox)
 const sdkBoxLocale = useState('sdk-page-box-locale', () => '')
+const cameraModule = useState('sdk-camera-module', () => null)
+const cameraModuleLocale = useState('sdk-camera-module-locale', () => '')
+const soundcardModule = useState('sdk-soundcard-module', () => null)
+const soundcardModuleLocale = useState('sdk-soundcard-module-locale', () => '')
+const exampleModule = useState('sdk-example-module', () => null)
+const exampleModuleLocale = useState('sdk-example-module-locale', () => '')
 
 const normalizeList = value => Array.isArray(value) ? value.filter(Boolean) : []
 
@@ -364,6 +380,10 @@ const createSdkBox = (content = {}) => {
       ...hero,
       features: normalizeList(hero.features),
     },
+    help: {
+      ...createEmptySdkBox().help,
+      ...(source.help || {}),
+    },
     seo: {
       ...createEmptySdkBox().seo,
       ...(source.seo || {}),
@@ -387,6 +407,78 @@ const getSdkBoxFromResponse = (response) => {
   return createSdkBox(content)
 }
 
+const getCameraModuleFromResponse = (response) => {
+  const records = response?.data
+  const firstRecord = Array.isArray(records) ? records[0] : records
+  const record = normalizeStrapiRecord(firstRecord)
+  const parsedData = parseStrapiJsonField(record.data)
+  const source = parsedData?.module ||
+    parsedData?.cameraModule ||
+    parsedData?.camera_module ||
+    parsedData?.data?.module ||
+    parsedData?.data ||
+    parsedData ||
+    {}
+
+  if (source.key !== 'camera') {
+    return null
+  }
+
+  return {
+    ...source,
+    items: normalizeList(source.items),
+    documents: source.documents || {},
+  }
+}
+
+const getSoundcardModuleFromResponse = (response) => {
+  const records = response?.data
+  const firstRecord = Array.isArray(records) ? records[0] : records
+  const record = normalizeStrapiRecord(firstRecord)
+  const parsedData = parseStrapiJsonField(record.data)
+  const source = parsedData?.module ||
+    parsedData?.soundcardModule ||
+    parsedData?.soundcard_module ||
+    parsedData?.data?.module ||
+    parsedData?.data ||
+    parsedData ||
+    {}
+
+  if (source.key !== 'audio') {
+    return null
+  }
+
+  return {
+    ...source,
+    items: normalizeList(source.items),
+    documents: source.documents || {},
+  }
+}
+
+const getExampleModuleFromResponse = (response) => {
+  const records = response?.data
+  const firstRecord = Array.isArray(records) ? records[0] : records
+  const record = normalizeStrapiRecord(firstRecord)
+  const parsedData = parseStrapiJsonField(record.data)
+  const source = parsedData?.module ||
+    parsedData?.exampleModule ||
+    parsedData?.example_module ||
+    parsedData?.data?.module ||
+    parsedData?.data ||
+    parsedData ||
+    {}
+
+  if (source.key !== 'demo') {
+    return null
+  }
+
+  return {
+    ...source,
+    items: normalizeList(source.items),
+    content: source.content || {},
+  }
+}
+
 const heroFeatures = computed(() => {
   return normalizeList(sdkBox.value.hero.features).map(item => {
     const asset = sdkFeatureAssets.find(feature => feature.key === item.key) || {}
@@ -399,7 +491,17 @@ const heroFeatures = computed(() => {
   })
 })
 
-const sdkGroups = [
+const staticSdkGroups = [
+  {
+    key: 'audio',
+    title: '虚拟声卡SDK',
+    count: '12个',
+    icon: 'lucide:volume-2',
+    items: [
+      { key: 'audio-overview', title: '功能概览' },
+      { key: 'audio-demo', title: 'Demo下载' },
+    ],
+  },
   {
     key: 'camera',
     title: '虚拟相机SDK',
@@ -424,26 +526,6 @@ const sdkGroups = [
     ],
   },
   {
-    key: 'audio',
-    title: '虚拟声卡SDK',
-    count: '12个',
-    icon: 'lucide:volume-2',
-    items: [
-      { key: 'audio-overview', title: '功能概览' },
-      { key: 'audio-demo', title: 'Demo下载' },
-    ],
-  },
-  {
-    key: 'cast',
-    title: '虚拟投屏SDK',
-    count: '12个',
-    icon: 'lucide:screen-share',
-    items: [
-      { key: 'cast-overview', title: '功能概览' },
-      { key: 'cast-demo', title: 'Demo下载' },
-    ],
-  },
-  {
     key: 'demo',
     title: 'Demo下载',
     count: '12个',
@@ -454,45 +536,55 @@ const sdkGroups = [
   },
 ]
 
-const demoDownloads = [
-  {
-    key: 'cast',
-    title: '手机投屏SDK-Demo下载',
-    description: '手机投屏 SDK 演示程序支持安卓、苹果双端无线 / 有线投屏；安卓无需开启开发者 ADB 模式，即插即用。适配手游直播、线上会议、线上教学、直播中控各类商用场景，可搭配虚拟相机、虚拟声卡整套 SDK 一体化集成。',
-    image: '/images/sdk/demo-stream.png',
-    theme: 'blue',
-  },
-  {
-    key: 'camera',
-    title: '虚拟相机SDK-Demo下载',
-    description: '虚拟相机 SDK 可将图片、视频素材封装成系统原生摄像头源，兼容所有直播、推流、会议软件，可无缝集成至自有 Windows 项目，自定义画面输出。',
-    image: '/images/sdk/demo-camera.png',
-    theme: 'purple',
-  },
-  {
-    key: 'audio',
-    title: '虚拟声卡SDK-Demo下载',
-    description: '虚拟声卡 SDK 可将外部音频、视频里的音频流转为系统麦克风输入源；支持自定义声卡与麦克风名称，能够无缝集成进 Windows 项目，适配直播推流、语音房间、线上会议等软件。',
-    image: '/images/sdk/demo-basic.png',
-    theme: 'cyan',
-  },
-]
+const defaultDemoContent = {
+  title: 'Demo下载',
+  description: '选择对应业务场景的示例工程，快速验证 VicastCam SDK 的虚拟相机和虚拟声卡能力。',
+  listAriaLabel: 'VicastCam SDK Demo下载列表',
+  downloadButtonText: '立即下载',
+  downloads: [
+    {
+      key: 'camera',
+      title: '虚拟相机SDK-Demo下载',
+      description: '虚拟相机 SDK 可将图片、视频素材封装成系统原生摄像头源，兼容所有直播、推流、会议软件，可无缝集成至自有 Windows 项目，自定义画面输出。',
+      image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/demo-camera.png',
+      theme: 'purple',
+    },
+    {
+      key: 'audio',
+      title: '虚拟声卡SDK-Demo下载',
+      description: '虚拟声卡 SDK 可将外部音频、视频里的音频流转为系统麦克风输入源；支持自定义声卡与麦克风名称，能够无缝集成进 Windows 项目，适配直播推流、语音房间、线上会议等软件。',
+      image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/demo-basic.png',
+      theme: 'cyan',
+    },
+  ],
+}
+
+const demoContent = computed(() => {
+  const content = exampleModule.value?.content || {}
+  const downloads = normalizeList(content.downloads)
+
+  return {
+    ...defaultDemoContent,
+    ...content,
+    downloads: downloads.length ? downloads : defaultDemoContent.downloads,
+  }
+})
+const demoDownloads = computed(() => demoContent.value.downloads.filter(item => item.key !== 'cast'))
 
 const activeGroupKey = ref('camera')
 const activeItemKey = ref('camera-notice')
 const activeCodeTab = ref('C')
-const sdkLanguageTabs = ['C', 'C++', 'C#']
 const sdkNoticeComponentImages = {
   C: {
-    src: '/images/sdk/notice-c.png',
+    src: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/notice-c.png',
     alt: 'VicastCam SDK C component folder',
   },
   'C++': {
-    src: '/images/sdk/notice-cpp.png',
+    src: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/notice-cpp.png',
     alt: 'VicastCam SDK C++ component folder',
   },
   'C#': {
-    src: '/images/sdk/notice-csharp.png',
+    src: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/notice-csharp.png',
     alt: 'VicastCam SDK C# component folder',
   },
 }
@@ -765,11 +857,27 @@ class Program
 }
 
 const leadingStandaloneGroups = computed(() => [])
-const accordionGroups = computed(() => sdkGroups.slice(0, 3))
-const standaloneGroups = computed(() => sdkGroups.slice(3))
-const sdkItems = computed(() => sdkGroups.flatMap(group => group.items))
-const activeSdkGroup = computed(() => sdkGroups.find(group => group.key === activeGroupKey.value) || null)
+const sdkGroups = computed(() => [
+  ...(soundcardModule.value ? [soundcardModule.value] : []),
+  ...(cameraModule.value ? [cameraModule.value] : []),
+  ...staticSdkGroups.filter(group => group.key !== 'camera' &&
+    (group.key !== 'audio' || !soundcardModule.value) &&
+    (group.key !== 'demo' || !exampleModule.value)),
+  ...(exampleModule.value ? [exampleModule.value] : []),
+])
+const accordionGroups = computed(() => sdkGroups.value.filter(group => group.key !== 'demo'))
+const standaloneGroups = computed(() => sdkGroups.value.filter(group => group.key === 'demo'))
+const sdkItems = computed(() => sdkGroups.value.flatMap(group => group.items || []))
+const activeSdkGroup = computed(() => sdkGroups.value.find(group => group.key === activeGroupKey.value) || null)
 const activeSdkItem = computed(() => sdkItems.value.find(item => item.key === activeItemKey.value) || null)
+const activeSdkModule = computed(() => {
+  if (activeGroupKey.value === 'audio') {
+    return soundcardModule.value
+  }
+
+  return cameraModule.value
+})
+const sdkLanguageTabs = computed(() => normalizeList(activeSdkModule.value?.languageTabs))
 
 const activeGroupTitle = computed(() => {
   return activeSdkGroup.value?.title || '资源下载'
@@ -779,10 +887,33 @@ const activeItemTitle = computed(() => {
   return activeSdkItem.value?.title || ''
 })
 
-const isNoticeView = computed(() => activeItemKey.value === 'camera-notice')
-const activeNoticeDoc = computed(() => sdkNoticeDocs[activeCodeTab.value] || sdkNoticeDocs.C)
+const isNoticeView = computed(() => activeItemKey.value === activeSdkModule.value?.defaultItemKey)
+const defaultCameraLabels = {
+  sidebarAriaLabel: 'SDK目录',
+  breadcrumbAriaLabel: '当前位置',
+  breadcrumbRoot: 'SDK文档',
+  developmentLanguage: '开发语言',
+  callFunction: '调用函数',
+  functionParameters: '函数参数',
+  exampleCode: '调用示例代码',
+  returnValues: '返回值及其含义',
+  copyCode: '复制代码',
+  codeCopied: '代码已复制',
+  downloadComponent: '下载SDK组件',
+}
+const cameraLabels = computed(() => {
+  const labels = activeSdkModule.value?.labels || {}
+
+  return Object.fromEntries(Object.entries(defaultCameraLabels).map(([key, fallback]) => {
+    const value = String(labels[key] || '').trim()
+    return [key, value && !value.includes('?') ? value : fallback]
+  }))
+})
+const cameraNoticeDocs = computed(() => activeSdkModule.value?.documents?.notice || {})
+const cameraNoticeComponentImages = computed(() => activeSdkModule.value?.assets?.noticeComponentImages || {})
+const activeNoticeDoc = computed(() => cameraNoticeDocs.value[activeCodeTab.value] || {})
 const activeNoticeComponentImage = computed(() => {
-  return sdkNoticeComponentImages[activeCodeTab.value] || sdkNoticeComponentImages.C
+  return cameraNoticeComponentImages.value[activeCodeTab.value] || {}
 })
 const isDemoDownloadView = computed(() => activeGroupKey.value === 'demo' || activeItemKey.value.includes('demo'))
 const isEmptyContentView = computed(() => activeSdkGroup.value && !activeSdkGroup.value.items?.length && !isNoticeView.value)
@@ -1211,13 +1342,14 @@ const parseSdkFunctionPathSamples = (value, functionName) => {
 
 const apiDoc = computed(() => {
   const functionName = activeSdkItem.value?.functionName || ''
-  const sdkDoc = sdkCameraDocs[functionName]
+  const sdkDoc = activeSdkModule.value?.documents?.functions?.[functionName]
 
   if (sdkDoc) {
     const codeSamples = parseSdkCodeSamples(sdkDoc.codeSamples)
 
     return {
       ...apiDocBase,
+      codeTabs: sdkLanguageTabs.value,
       title: activeSdkItem.value?.title || 'SDK函数说明',
       path: normalizeSdkDocText(sdkDoc.path) || functionName,
       pathSamples: parseSdkFunctionPathSamples(sdkDoc.path, functionName),
@@ -1228,15 +1360,16 @@ const apiDoc = computed(() => {
     }
   }
 
-  const codeSamples = sdkFunctionCodeSamples[functionName] || createSdkFunctionCodeSamples(functionName)
+  const codeSamples = createSdkFunctionCodeSamples('')
 
   return {
     ...apiDocBase,
+    codeTabs: sdkLanguageTabs.value,
     title: activeSdkItem.value?.title || 'SDK函数说明',
-    path: functionName || '待补充',
-    pathSamples: createSdkFunctionPathSamples(functionName),
-    params: sdkFunctionParams[functionName] || apiDocBase.params,
-    responseFields: sdkFunctionReturns[functionName] || apiDocBase.responseFields,
+    path: '',
+    pathSamples: createSdkFunctionPathSamples(''),
+    params: [],
+    responseFields: [],
     code: codeSamples.C,
     codeSamples,
   }
@@ -1248,14 +1381,18 @@ const copiedCodeKey = ref('')
 let copyCodeResetTimer = null
 const activeCodeCopyKey = computed(() => `${activeSdkItem.value?.key || 'sdk'}:${activeCodeTab.value}`)
 const isActiveCodeCopied = computed(() => copiedCodeKey.value === activeCodeCopyKey.value)
-const copyCodeButtonAriaLabel = computed(() => isActiveCodeCopied.value ? '代码已复制' : '复制代码')
+const copyCodeButtonAriaLabel = computed(() => {
+  return isActiveCodeCopied.value ? cameraLabels.value.codeCopied : cameraLabels.value.copyCode
+})
 
 const toggleGroup = (key) => {
   activeGroupKey.value = activeGroupKey.value === key ? '' : key
 
-  const group = sdkGroups.find(item => item.key === key)
+  const group = sdkGroups.value.find(item => item.key === key)
   if (group?.items?.[0]) {
     activeItemKey.value = group.items[0].key
+  } else {
+    activeItemKey.value = ''
   }
 }
 
@@ -1338,7 +1475,7 @@ const copyActiveCode = async () => {
 const getSingleQueryValue = value => Array.isArray(value) ? value[0] : value
 
 const selectSdkGroupByKey = (key) => {
-  const group = sdkGroups.find(item => item.key === key)
+  const group = sdkGroups.value.find(item => item.key === key)
 
   if (!group) {
     return
@@ -1355,10 +1492,22 @@ const selectSdkGroupByKey = (key) => {
 
 const syncSdkTargetFromRoute = () => {
   const target = String(getSingleQueryValue(route.query.sdkTarget) || '').trim().toLowerCase()
+
+  if (target === 'api') {
+    const apiGroup = sdkGroups.value.find(group => group.items?.some(item => item.functionName))
+    const firstApiItem = apiGroup?.items.find(item => item.functionName)
+
+    if (apiGroup && firstApiItem) {
+      activeGroupKey.value = apiGroup.key
+      activeItemKey.value = firstApiItem.key
+    }
+
+    return
+  }
+
   const targetMap = {
     camera: 'camera',
     audio: 'audio',
-    cast: 'cast',
   }
 
   if (targetMap[target]) {
@@ -1378,6 +1527,42 @@ useLocalizedAsyncState({
   },
 })
 
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: cameraModuleLocale,
+  load: currentLocale => getCameras(currentLocale),
+  sync: response => {
+    cameraModule.value = getCameraModuleFromResponse(response)
+  },
+  reset: () => {
+    cameraModule.value = null
+  },
+})
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: soundcardModuleLocale,
+  load: currentLocale => getSoundcards(currentLocale),
+  sync: response => {
+    soundcardModule.value = getSoundcardModuleFromResponse(response)
+  },
+  reset: () => {
+    soundcardModule.value = null
+  },
+})
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: exampleModuleLocale,
+  load: currentLocale => getExamples(currentLocale),
+  sync: response => {
+    exampleModule.value = getExampleModuleFromResponse(response)
+  },
+  reset: () => {
+    exampleModule.value = null
+  },
+})
+
 onMounted(() => {
   syncSdkTargetFromRoute()
 })
@@ -1389,6 +1574,30 @@ onBeforeUnmount(() => {
 })
 
 watch(() => route.query.sdkTarget, () => {
+  syncSdkTargetFromRoute()
+})
+
+watch(cameraModule, (module) => {
+  if (!module) {
+    return
+  }
+
+  if (!sdkLanguageTabs.value.includes(activeCodeTab.value)) {
+    activeCodeTab.value = sdkLanguageTabs.value[0] || ''
+  }
+
+  syncSdkTargetFromRoute()
+})
+
+watch(soundcardModule, (module) => {
+  if (!module) {
+    return
+  }
+
+  if (!sdkLanguageTabs.value.includes(activeCodeTab.value)) {
+    activeCodeTab.value = sdkLanguageTabs.value[0] || ''
+  }
+
   syncSdkTargetFromRoute()
 })
 
@@ -1649,18 +1858,25 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
 }
 
 .sdk-sidebar-items-wrap {
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
   overflow: hidden;
-  transition: max-height 0.25s ease;
+  transition: grid-template-rows 0.25s ease;
 }
 
 .sdk-sidebar-items-wrap-open {
-  max-height: 620px;
+  grid-template-rows: 1fr;
 }
 
 .sdk-sidebar-items {
+  min-height: 0;
   display: grid;
-  padding: 0 0 8px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.sdk-sidebar-items-wrap-open .sdk-sidebar-items {
+  padding-bottom: 8px;
 }
 
 .sdk-sidebar-item {
@@ -2012,6 +2228,19 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
   color: var(--theme-sdk-text, var(--theme-text-muted));
   font-size: 12px;
   line-height: 18px;
+}
+
+.sdk-notice-table-2-columns .sdk-notice-table-row {
+  grid-template-columns: minmax(310px, 0.95fr) minmax(0, 1.45fr);
+}
+
+.sdk-notice-table-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sdk-notice-table-row:not(.sdk-notice-table-head) > span:first-child {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
 .sdk-notice-table-row + .sdk-notice-table-row {

@@ -1,9 +1,12 @@
+import { getApiResponseMessage } from '../utils/api-response'
+
 const createToastId = () => {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
 // 全局轻提示状态，页面和组件都通过这个 composable 触发提示框。
 export const useSiteToast = () => {
+  const nuxtApp = useNuxtApp()
   const toastItems = useState('site-toast-items', () => [])
   const toastText = useState('site-toast-text', () => ({
     closeToastLabel: '',
@@ -15,6 +18,7 @@ export const useSiteToast = () => {
     verifyCodeRequired: '',
     agreeProtocolRequired: '',
     qrcodeExpired: '',
+    apiResponseMessages: {},
   }))
 
   const removeToast = (id) => {
@@ -49,6 +53,7 @@ export const useSiteToast = () => {
       verifyCodeRequired: text.verifyCodeRequired || '',
       agreeProtocolRequired: text.agreeProtocolRequired || '',
       qrcodeExpired: text.qrcodeExpired || '',
+      apiResponseMessages: text.apiResponseMessages || text.responseMessages || text.responseCodes || {},
     }
   }
 
@@ -114,6 +119,35 @@ export const useSiteToast = () => {
     return showErrorToast(toastText.value.requestFail, options)
   }
 
+  const resolveApiResponseMessage = (payload, options = {}) => {
+    const i18nLocale = nuxtApp.$i18n?.locale
+    const locale = typeof i18nLocale === 'string' ? i18nLocale : i18nLocale?.value
+
+    return getApiResponseMessage(payload, {
+      locale: locale || 'en',
+      scope: options.scope || payload?.responseScope || 'general',
+      messages: options.messages || toastText.value.apiResponseMessages,
+      fallback: options.fallback || toastText.value.requestFail,
+    })
+  }
+
+  const showApiResponseSuccessToast = (payload, options = {}) => {
+    const message = resolveApiResponseMessage(payload, {
+      ...options,
+      fallback: options.fallback || toastText.value.requestSuccess,
+    })
+
+    return showSuccessToast(message, options)
+  }
+
+  const showApiResponseErrorToast = (payload, options = {}) => {
+    if (payload?.authExpiredHandled) {
+      return null
+    }
+
+    return showErrorToast(resolveApiResponseMessage(payload, options), options)
+  }
+
   const requestLoadingText = computed(() => {
     const text = String(toastText.value.requestLoading || '').trim()
 
@@ -133,6 +167,9 @@ export const useSiteToast = () => {
     showErrorToast,
     showRequestSuccessToast,
     showRequestFailToast,
+    showApiResponseSuccessToast,
+    showApiResponseErrorToast,
+    resolveApiResponseMessage,
     setToastText,
     removeToast,
   }

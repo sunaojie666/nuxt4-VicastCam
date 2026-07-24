@@ -9,7 +9,7 @@
           :key="aboutHeroVideoSrc"
           class="about-hero-video"
           :src="aboutHeroVideoSrc"
-          poster="/images/login/background.png"
+          poster="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/background.png"
           autoplay
           muted
           loop
@@ -27,7 +27,7 @@
             <span>{{ aboutBox.hero.titleMain }}</span>
             <span class="theme-gradient-text">
               {{ aboutBox.hero.titleHighlight }}
-              <img class="about-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
+              <img class="about-hero-title-line" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
             </span>
           </h1>
 
@@ -259,7 +259,7 @@ const createStrapiAssetUrl = (url) => {
     return ''
   }
 
-  return url.startsWith('http') ? url : `${config.public.strapiUrl.replace(/\/+$/, '')}${url}`
+  return url.startsWith('http') ? url : `${config.public.mediaUrl.replace(/\/+$/, '')}${url}`
 }
 
 const syncAboutHeroVideo = (homeContent = {}) => {
@@ -272,31 +272,31 @@ const socialItems = [
     key: 'tiktok',
     title: 'TikTok',
     href: 'https://www.tiktok.com/',
-    icon: '/images/about/social/tiktok.png',
+    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/tiktok.png',
   },
   {
     key: 'youtube',
     title: 'YouTube',
     href: 'https://www.youtube.com/',
-    icon: '/images/about/social/youtube.png',
+    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/youtube.png',
   },
   {
     key: 'facebook',
     title: 'Facebook',
     href: 'https://www.facebook.com/',
-    icon: '/images/about/social/facebook.png',
+    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/facebook.png',
   },
   {
     key: 'instagram',
     title: 'Instagram',
     href: 'https://www.instagram.com/',
-    icon: '/images/about/social/instagram.png',
+    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/instagram.png',
   },
   {
     key: 'twitch',
     title: 'Twitch',
     href: 'https://www.twitch.tv/',
-    icon: '/images/about/social/twitch.png',
+    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/twitch.png',
   },
 ]
 

@@ -5,7 +5,7 @@
       :key="heroVideoSrc"
       class="home-hero-video"
       :src="heroVideoSrc"
-      poster="/images/login/background.png"
+      poster="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/background.png"
       autoplay
       muted
       loop
@@ -20,7 +20,7 @@
       <div class="home-hero-content">
         <div class="home-hero-main">
           <div v-if="heroBadgeText" :key="heroBadgeText" class="home-hero-eyebrow">
-            <img src="/images/common/badge-star.png" alt="" aria-hidden="true" role="presentation">
+            <img src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/badge-star.png" alt="" aria-hidden="true" role="presentation">
             <b>{{ heroBadgeText }}</b>
           </div>
 
@@ -28,7 +28,7 @@
             <span>{{ heroTitle }}</span>
             <span class="theme-gradient-text">
               {{ heroSubtitle }}
-              <img class="home-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
+              <img class="home-hero-title-line" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
             </span>
           </h1>
 
@@ -40,24 +40,24 @@
           <div class="home-hero-actions" aria-label="下载VicastCam">
             <a href="#" class="home-hero-download home-hero-download-light">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
-                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/apple-default.svg" alt="" role="presentation">
-                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/apple-active.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-default" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/apple-default.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-active" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/apple-active.svg" alt="" role="presentation">
               </span>
               <span>{{ appStoreUrl }}</span>
             </a>
 
             <a href="#" class="home-hero-download home-hero-download-light">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
-                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/android-default.svg" alt="" role="presentation">
-                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/android-active.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-default" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/android-default.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-active" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/android-active.svg" alt="" role="presentation">
               </span>
               <span>{{ googlePlayUrl }}</span>
             </a>
 
             <a href="#" class="home-hero-download home-hero-download-primary">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
-                <img class="home-hero-download-icon-default" src="/images/home/download-buttons/windows-default.svg" alt="" role="presentation">
-                <img class="home-hero-download-icon-active" src="/images/home/download-buttons/windows-active.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-default" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/windows-default.svg" alt="" role="presentation">
+                <img class="home-hero-download-icon-active" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/windows-active.svg" alt="" role="presentation">
               </span>
               <span>{{ desktopClientUrl }}</span>
             </a>
@@ -77,14 +77,14 @@
 
           <div class="home-hero-metric">
             <span class="home-hero-score-icons" aria-hidden="true">
-              <img v-for="star in 5" :key="star" src="/images/common/rating-star.png" alt="" role="presentation">
+              <img v-for="star in 5" :key="star" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/rating-star.png" alt="" role="presentation">
             </span>
             <strong>4.9</strong>
             <span>{{ ratingLabel }}</span>
           </div>
 
           <div class="home-hero-metric">
-            <img class="home-hero-download-icon" src="/images/common/download-metric.png" alt="" aria-hidden="true" role="presentation">
+            <img class="home-hero-download-icon" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/download-metric.png" alt="" aria-hidden="true" role="presentation">
             <strong>10M+</strong>
             <span>{{ downloadCountLabel }}</span>
           </div>
@@ -136,7 +136,7 @@ const createStrapiAssetUrl = (url) => {
     return ''
   }
 
-  return url.startsWith('http') ? url : `${config.public.strapiUrl.replace(/\/+$/, '')}${url}`
+  return url.startsWith('http') ? url : `${config.public.mediaUrl.replace(/\/+$/, '')}${url}`
 }
 
 const syncHomeHero = (homeData = {}) => {

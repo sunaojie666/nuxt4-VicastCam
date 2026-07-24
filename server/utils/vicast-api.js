@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { createError, getCookie, readBody } from 'h3'
 
 const AUTH_TOKEN_COOKIE = 'vicast_auth_token'
-const VICAST_SIGN_KEY = 'dygc_2024'
+const VICAST_SIGN_KEY = 'qY4tsjKr746NXwdQNWjio36D'
 
 // 兼容环境变量里是否带尾部斜杠，避免拼接出双斜杠。
 export const normalizeVicastApiBaseURL = (url) => {

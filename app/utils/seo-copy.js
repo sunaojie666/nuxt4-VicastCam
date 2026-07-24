@@ -1,7 +1,7 @@
 export const defaultRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
 const privateRobots = 'noindex, nofollow, noarchive'
 export const defaultDescription = 'VicastCam provides virtual camera, virtual background, screen casting, and live streaming tools for creators, meetings, and multi-platform production.'
-export const defaultSeoImage = '/images/common/og-default.png'
+export const defaultSeoImage = 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/og-default.png'
 
 const fallbackPageSeoCopy = {
   about: {
@@ -17,8 +17,8 @@ const fallbackPageSeoCopy = {
     description: 'Review the VicastCam User Agreement for software licensing, account, subscription, and product usage rules.',
   },
   sales: {
-    title: 'Sales Policy',
-    description: 'Review the VicastCam Sales Policy for subscription purchases, payments, delivery, renewals, refunds, and order support.',
+    title: 'Membership Subscription Agreement',
+    description: 'Review the VicastCam Membership Subscription Agreement for subscription purchases, payments, renewals, refunds, and order support.',
   },
 }
 

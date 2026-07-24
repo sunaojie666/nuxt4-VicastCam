@@ -1,7 +1,7 @@
 <template>
-  <section class="tutorial-player-section" aria-label="教程列表">
+  <section class="tutorial-player-section" :aria-label="content.sectionAriaLabel">
     <div class="tutorial-player-layout">
-      <aside class="tutorial-sidebar" aria-label="教程目录">
+      <aside class="tutorial-sidebar" :aria-label="content.catalogAriaLabel">
         <section
           v-for="group in tutorialGroups"
           :key="group.key"
@@ -25,7 +25,7 @@
                 :key="lesson.id"
                 type="button"
                 :class="['tutorial-lesson', { 'tutorial-lesson-active': lesson.id === activeLessonId }]"
-                @click="activeLessonId = lesson.id"
+                @click="selectLesson(lesson)"
               >
                 <span class="tutorial-lesson-index">{{ lesson.index }}</span>
                 <span>{{ lesson.title }}</span>
@@ -47,27 +47,40 @@
 
         <div class="tutorial-video-shell">
           <video
+            :key="activeLesson.video"
+            ref="videoPlayer"
             class="tutorial-video-player"
-            src="/videos/tutorial-demo.mp4"
-            poster="/images/login/background.png"
+            :src="activeLesson.video"
+            :poster="tutorialPoster"
             controls
+            playsinline
             preload="metadata"
           />
         </div>
 
         <footer class="tutorial-step-nav">
-          <button type="button" class="tutorial-step-button tutorial-step-button-disabled">
+          <button
+            type="button"
+            :class="['tutorial-step-button', { 'tutorial-step-button-disabled': !previousLesson }]"
+            :disabled="!previousLesson"
+            @click="selectLesson(previousLesson, true)"
+          >
             <Icon name="lucide:chevron-left" aria-hidden="true" />
             <span>
-              <small>上一集</small>
-              已经是第一集
+              <small>{{ content.previousLabel }}</small>
+              {{ previousLesson?.title || content.firstLessonText }}
             </span>
           </button>
 
-          <button type="button" class="tutorial-step-button tutorial-step-button-next">
+          <button
+            type="button"
+            :class="['tutorial-step-button', 'tutorial-step-button-next', { 'tutorial-step-button-disabled': !nextLesson }]"
+            :disabled="!nextLesson"
+            @click="selectLesson(nextLesson, true)"
+          >
             <span>
-              <small>下一集</small>
-              第2集:如何注册和登录
+              <small>{{ content.nextLabel }}</small>
+              {{ nextLesson?.title || content.lastLessonText }}
             </span>
             <Icon name="lucide:chevron-right" aria-hidden="true" />
           </button>
@@ -78,52 +91,23 @@
 </template>
 
 <script setup>
-const tutorialGroups = [
-  {
-    key: 'desktop',
-    title: '电脑端',
-    count: '12集',
-    icon: 'lucide:monitor',
-    lessons: [
-      { id: 'desktop-1', index: 1, title: '如何下载与安装VicastCam', description: '手把手教你在电脑端下载与安装 VicastCam', time: '04:32' },
-      { id: 'desktop-2', index: 2, title: '如何注册与登录VicastCam', description: '快速完成账号注册并登录软件', time: '04:32' },
-      { id: 'desktop-3', index: 3, title: '如何开启虚拟背景', description: '学习选择、预览和应用虚拟背景', time: '04:32' },
-      { id: 'desktop-4', index: 4, title: '如何调整直播画面', description: '调整画面比例、清晰度和背景效果', time: '04:32' },
-      { id: 'desktop-5', index: 5, title: '如何连接直播平台', description: '连接常用直播平台并完成推流准备', time: '04:32' },
-    ],
+const props = defineProps({
+  content: {
+    type: Object,
+    required: true,
   },
-  {
-    key: 'beginner',
-    title: '入门教程',
-    count: '8集',
-    icon: 'lucide:folder-open',
-    lessons: [
-      { id: 'beginner-1', index: 1, title: '认识VicastCam界面', description: '快速了解软件的主要功能区域', time: '03:18' },
-      { id: 'beginner-2', index: 2, title: '第一次创建直播场景', description: '完成第一个可用直播场景', time: '05:12' },
-    ],
+  groups: {
+    type: Array,
+    required: true,
   },
-  {
-    key: 'advanced',
-    title: '高级教程',
-    count: '10集',
-    icon: 'lucide:folder',
-    lessons: [
-      { id: 'advanced-1', index: 1, title: '专业抠图参数设置', description: '调节边缘、光线和人物细节', time: '06:06' },
-    ],
-  },
-  {
-    key: 'others',
-    title: '其他教程',
-    count: '6集',
-    icon: 'lucide:folder',
-    lessons: [
-      { id: 'others-1', index: 1, title: '常见问题处理', description: '处理安装、登录和视频输出问题', time: '04:08' },
-    ],
-  },
-]
+})
 
-const activeGroupKey = ref('desktop')
-const activeLessonId = ref('desktop-1')
+const tutorialGroups = computed(() => props.groups)
+const tutorialPoster = '/images/tutorial/video-poster.png'
+
+const activeGroupKey = ref('beginner')
+const activeLessonId = ref('beginner-1')
+const videoPlayer = ref(null)
 
 const toggleTutorialGroup = (group) => {
   activeGroupKey.value = activeGroupKey.value === group.key ? '' : group.key
@@ -134,8 +118,45 @@ const toggleTutorialGroup = (group) => {
 }
 
 const activeLesson = computed(() => {
-  const lessons = tutorialGroups.flatMap(group => group.lessons)
+  const lessons = tutorialGroups.value.flatMap(group => group.lessons)
   return lessons.find(lesson => lesson.id === activeLessonId.value) || lessons[0]
+})
+
+const allLessons = computed(() => tutorialGroups.value.flatMap(group => group.lessons))
+const activeLessonIndex = computed(() => allLessons.value.findIndex(lesson => lesson.id === activeLessonId.value))
+const previousLesson = computed(() => activeLessonIndex.value > 0 ? allLessons.value[activeLessonIndex.value - 1] : null)
+const nextLesson = computed(() => activeLessonIndex.value >= 0 && activeLessonIndex.value < allLessons.value.length - 1 ? allLessons.value[activeLessonIndex.value + 1] : null)
+
+const playActiveLesson = async () => {
+  await nextTick()
+
+  try {
+    await videoPlayer.value?.play()
+  } catch {
+    // Browsers can still block scripted playback through local autoplay policies.
+  }
+}
+
+const selectLesson = (lesson, autoplay = false) => {
+  if (!lesson) return
+  activeLessonId.value = lesson.id
+  activeGroupKey.value = tutorialGroups.value.find(group => group.lessons.some(item => item.id === lesson.id))?.key || activeGroupKey.value
+
+  if (autoplay) {
+    void playActiveLesson()
+  }
+}
+
+watch(tutorialGroups, (groups) => {
+  const lessons = groups.flatMap(group => group.lessons || [])
+
+  if (!lessons.some(lesson => lesson.id === activeLessonId.value)) {
+    activeLessonId.value = lessons[0]?.id || ''
+  }
+
+  if (!groups.some(group => group.key === activeGroupKey.value)) {
+    activeGroupKey.value = groups[0]?.key || ''
+  }
 })
 </script>
 
@@ -144,7 +165,7 @@ const activeLesson = computed(() => {
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 32px 0 78px;
+  padding: 80px 0;
   background: var(--page-route-background);
 }
 
@@ -352,7 +373,8 @@ const activeLesson = computed(() => {
 .tutorial-video-player {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #000;
 }
 
 .tutorial-step-nav {
@@ -426,10 +448,6 @@ const activeLesson = computed(() => {
 }
 
 @media (max-width: 900px) {
-  .tutorial-player-section {
-    padding: 22px 0 58px;
-  }
-
   .tutorial-player-layout {
     grid-template-columns: 1fr;
     gap: 18px;

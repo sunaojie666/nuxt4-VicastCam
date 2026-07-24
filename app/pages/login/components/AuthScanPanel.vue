@@ -19,7 +19,7 @@
     </div>
 
     <p class="auth-scan-tip">
-      <img src="/images/login/scan-code-icon.png" alt="" aria-hidden="true" role="presentation">
+      <img src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/scan-code-icon.png" alt="" aria-hidden="true" role="presentation">
       <span>{{ loginBox.qrLoginTip }}</span>
     </p>
 
@@ -59,7 +59,7 @@ const props = defineProps({
     default: () => ({}),
   },
 })
-const { requestLoadingText, showErrorToast, showRequestFailToast, showRequestSuccessToast } = useSiteToast()
+const { requestLoadingText, showApiResponseErrorToast, showApiResponseSuccessToast, showErrorToast, showRequestFailToast } = useSiteToast()
 const { loginWithScanQrcode } = useAuth()
 const localePath = useLocalePath()
 const qrcodeSource = ref('')
@@ -181,9 +181,9 @@ const expireQrcode = () => {
   showErrorToast(toastBox.value.qrcodeExpired || '')
 }
 
-const handleScanLoginSuccess = () => {
+const handleScanLoginSuccess = (response) => {
   stopScanStatusPolling()
-  showRequestSuccessToast()
+  showApiResponseSuccessToast(response, { scope: 'auth' })
   navigateTo(localePath('/'))
 }
 
@@ -206,13 +206,16 @@ const checkScanLoginStatus = () => {
       isCheckingScanStatus.value = false
 
       if (result?.user) {
-        handleScanLoginSuccess()
+        handleScanLoginSuccess(result.response)
       }
     },
-    () => {
+    (error) => {
       stopScanStatusPolling()
       qrcodeLoadFailed.value = true
-      showRequestFailToast()
+      showApiResponseErrorToast(error, {
+        scope: 'qr',
+        fallback: toastBox.value.requestFail,
+      })
     }
   )
 }
@@ -250,10 +253,13 @@ const loadLoginQrcode = () => {
       qrcodeUuid.value = uuid
       startScanStatusPolling()
     },
-    () => {
+    (error) => {
       isLoadingQrcode.value = false
       qrcodeLoadFailed.value = true
-      showRequestFailToast()
+      showApiResponseErrorToast(error, {
+        scope: 'qr',
+        fallback: toastBox.value.requestFail,
+      })
     }
   )
 }

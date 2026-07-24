@@ -145,15 +145,15 @@ const normalizePlanType = value => {
 const membershipPlanMeta = {
   month: {
     theme: 'theme-cyan',
-    badgeImage: '/images/profile/month.png',
+    badgeImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/month.png',
   },
   year: {
     theme: 'theme-blue',
-    badgeImage: '/images/profile/year.png',
+    badgeImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png',
   },
   life: {
     theme: 'theme-violet',
-    badgeImage: '/images/profile/gold.png',
+    badgeImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/gold.png',
   },
 }
 
@@ -223,7 +223,7 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('\u7ec8\u8eab') ||
     normalizedVipType.includes('\u6c38\u4e45')
   ) {
-    return '/images/profile/gold.png'
+    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/gold.png'
   }
 
   if (
@@ -232,7 +232,7 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('annual') ||
     normalizedVipType.includes('\u5e74')
   ) {
-    return '/images/profile/year.png'
+    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png'
   }
 
   if (
@@ -241,10 +241,10 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('monthly') ||
     normalizedVipType.includes('\u6708')
   ) {
-    return '/images/profile/month.png'
+    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/month.png'
   }
 
-  return '/images/profile/year.png'
+  return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png'
 }
 
 const membershipPlans = computed(() => {

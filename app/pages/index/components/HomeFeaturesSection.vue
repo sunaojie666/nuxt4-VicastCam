@@ -21,12 +21,12 @@
           :style="{ '--reveal-delay': `${feature.delay}ms`, '--feature-icon-bg': feature.gradient }"
         >
           <span class="home-features-icon">
-            <img v-if="index === 0" src="/images/home/features/feature-1.png" alt="" aria-hidden="true" role="presentation">
-            <img v-else-if="index === 1" src="/images/home/features/feature-2.png" alt="" aria-hidden="true" role="presentation">
-            <img v-else-if="index === 2" src="/images/home/features/feature-3.png" alt="" aria-hidden="true" role="presentation">
-            <img v-else-if="index === 3" src="/images/home/features/feature-4.png" alt="" aria-hidden="true" role="presentation">
-            <img v-else-if="index === 4" src="/images/home/features/feature-5.png" alt="" aria-hidden="true" role="presentation">
-            <img v-else src="/images/home/features/feature-6.png" alt="" aria-hidden="true" role="presentation">
+            <img v-if="index === 0" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/features/feature-1.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else-if="index === 1" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/features/feature-2.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else-if="index === 2" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/features/feature-3.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else-if="index === 3" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/features/feature-4.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else-if="index === 4" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/features/feature-5.png" alt="" aria-hidden="true" role="presentation">
+            <img v-else src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/features/feature-6.png" alt="" aria-hidden="true" role="presentation">
           </span>
 
           <h3>{{ feature.title }}</h3>
@@ -210,7 +210,7 @@ const { loadContent: loadFeatureContent } = useLocalizedAsyncState({
   padding: 28px 29px;
   border: 1px solid var(--theme-feature-card-border, transparent);
   border-radius: 8px;
-  background: var(--theme-feature-card-background, url("/images/home/features/card-bg.png") center / cover no-repeat);
+  background: var(--theme-feature-card-background, url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/features/card-bg.png") center / cover no-repeat);
   transform-origin: center center;
   transition:
     border-color 0.22s ease,

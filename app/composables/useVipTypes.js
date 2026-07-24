@@ -2,16 +2,16 @@ import { getVipTypes } from '../api/request/auth'
 
 const defaultBenefit = '普通会员特权'
 const badgeImages = [
-  '/images/profile/month.png',
-  '/images/profile/year.png',
-  '/images/profile/gold.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/month.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/gold.png',
 ]
 const themes = ['theme-cyan', 'theme-blue', 'theme-violet']
 const homePriceImages = {
-  '9.99': '/images/pricing/price-9-99.png',
-  '69.99': '/images/pricing/price-69-99.png',
-  '89.99': '/images/pricing/price-99-99.png',
-  '99.99': '/images/pricing/price-99-99.png',
+  '9.99': 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/pricing/price-9-99.png',
+  '69.99': 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/pricing/price-69-99.png',
+  '89.99': 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/pricing/price-99-99.png',
+  '99.99': 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/pricing/price-99-99.png',
 }
 
 let vipTypesRequest = null
@@ -23,7 +23,7 @@ const fallbackPlans = [
     description: '适合想体验软件功能的用户',
     subtitle: '低门槛随心用，全功能按月畅享',
     price: '¥9.99',
-    priceImage: '/images/pricing/price-9-99.png',
+    priceImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/pricing/price-9-99.png',
     originalPrice: '',
     unit: '/月',
     cta: '购买',
@@ -40,7 +40,7 @@ const fallbackPlans = [
     description: '适合想体验软件功能的用户',
     subtitle: '超值特惠，性价比拉满更省钱',
     price: '¥69.99',
-    priceImage: '/images/pricing/price-69-99.png',
+    priceImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/pricing/price-69-99.png',
     originalPrice: '',
     unit: '/年',
     cta: '购买',
@@ -57,7 +57,7 @@ const fallbackPlans = [
     description: '适合想体验软件功能的用户',
     subtitle: '一次付费永久畅用，免费更新',
     price: '$89.99',
-    priceImage: '/images/pricing/price-99-99.png',
+    priceImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/pricing/price-99-99.png',
     originalPrice: '',
     unit: '',
     cta: '购买',

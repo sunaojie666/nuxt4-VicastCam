@@ -9,6 +9,7 @@ import { isValidThemeCode, themeStorageKey } from './utils/theme'
 
 const siteName = 'VicastCam'
 const { locale, locales } = useI18n()
+const route = useRoute()
 const themeCookie = useCookie(themeStorageKey)
 
 const activeLocaleConfig = computed(() => {
@@ -16,6 +17,12 @@ const activeLocaleConfig = computed(() => {
 })
 
 const activeTheme = computed(() => {
+  const routeName = String(route.name || '').split('___')[0]
+
+  if (routeName === 'login') {
+    return 'dark'
+  }
+
   return isValidThemeCode(themeCookie.value) ? themeCookie.value : 'dark'
 })
 

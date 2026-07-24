@@ -1,4 +1,4 @@
-import { checkScanLoginStatus, getVipInfo, loginByEmailCode, loginByPassword } from '../api/request/auth'
+import { checkScanLoginStatus, getVipInfo, loginByEmailCode, loginByPassword, logout } from '../api/request/auth'
 import { authUserCookieName, clearAuthStorage } from '../utils/auth-session'
 
 const getLoginUser = (response) => {
@@ -13,40 +13,6 @@ const getLoginUser = (response) => {
     response?.data ||
     response ||
     null
-}
-
-const getLoginErrorMessage = (response) => {
-  return response?.error?.message ||
-    response?.data?.error?.message ||
-    response?.message ||
-    response?.data?.message ||
-    ''
-}
-
-const successResponseCodes = new Set([0, 200, 200001, 200200])
-const successResponseStatus = new Set(['success', 'ok', 'succeed'])
-
-const getResponseCode = (response) => {
-  return pickUserValue(response?.code, response?.data?.code)
-}
-
-const getResponseStatus = (response) => {
-  return String(pickUserValue(response?.status, response?.data?.status) || '').toLowerCase()
-}
-
-const isBusinessFailedResponse = (response) => {
-  const code = getResponseCode(response)
-  const status = getResponseStatus(response)
-
-  if (response?.error || response?.data?.error) {
-    return true
-  }
-
-  if (code !== undefined && !successResponseCodes.has(Number(code))) {
-    return true
-  }
-
-  return Boolean(status && !successResponseStatus.has(status))
 }
 
 const pickUserValue = (...values) => {
@@ -71,6 +37,14 @@ const createUserBoolean = (...values) => {
   }
 
   return ['1', 'true', 'yes'].includes(String(value || '').toLowerCase())
+}
+
+const createMissingLoginUserError = (response) => {
+  return Object.assign(new Error('loginFailed'), {
+    responseKey: 'loginFailed',
+    responseScope: 'auth',
+    data: response,
+  })
 }
 
 // 只保留前端展示登录态需要的字段，不把 token 放进可读 cookie。
@@ -146,9 +120,7 @@ export const useAuth = () => {
       })
 
       if (!user) {
-        return Promise.reject(Object.assign(new Error(getLoginErrorMessage(response)), {
-          data: response,
-        }))
+        return Promise.reject(createMissingLoginUserError(response))
       }
 
       return response
@@ -162,9 +134,7 @@ export const useAuth = () => {
       })
 
       if (!user) {
-        return Promise.reject(Object.assign(new Error(getLoginErrorMessage(response)), {
-          data: response,
-        }))
+        return Promise.reject(createMissingLoginUserError(response))
       }
 
       return response
@@ -194,12 +164,6 @@ export const useAuth = () => {
     return getVipInfo({
       user_id,
     }).then((response) => {
-      if (isBusinessFailedResponse(response)) {
-        return Promise.reject(Object.assign(new Error(getLoginErrorMessage(response)), {
-          data: response,
-        }))
-      }
-
       mergeAuthUser(getLoginUser(response) || {})
       return response
     })
@@ -207,6 +171,19 @@ export const useAuth = () => {
 
   const clearAuth = () => {
     clearAuthStorage()
+  }
+
+  const logoutUser = () => {
+    const user_id = authUser.value?.user_id
+
+    if (!user_id) {
+      clearAuth()
+      return Promise.resolve(null)
+    }
+
+    return logout({ user_id }).finally(() => {
+      clearAuth()
+    })
   }
 
   return {
@@ -217,6 +194,7 @@ export const useAuth = () => {
     loginWithScanQrcode,
     refreshVipInfo,
     mergeAuthUser,
+    logoutUser,
     clearAuth,
   }
 }

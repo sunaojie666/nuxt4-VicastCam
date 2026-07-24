@@ -1,25 +1,29 @@
 <template>
   <section class="tutorial-hero-section" aria-labelledby="tutorial-hero-title">
     <div class="tutorial-hero-inner">
-      <span class="tutorial-hero-eyebrow">教程中心</span>
+      <span class="tutorial-hero-eyebrow">{{ content.eyebrow }}</span>
 
       <h1 id="tutorial-hero-title" class="tutorial-hero-title">
-        <span>开启您的VicastCam</span>
-        <span class="theme-gradient-text">学习之旅</span>
+        <span>{{ content.titleMain }}</span>
+        <span class="theme-gradient-text">{{ content.titleHighlight }}</span>
       </h1>
 
       <p class="tutorial-hero-subtitle">
-        <span>让您充分掌握软件使用方法</span>
-        <span class="theme-gradient-text">更快上手软件</span>
+        <span>{{ content.descriptionMain }}</span>
+        <span class="theme-gradient-text">{{ content.descriptionHighlight }}</span>
       </p>
-
-      <label class="tutorial-search">
-        <Icon class="tutorial-search-icon" name="lucide:search" aria-hidden="true" />
-        <input type="search" placeholder="搜索教程..." aria-label="搜索教程">
-      </label>
     </div>
   </section>
 </template>
+
+<script setup>
+defineProps({
+  content: {
+    type: Object,
+    required: true,
+  },
+})
+</script>
 
 <style scoped>
 .tutorial-hero-section {
@@ -33,15 +37,13 @@
   border-bottom: none;
 }
 
-@media (min-width: 901px) {
-  :root[data-theme="light"] .tutorial-hero-section {
-    background: url("/images/common/light-page-hero-bg.png") center / cover no-repeat;
-  }
+:root[data-theme="light"] .tutorial-hero-section {
+  background: url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/light-page-hero-bg.png") center / cover no-repeat;
 }
 
 .tutorial-hero-inner {
   width: min(100%, var(--page-max-width));
-  min-height: 360px;
+  min-height: 294px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,41 +90,9 @@
   overflow-wrap: anywhere;
 }
 
-.tutorial-search {
-  width: min(100%, 420px);
-  height: 48px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  padding: 0 18px;
-  border: 1px solid var(--theme-route-card-border, var(--theme-text-subtle));
-  border-radius: 10px;
-  background: var(--theme-route-card-background, var(--theme-surface-72));
-}
-
-.tutorial-search-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  color: var(--theme-text-muted);
-}
-
-.tutorial-search input {
-  width: 100%;
-  min-width: 0;
-  color: var(--theme-route-card-title, var(--theme-text-light));
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.tutorial-search input::placeholder {
-  color: var(--theme-route-card-text, var(--theme-text-muted));
-}
-
 @media (max-width: 768px) {
   .tutorial-hero-inner {
-    min-height: 360px;
+    min-height: 294px;
     padding-top: 28px;
   }
 

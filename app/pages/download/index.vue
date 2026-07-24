@@ -168,29 +168,29 @@ const emptyDownloadBox = {
 const platformAssets = [
   {
     key: 'android',
-    image: '/images/download/win.png',
-    actionIcon: '/images/download/action-download.png',
-    desktopActionIcon: '/images/download/action-qr-green.png',
-    mobileBackground: '/images/download/mobile-android-bg.png',
-    mobileIcon: '/images/download/mobile-android-icon.png',
-    qrImage: '/images/download/action-qr-green.png',
+    image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/win.png',
+    actionIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/action-download.png',
+    desktopActionIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/action-qr-green.png',
+    mobileBackground: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/mobile-android-bg.png',
+    mobileIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/mobile-android-icon.png',
+    qrImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/action-qr-green.png',
   },
   {
     key: 'ios',
-    image: '/images/download/ios.png',
-    actionIcon: '/images/download/action-download.png',
-    desktopActionIcon: '/images/download/action-qr-purple.png',
-    mobileBackground: '/images/download/mobile-ios-bg.png',
-    mobileIcon: '/images/download/mobile-ios-icon.png',
-    qrImage: '/images/download/action-qr-purple.png',
+    image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/ios.png',
+    actionIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/action-download.png',
+    desktopActionIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/action-qr-purple.png',
+    mobileBackground: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/mobile-ios-bg.png',
+    mobileIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/mobile-ios-icon.png',
+    qrImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/action-qr-purple.png',
   },
   {
     key: 'windows',
-    image: '/images/download/android.png',
-    actionIcon: '/images/download/action-download.png',
-    desktopActionIcon: '/images/download/action-download.png',
-    mobileBackground: '/images/download/mobile-windows-bg.png',
-    mobileIcon: '/images/download/mobile-windows-icon.png',
+    image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/android.png',
+    actionIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/action-download.png',
+    desktopActionIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/action-download.png',
+    mobileBackground: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/mobile-windows-bg.png',
+    mobileIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/mobile-windows-icon.png',
     qrImage: '',
   },
 ]
@@ -198,19 +198,19 @@ const platformAssets = [
 const reasonAssets = [
   {
     key: 'secure',
-    image: '/images/download/reason-fast.png',
+    image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/reason-fast.png',
   },
   {
     key: 'updates',
-    image: '/images/download/reason-secure.png',
+    image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/reason-secure.png',
   },
   {
     key: 'support',
-    image: '/images/download/reason-cross-platform.png',
+    image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/reason-cross-platform.png',
   },
   {
     key: 'tutorial',
-    image: '/images/download/reason-support.png',
+    image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/download/reason-support.png',
   },
 ]
 
@@ -327,7 +327,7 @@ setupStructuredData(() => {
     operatingSystem: platform.system || platform.name || platform.key,
     description: platform.subtitle || downloadBox.value.platform.description || downloadBox.value.seo.description,
     url: downloadPageUrl.value,
-    image: createAbsoluteUrl(platform.mobileIcon || platform.image || '/images/common/og-default.png', siteUrl.value),
+    image: createAbsoluteUrl(platform.mobileIcon || platform.image || 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/og-default.png', siteUrl.value),
     inLanguage: activeLocaleConfig.value.language || locale.value,
   }))
 
@@ -341,7 +341,7 @@ setupStructuredData(() => {
         operatingSystem: 'Windows, iOS, Android',
         description: downloadBox.value.seo.description || 'Download VicastCam for Windows, iOS, and Android.',
         url: downloadPageUrl.value,
-        image: createAbsoluteUrl('/images/common/og-default.png', siteUrl.value),
+        image: createAbsoluteUrl('https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/og-default.png', siteUrl.value),
         inLanguage: activeLocaleConfig.value.language || locale.value,
       }
 }, { id: 'download-software-jsonld' })
@@ -378,7 +378,7 @@ setupStructuredData(() => {
 
 @media (min-width: 901px) {
   :root[data-theme="light"] .download-hero {
-    background: url("/images/common/light-page-hero-bg.png") center / cover no-repeat;
+    background: url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/light-page-hero-bg.png") center / cover no-repeat;
   }
 }
 

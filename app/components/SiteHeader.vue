@@ -6,7 +6,7 @@
         <NuxtLink :to="localePath('/')" class="site-brand" target="_blank" rel="noopener noreferrer">
           <img
             class="site-brand-image"
-            src="/images/common/logo.png"
+            src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png"
             alt=""
             aria-hidden="true"
             role="presentation"
@@ -161,7 +161,13 @@
                 <Icon name="lucide:user-round" aria-hidden="true" />
                 <span>{{ profileMenuText.profile }}</span>
               </button>
-              <button type="button" class="site-profile-menu-item" role="menuitem" @click="handleLogout">
+              <button
+                type="button"
+                class="site-profile-menu-item"
+                role="menuitem"
+                :disabled="isLoggingOut"
+                @click="handleLogout"
+              >
                 <Icon name="lucide:log-out" aria-hidden="true" />
                 <span>{{ profileMenuText.logout }}</span>
               </button>
@@ -192,6 +198,16 @@
         >
           <span>{{ item.label }}</span>
         </button>
+
+        <NuxtLink
+          v-if="!isLoggedIn"
+          :to="localePath('/login')"
+          class="site-mobile-auth-link"
+          @click="closeMobileMenu"
+        >
+          <Icon name="lucide:log-in" aria-hidden="true" />
+          <span>{{ headerText.loginRegister }}</span>
+        </NuxtLink>
       </div>
     </div>
   </header>
@@ -210,7 +226,7 @@ const switchLocalePath = useSwitchLocalePath()
 
 // 当前路由用于在页面跳转后关闭手机端菜单和处理区块滚动。
 const route = useRoute()
-const { authUser, clearAuth } = useAuth()
+const { authUser, logoutUser } = useAuth()
 const { profileBox, loadProfileText } = useProfileText()
 
 // 顶部导航模板只读取普通 ref，避免在模板中直接写翻译逻辑。
@@ -221,6 +237,7 @@ const siteHeaderNavigationLocale = useState('site-header-navigation-locale', () 
 const activeLocale = ref({})
 const localeMenuOpen = ref(false)
 const profileMenuOpen = ref(false)
+const isLoggingOut = ref(false)
 const navigationDropdownOpenKey = ref('')
 const mobileMenuOpen = ref(false)
 const mobileMenuIcon = ref('lucide:menu')
@@ -300,13 +317,6 @@ const navigationDropdownItemsMap = {
       path: '/sdk',
       query: { sdkTarget: 'camera' },
       icon: 'lucide:camera',
-    },
-    {
-      key: 'cast-sdk',
-      labelKey: 'castSdk',
-      path: '/sdk',
-      query: { sdkTarget: 'cast' },
-      icon: 'lucide:screen-share',
     },
   ],
 }
@@ -765,12 +775,23 @@ const goToProfile = () => {
   openPageInNewTab(localePath('/profile'))
 }
 
-const handleLogout = () => {
+const handleLogout = async () => {
+  if (isLoggingOut.value) {
+    return
+  }
+
   closeProfileMenu()
   closeMobileMenu()
-  clearAuth()
+  isLoggingOut.value = true
 
-  navigateTo(localePath('/'))
+  try {
+    await logoutUser()
+  } catch {
+    // 本地登录态已在 logoutUser 中清除，后端异常不阻止用户退出当前设备。
+  } finally {
+    isLoggingOut.value = false
+    await navigateTo(localePath('/'))
+  }
 }
 
 const handleLocaleButtonClick = () => {
@@ -1891,14 +1912,36 @@ onBeforeUnmount(() => {
   }
 
   .site-auth-button {
-    min-width: 86px;
-    max-width: none;
+    display: none;
+  }
+
+  .site-mobile-auth-link {
+    min-width: 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--theme-header-dropdown-border, var(--theme-border));
+    color: var(--theme-accent-bright);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    text-decoration: none;
+  }
+
+  .site-mobile-auth-link svg {
+    width: 16px;
+    height: 16px;
     flex: 0 0 auto;
-    height: 36px;
-    padding: 0 14px;
-    margin-left: 0;
-    font-size: 13px;
-    line-height: 36px;
+  }
+
+  .site-mobile-auth-link:hover,
+  .site-mobile-auth-link:focus {
+    color: var(--theme-accent-bright);
+    background-color: var(--theme-header-dropdown-hover-background, var(--theme-accent-hover));
   }
 
   .site-profile-link {
@@ -1962,8 +2005,23 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 390px) {
+  .page-header-inner {
+    gap: 6px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .site-brand {
+    gap: 5px;
+  }
+
+  .site-brand-image {
+    width: 36px;
+    height: 36px;
+  }
+
   .site-brand-name {
-    display: none;
+    font-size: 16px;
   }
 }
 </style>

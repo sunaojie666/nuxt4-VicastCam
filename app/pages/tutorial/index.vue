@@ -2,9 +2,9 @@
   <div class="tutorial-page-shell">
     <SiteHeader />
 
-    <main class="tutorial-page-main">
-      <TutorialHeroSection />
-      <TutorialPlayerSection />
+    <main v-if="videoContent" class="tutorial-page-main">
+      <TutorialHeroSection :content="videoContent.hero" />
+      <TutorialPlayerSection :content="videoContent.player" :groups="videoContent.groups" />
     </main>
 
     <SiteFooter />
@@ -16,35 +16,62 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import TutorialHeroSection from './components/TutorialHeroSection.vue'
 import TutorialPlayerSection from './components/TutorialPlayerSection.vue'
+import { getVideos } from '../../api/request/strapi'
 import { setupPageSeo } from '../../utils/seo'
 
 setupPageSeo('tutorial')
 
 const config = useRuntimeConfig()
+const { locale } = useI18n()
 const siteUrl = String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, '')
 const createAbsoluteUrl = path => /^https?:\/\//.test(path) ? path : `${siteUrl}${path.startsWith('/') ? path : `/${path}`}`
+const tutorialPoster = '/images/tutorial/video-poster.png'
 
-const tutorialVideoPath = '/videos/tutorial-demo.mp4'
-const tutorialVideoPosterPath = '/images/login/background.png'
+const videoContent = useState('tutorial-video-content', () => null)
+const loadedVideoLocale = useState('tutorial-video-locale', () => '')
 
-useHead({
-  script: [
+const getVideoContentData = (response) => {
+  const entry = Array.isArray(response?.data)
+    ? response.data[0]
+    : response?.data || response
+  const attributes = entry?.attributes || entry
+
+  return attributes?.data || attributes?.videoBox || attributes || null
+}
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: loadedVideoLocale,
+  load: currentLocale => getVideos(currentLocale),
+  sync: response => {
+    videoContent.value = getVideoContentData(response)
+  },
+  reset: () => {
+    videoContent.value = null
+  },
+})
+
+const firstLesson = computed(() => {
+  return videoContent.value?.groups?.flatMap(group => group.lessons || [])[0] || null
+})
+
+useHead(() => ({
+  script: firstLesson.value?.video ? [
     {
       id: 'tutorial-video-jsonld',
       type: 'application/ld+json',
       textContent: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
-        name: 'VicastCam Tutorial: Download and Install',
-        description: 'A VicastCam tutorial video that introduces how to download, install, and start using VicastCam.',
-        thumbnailUrl: [createAbsoluteUrl(tutorialVideoPosterPath)],
+        name: firstLesson.value.title,
+        description: firstLesson.value.description,
+        thumbnailUrl: [createAbsoluteUrl(tutorialPoster)],
         uploadDate: '2026-06-09T09:03:25+08:00',
-        duration: 'PT10S',
-        contentUrl: createAbsoluteUrl(tutorialVideoPath),
+        contentUrl: createAbsoluteUrl(firstLesson.value.video),
       }),
     },
-  ],
-})
+  ] : [],
+}))
 </script>
 
 <style scoped>

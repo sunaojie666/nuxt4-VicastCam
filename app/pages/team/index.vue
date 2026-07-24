@@ -11,7 +11,7 @@
             <span>{{ teamBox.hero.title }}</span>
             <span class="theme-gradient-text team-hero-title-highlight">
               {{ teamBox.hero.highlight }}
-              <img class="team-hero-title-line" src="/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
+              <img class="team-hero-title-line" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
             </span>
           </h1>
 
@@ -176,64 +176,129 @@
           </p>
 
           <div class="team-application-layout">
-            <form class="team-application-form" @submit.prevent>
+            <form class="team-application-form" @submit.prevent="handleApplicationSubmit">
               <div class="team-form-grid">
                 <label v-for="field in applicationFields" :key="field.name" class="team-form-field">
-                  <span>{{ field.label }}</span>
+                  <span>
+                    {{ field.label }}<span v-if="field.required" class="team-form-required" aria-hidden="true">*</span>
+                  </span>
                   <span class="team-form-control">
                     <Icon :name="field.icon" aria-hidden="true" />
-                    <select v-if="field.type === 'select'" :name="field.name" :required="field.required">
-                      <option value="">{{ field.placeholder }}</option>
-                      <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
-                    </select>
+                    <template v-if="field.type === 'select'">
+                      <input
+                        type="hidden"
+                        :name="field.name"
+                        :value="getApplicationSelectValue(field.name)"
+                      >
+                      <span class="team-application-select" @click.stop>
+                        <button
+                          type="button"
+                          :class="[
+                            'team-application-select-button',
+                            {
+                              'team-application-select-button-placeholder': !getApplicationSelectValue(field.name),
+                            },
+                          ]"
+                          :disabled="isSubmittingApplication"
+                          :aria-expanded="isApplicationSelectOpen(field.name)"
+                          aria-haspopup="listbox"
+                          @click="toggleApplicationSelect(field.name)"
+                        >
+                          <span>{{ getApplicationSelectLabel(field) }}</span>
+                          <Icon name="lucide:chevron-down" aria-hidden="true" />
+                        </button>
+
+                        <Transition name="team-select-fade">
+                          <ul
+                            v-if="isApplicationSelectOpen(field.name)"
+                            class="team-application-select-menu"
+                            role="listbox"
+                          >
+                            <li
+                              v-for="option in field.options"
+                              :key="option"
+                              role="option"
+                              :aria-selected="getApplicationSelectValue(field.name) === option"
+                            >
+                              <button
+                                type="button"
+                                class="team-application-select-option"
+                                @click="selectApplicationOption(field.name, option)"
+                              >
+                                {{ option }}
+                              </button>
+                            </li>
+                          </ul>
+                        </Transition>
+                      </span>
+                    </template>
                     <input
                       v-else
                       :name="field.name"
                       :type="field.type"
                       :placeholder="field.placeholder"
                       :required="field.required"
+                      :disabled="isSubmittingApplication"
                     >
                   </span>
                 </label>
 
                 <label class="team-form-field team-form-field-wide">
-                  <span>{{ teamBox.application.intentLabel }}</span>
+                  <span>
+                    {{ teamBox.application.intentLabel }}<span class="team-form-required" aria-hidden="true">*</span>
+                  </span>
                   <span class="team-form-control team-form-textarea-control">
                     <Icon name="lucide:pencil-line" aria-hidden="true" />
-                    <textarea name="cooperationIntent" :placeholder="teamBox.application.intentPlaceholder"></textarea>
+                    <textarea
+                      name="cooperationIntent"
+                      :placeholder="teamBox.application.intentPlaceholder"
+                      required
+                      :disabled="isSubmittingApplication"
+                    ></textarea>
                   </span>
                 </label>
               </div>
 
               <p class="team-form-note">{{ teamBox.application.note }}</p>
 
-              <button class="team-form-submit" type="submit">{{ teamBox.application.submitLabel }}</button>
+              <button class="team-form-submit" type="submit" :disabled="isSubmittingApplication">
+                {{ applicationSubmitLabel }}
+              </button>
             </form>
 
-            <aside class="team-application-contact" aria-labelledby="team-application-contact-title">
-              <div class="team-contact-heading">
-                <span class="team-contact-icon">
-                  <Icon name="lucide:headset" aria-hidden="true" />
+            <div class="team-application-sidebar">
+              <aside class="team-application-contact" aria-labelledby="team-application-contact-title">
+                <div class="team-contact-heading">
+                  <span class="team-contact-icon">
+                    <Icon name="lucide:headset" aria-hidden="true" />
+                  </span>
+                  <h3 id="team-application-contact-title">{{ teamBox.contact.title }}</h3>
+                </div>
+
+                <ul class="team-contact-list">
+                  <li v-for="item in contactItems" :key="item.label">
+                    <span class="team-contact-list-icon" aria-hidden="true">
+                      <Icon :name="item.icon" />
+                    </span>
+                    <span>
+                      <small>{{ item.label }}</small>
+                      <strong>{{ item.value }}</strong>
+                    </span>
+                  </li>
+                </ul>
+
+                <p class="team-contact-note">
+                  {{ teamBox.contact.note }}
+                </p>
+              </aside>
+
+              <div class="team-contact-qr-card">
+                <span class="team-contact-qr-image">
+                  <img v-if="contactQr.image" :src="contactQr.image" :alt="contactQr.alt">
                 </span>
-                <h3 id="team-application-contact-title">{{ teamBox.contact.title }}</h3>
+                <strong>{{ contactQr.label }}</strong>
               </div>
-
-              <ul class="team-contact-list">
-                <li v-for="item in contactItems" :key="item.label">
-                  <span class="team-contact-list-icon" aria-hidden="true">
-                    <Icon :name="item.icon" />
-                  </span>
-                  <span>
-                    <small>{{ item.label }}</small>
-                    <strong>{{ item.value }}</strong>
-                  </span>
-                </li>
-              </ul>
-
-              <p class="team-contact-note">
-                {{ teamBox.contact.note }}
-              </p>
-            </aside>
+            </div>
           </div>
         </div>
       </section>
@@ -246,11 +311,17 @@
 <script setup>
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
+import { addBusinessCooperation, getBusinessWechatQrcode } from '../../api/request/business'
 import { getTeams } from '../../api/request/strapi'
 import { createAbsoluteUrl, createLocalizedUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
 
 const config = useRuntimeConfig()
 const { locale, locales } = useI18n()
+const { requestLoadingText, showApiResponseErrorToast, showApiResponseSuccessToast, showErrorToast } = useSiteToast()
+const isSubmittingApplication = ref(false)
+const contactQrcodeSource = ref('')
+const applicationSelectValues = ref({})
+const openApplicationSelectName = ref('')
 
 const activeLocaleConfig = computed(() => {
   return locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
@@ -322,22 +393,25 @@ const fieldDefaults = [
   },
 ]
 
+const defaultApplicationFieldNames = new Set(fieldDefaults.map(field => field.name))
+const requiredApplicationFieldNames = new Set(['contactName', 'email', 'country'])
+
 const contactIconDefaults = ['lucide:mail', 'lucide:message-circle', 'lucide:clock']
 const advantageIconDefaults = [
-  '/images/team/advantage-creators-icon.png',
-  '/images/team/advantage-delivery-icon.png',
-  '/images/team/advantage-competition-icon.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/advantage-creators-icon.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/advantage-delivery-icon.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/advantage-competition-icon.png',
 ]
 const supportIconDefaults = [
-  '/images/team/support-marketing-materials-icon.png',
-  '/images/team/support-technical-service-icon.png',
-  '/images/team/support-brand-authorization-icon.png',
-  '/images/team/support-priority-beta-icon.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/support-marketing-materials-icon.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/support-technical-service-icon.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/support-brand-authorization-icon.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/support-priority-beta-icon.png',
 ]
 const planImageDefaults = [
-  '/images/team/plan-channel-agent-image.png',
-  '/images/team/plan-oem-sdk-image.png',
-  '/images/team/plan-enterprise-custom-image.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/plan-channel-agent-image.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/plan-oem-sdk-image.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/plan-enterprise-custom-image.png',
 ]
 
 const defaultTeamBox = {
@@ -397,12 +471,212 @@ const defaultTeamBox = {
     title: '',
     items: [],
     note: '',
+    qr: {
+      image: '',
+      label: '',
+      alt: '',
+    },
   },
   seo: {
     title: '',
     description: '',
     image: '',
     imageAlt: '',
+  },
+}
+
+const applicationToastCopy = {
+  'zh-CN': {
+    submit: '提交申请',
+    submitting: '提交中...',
+    success: '提交成功，我们会尽快联系你',
+    fail: '提交失败，请稍后重试',
+    invalidEmail: '请输入有效邮箱',
+    requiredField: '请填写{field}',
+  },
+  en: {
+    submit: 'Submit application',
+    submitting: 'Submitting...',
+    success: 'Submitted successfully. We will contact you soon.',
+    fail: 'Submission failed. Please try again later.',
+    invalidEmail: 'Enter a valid email address',
+    requiredField: 'Please complete {field}',
+  },
+  'zh-TW': {
+    submit: '提交申請',
+    submitting: '提交中...',
+    success: '提交成功，我們會盡快聯絡你',
+    fail: '提交失敗，請稍後再試',
+    invalidEmail: '請輸入有效郵箱',
+    requiredField: '請填寫{field}',
+  },
+  id: {
+    submit: 'Kirim aplikasi',
+    submitting: 'Mengirim...',
+    success: 'Berhasil dikirim. Kami akan segera menghubungi Anda.',
+    fail: 'Pengiriman gagal. Silakan coba lagi nanti.',
+    invalidEmail: 'Masukkan alamat email yang valid',
+    requiredField: 'Harap lengkapi {field}',
+  },
+  ms: {
+    submit: 'Hantar permohonan',
+    submitting: 'Sedang menghantar...',
+    success: 'Berjaya dihantar. Kami akan menghubungi anda tidak lama lagi.',
+    fail: 'Penghantaran gagal. Sila cuba lagi kemudian.',
+    invalidEmail: 'Masukkan alamat e-mel yang sah',
+    requiredField: 'Sila lengkapkan {field}',
+  },
+  th: {
+    submit: 'ส่งใบสมัคร',
+    submitting: 'กำลังส่ง...',
+    success: 'ส่งสำเร็จแล้ว เราจะติดต่อคุณโดยเร็ว',
+    fail: 'ส่งไม่สำเร็จ โปรดลองอีกครั้งภายหลัง',
+    invalidEmail: 'โปรดป้อนที่อยู่อีเมลที่ถูกต้อง',
+    requiredField: 'โปรดกรอก {field}',
+  },
+  vi: {
+    submit: 'Gửi đơn đăng ký',
+    submitting: 'Đang gửi...',
+    success: 'Gửi thành công. Chúng tôi sẽ sớm liên hệ với bạn.',
+    fail: 'Gửi không thành công. Vui lòng thử lại sau.',
+    invalidEmail: 'Nhập địa chỉ email hợp lệ',
+    requiredField: 'Vui lòng điền {field}',
+  },
+  fil: {
+    submit: 'Isumite ang aplikasyon',
+    submitting: 'Isinusumite...',
+    success: 'Matagumpay na naisumite. Makikipag-ugnayan kami sa iyo sa lalong madaling panahon.',
+    fail: 'Nabigong isumite. Pakisubukang muli mamaya.',
+    invalidEmail: 'Maglagay ng wastong email address',
+    requiredField: 'Pakikumpleto ang {field}',
+  },
+  es: {
+    submit: 'Enviar solicitud',
+    submitting: 'Enviando...',
+    success: 'Solicitud enviada correctamente. Nos pondremos en contacto contigo pronto.',
+    fail: 'Error al enviar. Inténtalo de nuevo más tarde.',
+    invalidEmail: 'Introduce una dirección de correo electrónico válida',
+    requiredField: 'Completa {field}',
+  },
+  pt: {
+    submit: 'Enviar candidatura',
+    submitting: 'A enviar...',
+    success: 'Enviado com sucesso. Entraremos em contacto consigo em breve.',
+    fail: 'Falha no envio. Tente novamente mais tarde.',
+    invalidEmail: 'Introduza um endereço de email válido',
+    requiredField: 'Preencha {field}',
+  },
+  ar: {
+    submit: 'إرسال الطلب',
+    submitting: 'جارٍ الإرسال...',
+    success: 'تم الإرسال بنجاح. سنتواصل معك قريبًا.',
+    fail: 'فشل الإرسال. يُرجى المحاولة مرة أخرى لاحقًا.',
+    invalidEmail: 'أدخل عنوان بريد إلكتروني صالحًا',
+    requiredField: 'يُرجى إكمال {field}',
+  },
+  ja: {
+    submit: '申請を送信',
+    submitting: '送信中...',
+    success: '送信が完了しました。近日中にご連絡します。',
+    fail: '送信に失敗しました。しばらくしてからもう一度お試しください。',
+    invalidEmail: '有効なメールアドレスを入力してください',
+    requiredField: '{field}を入力してください',
+  },
+  tr: {
+    submit: 'Başvuruyu gönder',
+    submitting: 'Gönderiliyor...',
+    success: 'Başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.',
+    fail: 'Gönderim başarısız oldu. Lütfen daha sonra tekrar deneyin.',
+    invalidEmail: 'Geçerli bir e-posta adresi girin',
+    requiredField: 'Lütfen {field} alanını doldurun',
+  },
+  it: {
+    submit: 'Invia candidatura',
+    submitting: 'Invio in corso...',
+    success: 'Inviato con successo. Ti contatteremo presto.',
+    fail: 'Invio non riuscito. Riprova più tardi.',
+    invalidEmail: 'Inserisci un indirizzo email valido',
+    requiredField: 'Completa {field}',
+  },
+  de: {
+    submit: 'Bewerbung absenden',
+    submitting: 'Wird gesendet...',
+    success: 'Erfolgreich gesendet. Wir melden uns bald bei Ihnen.',
+    fail: 'Übermittlung fehlgeschlagen. Bitte versuchen Sie es später erneut.',
+    invalidEmail: 'Geben Sie eine gültige E-Mail-Adresse ein',
+    requiredField: 'Bitte füllen Sie {field} aus',
+  },
+  fr: {
+    submit: 'Envoyer la candidature',
+    submitting: 'Envoi en cours...',
+    success: 'Envoyé avec succès. Nous vous contacterons bientôt.',
+    fail: 'Échec de l’envoi. Veuillez réessayer plus tard.',
+    invalidEmail: 'Saisissez une adresse e-mail valide',
+    requiredField: 'Veuillez renseigner {field}',
+  },
+  ko: {
+    submit: '신청서 제출',
+    submitting: '제출 중...',
+    success: '제출이 완료되었습니다. 곧 연락드리겠습니다.',
+    fail: '제출에 실패했습니다. 나중에 다시 시도해 주세요.',
+    invalidEmail: '유효한 이메일 주소를 입력하세요',
+    requiredField: '{field}을(를) 입력해 주세요',
+  },
+  ru: {
+    submit: 'Отправить заявку',
+    submitting: 'Отправка...',
+    success: 'Заявка успешно отправлена. Мы скоро свяжемся с вами.',
+    fail: 'Не удалось отправить заявку. Повторите попытку позже.',
+    invalidEmail: 'Введите действительный адрес электронной почты',
+    requiredField: 'Заполните поле {field}',
+  },
+  pl: {
+    submit: 'Wyślij zgłoszenie',
+    submitting: 'Wysyłanie...',
+    success: 'Wysłano pomyślnie. Skontaktujemy się z Tobą wkrótce.',
+    fail: 'Wysyłanie nie powiodło się. Spróbuj ponownie później.',
+    invalidEmail: 'Wpisz prawidłowy adres e-mail',
+    requiredField: 'Uzupełnij {field}',
+  },
+  nl: {
+    submit: 'Aanvraag indienen',
+    submitting: 'Bezig met indienen...',
+    success: 'Succesvol ingediend. We nemen binnenkort contact met u op.',
+    fail: 'Indienen mislukt. Probeer het later opnieuw.',
+    invalidEmail: 'Voer een geldig e-mailadres in',
+    requiredField: 'Vul {field} in',
+  },
+  hi: {
+    submit: 'आवेदन जमा करें',
+    submitting: 'जमा किया जा रहा है...',
+    success: 'सफलतापूर्वक जमा किया गया। हम जल्द ही आपसे संपर्क करेंगे।',
+    fail: 'जमा करने में विफल। कृपया बाद में पुनः प्रयास करें।',
+    invalidEmail: 'एक मान्य ईमेल पता दर्ज करें',
+    requiredField: 'कृपया {field} भरें',
+  },
+  ur: {
+    submit: 'درخواست جمع کریں',
+    submitting: 'جمع کیا جا رہا ہے...',
+    success: 'درخواست کامیابی سے جمع ہو گئی۔ ہم جلد آپ سے رابطہ کریں گے۔',
+    fail: 'درخواست جمع نہیں ہو سکی۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
+    invalidEmail: 'درست ای میل ایڈریس درج کریں',
+    requiredField: 'براہ کرم {field} مکمل کریں',
+  },
+  bn: {
+    submit: 'আবেদন জমা দিন',
+    submitting: 'জমা দেওয়া হচ্ছে...',
+    success: 'সফলভাবে জমা হয়েছে। আমরা শীঘ্রই আপনার সঙ্গে যোগাযোগ করব।',
+    fail: 'জমা দেওয়া যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।',
+    invalidEmail: 'একটি বৈধ ইমেল ঠিকানা লিখুন',
+    requiredField: 'অনুগ্রহ করে {field} পূরণ করুন',
+  },
+  fa: {
+    submit: 'ارسال درخواست',
+    submitting: 'در حال ارسال...',
+    success: 'با موفقیت ارسال شد. به‌زودی با شما تماس می‌گیریم.',
+    fail: 'ارسال ناموفق بود. لطفاً بعداً دوباره تلاش کنید.',
+    invalidEmail: 'یک نشانی ایمیل معتبر وارد کنید',
+    requiredField: 'لطفاً {field} را تکمیل کنید',
   },
 }
 
@@ -516,15 +790,29 @@ const planItems = computed(() => {
 const applicationFields = computed(() => {
   const fields = normalizeList(teamBox.value.application.fields)
 
-  return fieldDefaults.map(defaultField => {
+  const defaultFields = fieldDefaults.map(defaultField => {
     const sourceField = fields.find(item => item.name === defaultField.name) || {}
 
     return {
       ...defaultField,
       ...sourceField,
+      required: requiredApplicationFieldNames.has(defaultField.name) || Boolean(sourceField.required),
       options: normalizeList(sourceField.options),
     }
   })
+
+  const extraFields = fields
+    .filter(field => field?.name && !defaultApplicationFieldNames.has(field.name))
+    .map(field => ({
+      ...field,
+      required: requiredApplicationFieldNames.has(field.name) || Boolean(field.required),
+      options: normalizeList(field.options),
+    }))
+
+  return [
+    ...defaultFields,
+    ...extraFields,
+  ]
 })
 const contactItems = computed(() => {
   return normalizeList(teamBox.value.contact.items).map((item, index) => ({
@@ -532,6 +820,191 @@ const contactItems = computed(() => {
     ...item,
   }))
 })
+
+const contactQrCopy = {
+  'zh-CN': '通过WhatsApp扫码联系我们',
+  'zh-TW': '透過WhatsApp掃碼聯絡我們',
+  en: 'Scan with WhatsApp to contact us',
+}
+
+const contactQr = computed(() => {
+  const qr = teamBox.value.contact.qr || {}
+  const label = qr.label || contactQrCopy[locale.value] || contactQrCopy.en
+
+  return {
+    image: contactQrcodeSource.value || qr.image || '',
+    label,
+    alt: qr.alt || label,
+  }
+})
+
+const findContactQrcodeSource = (response) => {
+  const source = response?.data?.qrcode
+    || response?.data?.qr_code
+    || response?.data?.url
+    || response?.data?.image
+    || response?.data
+    || response?.qrcode
+    || response?.url
+
+  return typeof source === 'string' ? source.trim() : ''
+}
+
+const loadContactQrcode = () => {
+  getBusinessWechatQrcode().then(
+    (response) => {
+      contactQrcodeSource.value = findContactQrcodeSource(response)
+    },
+    () => {}
+  )
+}
+
+const applicationCopy = computed(() => {
+  return applicationToastCopy[locale.value] || applicationToastCopy.en
+})
+
+const applicationSubmitLabel = computed(() => {
+  if (isSubmittingApplication.value) {
+    return requestLoadingText.value || applicationCopy.value.submitting
+  }
+
+  return teamBox.value.application.submitLabel || applicationCopy.value.submit
+})
+
+const getSingleFormValue = (formData, key) => {
+  return String(formData.get(key) || '').trim()
+}
+
+const getApplicationSelectValue = (name) => {
+  return String(applicationSelectValues.value[name] || '').trim()
+}
+
+const getApplicationSelectLabel = (field = {}) => {
+  return getApplicationSelectValue(field.name) || field.placeholder || ''
+}
+
+const isApplicationSelectOpen = (name) => {
+  return openApplicationSelectName.value === name
+}
+
+const closeApplicationSelect = () => {
+  openApplicationSelectName.value = ''
+}
+
+const toggleApplicationSelect = (name) => {
+  if (isSubmittingApplication.value) {
+    return
+  }
+
+  openApplicationSelectName.value = isApplicationSelectOpen(name) ? '' : name
+}
+
+const selectApplicationOption = (name, option) => {
+  applicationSelectValues.value = {
+    ...applicationSelectValues.value,
+    [name]: String(option || ''),
+  }
+  closeApplicationSelect()
+}
+
+const resetApplicationSelectValues = () => {
+  applicationSelectValues.value = {}
+  closeApplicationSelect()
+}
+
+const createApplicationPayload = (formElement) => {
+  const formData = new FormData(formElement)
+
+  const payload = {
+    contactName: getSingleFormValue(formData, 'contactName'),
+    companyName: getSingleFormValue(formData, 'companyName'),
+    email: getSingleFormValue(formData, 'email'),
+    phone: getSingleFormValue(formData, 'phone'),
+    businessType: getSingleFormValue(formData, 'businessType'),
+    region: getSingleFormValue(formData, 'region'),
+    workingHours: getSingleFormValue(formData, 'workingHours'),
+    working_hours: getSingleFormValue(formData, 'working_hours'),
+    position: getSingleFormValue(formData, 'position'),
+    budget: getSingleFormValue(formData, 'budget'),
+    country: getSingleFormValue(formData, 'country'),
+    website: getSingleFormValue(formData, 'website'),
+    cooperationIntent: getSingleFormValue(formData, 'cooperationIntent'),
+  }
+
+  applicationFields.value.forEach((field) => {
+    if (field?.name && payload[field.name] === undefined) {
+      payload[field.name] = getSingleFormValue(formData, field.name)
+    }
+  })
+
+  return payload
+}
+
+const isValidApplicationEmail = (email) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+const getApplicationRequiredMessage = (field = {}) => {
+  const template = applicationCopy.value.requiredField || applicationToastCopy.en.requiredField
+  const fieldLabel = String(field.label || field.placeholder || '').replace(/\*+$/, '').trim()
+
+  return template.replace('{field}', fieldLabel)
+}
+
+const getMissingApplicationSelectField = (payload = {}) => {
+  return applicationFields.value.find(field => {
+    return field?.type === 'select' &&
+      field.required &&
+      !String(payload[field.name] || '').trim()
+  })
+}
+
+const handleApplicationSubmit = (event) => {
+  if (isSubmittingApplication.value) {
+    return
+  }
+
+  const formElement = event.currentTarget
+
+  if (!formElement?.reportValidity?.()) {
+    return
+  }
+
+  const payload = createApplicationPayload(formElement)
+  const missingSelectField = getMissingApplicationSelectField(payload)
+
+  if (missingSelectField) {
+    showErrorToast(getApplicationRequiredMessage(missingSelectField))
+    return
+  }
+
+  if (!isValidApplicationEmail(payload.email)) {
+    showErrorToast(applicationCopy.value.invalidEmail)
+    return
+  }
+
+  isSubmittingApplication.value = true
+
+  addBusinessCooperation(payload).then(
+    (response) => {
+      isSubmittingApplication.value = false
+
+      formElement.reset()
+      resetApplicationSelectValues()
+      showApiResponseSuccessToast(response, {
+        scope: 'general',
+        fallback: applicationCopy.value.success,
+      })
+    },
+    (error) => {
+      isSubmittingApplication.value = false
+      showApiResponseErrorToast(error, {
+        scope: 'general',
+        fallback: applicationCopy.value.fail,
+      })
+    }
+  )
+}
 
 const scrollToTeamSection = (sectionId) => {
   if (!process.client) {
@@ -559,6 +1032,24 @@ const scrollToApplication = () => {
 const scrollToAdvantages = () => {
   scrollToTeamSection('team-cooperation-advantages')
 }
+
+const handleApplicationDocumentClick = () => {
+  closeApplicationSelect()
+}
+
+onMounted(() => {
+  if (process.client) {
+    document.addEventListener('click', handleApplicationDocumentClick)
+  }
+
+  loadContactQrcode()
+})
+
+onBeforeUnmount(() => {
+  if (process.client) {
+    document.removeEventListener('click', handleApplicationDocumentClick)
+  }
+})
 
 useLocalizedAsyncState({
   locale,
@@ -617,7 +1108,7 @@ setupStructuredData(() => {
       name: pageTitle,
       description: pageDescription,
       url: teamPageUrl.value,
-      image: createAbsoluteUrl(teamBox.value.seo.image || '/images/team/partner-plan-hero-bg.png', siteUrl.value),
+      image: createAbsoluteUrl(teamBox.value.seo.image || 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/partner-plan-hero-bg.png', siteUrl.value),
       inLanguage,
     },
     {
@@ -625,7 +1116,7 @@ setupStructuredData(() => {
       '@type': 'Organization',
       name: 'VicastCam',
       url: siteUrl.value,
-      logo: createAbsoluteUrl('/images/common/logo.png', siteUrl.value),
+      logo: createAbsoluteUrl('https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png', siteUrl.value),
       ...(contactPoint.length ? { contactPoint } : {}),
     },
   ]
@@ -646,7 +1137,7 @@ setupStructuredData(() => {
     linear-gradient(180deg, rgba(2, 6, 23, 0.12) 0%, rgba(2, 6, 23, 0.34) 100%);
   --team-hero-background:
     linear-gradient(180deg, rgba(3, 7, 18, 0.06) 0%, rgba(3, 7, 18, 0.16) 100%),
-    url("/images/team/partner-plan-hero-bg.png") center / cover no-repeat,
+    url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/partner-plan-hero-bg.png") center / cover no-repeat,
     #040915;
   --team-primary-button-background: linear-gradient(135deg, #16a8f8 0%, #2563eb 100%);
   --team-primary-button-shadow: rgba(37, 99, 235, 0.34);
@@ -1293,10 +1784,18 @@ setupStructuredData(() => {
 }
 
 .team-application-form,
-.team-application-contact {
+.team-application-contact,
+.team-contact-qr-card {
   border: 1px solid var(--team-form-panel-border);
   border-radius: 22px;
   background: var(--team-form-panel-background);
+}
+
+.team-application-sidebar {
+  width: 346px;
+  min-width: 0;
+  display: grid;
+  gap: 24px;
 }
 
 .team-application-form {
@@ -1324,6 +1823,11 @@ setupStructuredData(() => {
 
 .team-form-field-wide {
   grid-column: 1 / -1;
+}
+
+.team-form-required {
+  margin-left: 3px;
+  color: #ef4444;
 }
 
 .team-form-control {
@@ -1366,8 +1870,161 @@ setupStructuredData(() => {
 }
 
 .team-form-control select {
-  color: var(--team-form-icon);
+  color: var(--team-form-value);
+  color-scheme: dark;
   cursor: pointer;
+}
+
+.team-form-control select:invalid {
+  color: var(--team-form-placeholder);
+}
+
+.team-form-control select option {
+  color: rgba(226, 232, 240, 0.94);
+  background: rgba(17, 24, 39, 1);
+}
+
+.team-form-control select option[value=""] {
+  color: rgba(148, 163, 184, 0.86);
+}
+
+.team-form-control select option:checked {
+  color: var(--theme-white);
+  background: rgba(37, 99, 235, 1);
+}
+
+.team-application-select {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+}
+
+.team-application-select-button {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--team-form-value);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.team-application-select-button-placeholder {
+  color: var(--team-form-placeholder);
+}
+
+.team-application-select-button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-form-control .team-application-select-button svg {
+  width: 15px;
+  height: 15px;
+  color: var(--team-form-icon);
+  transition: transform 0.18s ease;
+}
+
+.team-application-select-button[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.team-application-select-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.team-application-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -42px;
+  right: -14px;
+  z-index: 40;
+  max-height: 248px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid rgba(92, 111, 152, 0.44);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.98);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.34), 0 0 0 1px rgba(125, 211, 252, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(125, 211, 252, 0.58) rgba(15, 23, 42, 0.98);
+}
+
+.team-application-select-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.team-application-select-menu::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.98);
+}
+
+.team-application-select-menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(125, 211, 252, 0.58);
+}
+
+.team-application-select-menu li {
+  color: var(--team-form-value);
+}
+
+.team-application-select-option {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.team-application-select-option:hover,
+.team-application-select-option:focus {
+  color: var(--theme-white);
+  background: rgba(37, 99, 235, 0.22);
+}
+
+.team-application-select-menu li[aria-selected="true"] .team-application-select-option {
+  color: var(--theme-white);
+  background: linear-gradient(135deg, rgba(45, 145, 255, 0.88) 0%, rgba(146, 70, 245, 0.78) 100%);
+}
+
+.team-select-fade-enter-active,
+.team-select-fade-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.team-select-fade-enter-from,
+.team-select-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.team-form-control input:disabled,
+.team-form-control select:disabled,
+.team-form-control textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
 }
 
 .team-form-textarea-control {
@@ -1411,6 +2068,15 @@ setupStructuredData(() => {
 .team-form-submit:focus-visible {
   transform: translateY(-1px);
   box-shadow: 0 22px 42px rgba(37, 99, 235, 0.36);
+}
+
+.team-form-submit:disabled,
+.team-form-submit:disabled:hover,
+.team-form-submit:disabled:focus-visible {
+  cursor: not-allowed;
+  opacity: 0.72;
+  transform: none;
+  box-shadow: 0 18px 36px rgba(37, 99, 235, 0.2);
 }
 
 .team-application-contact {
@@ -1514,6 +2180,43 @@ setupStructuredData(() => {
   overflow-wrap: anywhere;
 }
 
+.team-contact-qr-card {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+  padding: 44px 28px 28px;
+  color: var(--team-contact-value);
+}
+
+.team-contact-qr-image {
+  width: 230px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 12px;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.team-contact-qr-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.team-contact-qr-card > strong {
+  color: var(--team-contact-value);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+}
+
 :root[data-theme="light"] .team-page-shell {
   --team-page-background: rgba(248, 252, 255, 1);
   --team-hero-title: var(--theme-white);
@@ -1527,7 +2230,7 @@ setupStructuredData(() => {
     linear-gradient(180deg, rgba(2, 6, 23, 0.12) 0%, rgba(2, 6, 23, 0.34) 100%);
   --team-hero-background:
     linear-gradient(180deg, rgba(3, 7, 18, 0.06) 0%, rgba(3, 7, 18, 0.16) 100%),
-    url("/images/team/partner-plan-hero-bg.png") center / cover no-repeat,
+    url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/partner-plan-hero-bg.png") center / cover no-repeat,
     #040915;
   --team-primary-button-background: linear-gradient(135deg, rgba(6, 182, 212, 1) 0%, rgba(37, 99, 235, 1) 100%);
   --team-primary-button-shadow: rgba(37, 99, 235, 0.2);
@@ -1611,7 +2314,8 @@ setupStructuredData(() => {
 
 :root[data-theme="light"] .team-rule-panel,
 :root[data-theme="light"] .team-application-form,
-:root[data-theme="light"] .team-application-contact {
+:root[data-theme="light"] .team-application-contact,
+:root[data-theme="light"] .team-contact-qr-card {
   padding-left: 28px;
   padding-right: 28px;
   box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
@@ -1643,6 +2347,50 @@ setupStructuredData(() => {
 :root[data-theme="light"] .team-form-control select option {
   color: rgba(17, 24, 39, 1);
   background: rgba(255, 255, 255, 1);
+}
+
+:root[data-theme="light"] .team-form-control select {
+  color-scheme: light;
+}
+
+:root[data-theme="light"] .team-form-control select:invalid,
+:root[data-theme="light"] .team-form-control select option[value=""] {
+  color: rgba(100, 116, 139, 0.88);
+}
+
+:root[data-theme="light"] .team-form-control select option:checked {
+  color: var(--theme-white);
+  background: rgba(40, 115, 253, 1);
+}
+
+:root[data-theme="light"] .team-application-select-menu {
+  border-color: rgba(203, 213, 225, 0.95);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14), 0 0 0 1px rgba(40, 115, 253, 0.06);
+  scrollbar-color: rgba(40, 115, 253, 0.45) rgba(255, 255, 255, 0.98);
+}
+
+:root[data-theme="light"] .team-application-select-menu::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+:root[data-theme="light"] .team-application-select-menu::-webkit-scrollbar-thumb {
+  background: rgba(40, 115, 253, 0.45);
+}
+
+:root[data-theme="light"] .team-application-select-option {
+  color: rgba(30, 41, 59, 0.92);
+}
+
+:root[data-theme="light"] .team-application-select-option:hover,
+:root[data-theme="light"] .team-application-select-option:focus {
+  color: rgba(30, 64, 175, 1);
+  background: rgba(40, 115, 253, 0.1);
+}
+
+:root[data-theme="light"] .team-application-select-menu li[aria-selected="true"] .team-application-select-option {
+  color: var(--theme-white);
+  background: linear-gradient(135deg, rgba(40, 115, 253, 0.94) 0%, rgba(113, 82, 255, 0.9) 100%);
 }
 
 @media (max-width: 768px) {
@@ -1825,7 +2573,8 @@ setupStructuredData(() => {
   }
 
   .team-application-form,
-  .team-application-contact {
+  .team-application-contact,
+  .team-contact-qr-card {
     border-radius: 16px;
   }
 
@@ -1849,10 +2598,26 @@ setupStructuredData(() => {
     width: 100%;
   }
 
+  .team-application-sidebar,
   .team-application-contact {
     width: 100%;
+  }
+
+  .team-application-sidebar {
+    gap: 18px;
+  }
+
+  .team-application-contact {
     height: auto;
     padding: 24px 20px;
+  }
+
+  .team-contact-qr-card {
+    padding: 32px 20px 24px;
+  }
+
+  .team-contact-qr-image {
+    width: min(230px, 76vw);
   }
 
   .team-contact-heading h3 {

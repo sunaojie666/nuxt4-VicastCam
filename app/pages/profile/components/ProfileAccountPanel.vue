@@ -95,7 +95,7 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('\u7ec8\u8eab') ||
     normalizedVipType.includes('\u6c38\u4e45')
   ) {
-    return '/images/profile/gold.png'
+    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/gold.png'
   }
 
   if (
@@ -104,7 +104,7 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('annual') ||
     normalizedVipType.includes('\u5e74')
   ) {
-    return '/images/profile/year.png'
+    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png'
   }
 
   if (
@@ -113,10 +113,10 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('monthly') ||
     normalizedVipType.includes('\u6708')
   ) {
-    return '/images/profile/month.png'
+    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/month.png'
   }
 
-  return '/images/profile/year.png'
+  return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png'
 }
 
 const currentVipName = computed(() => {

@@ -70,6 +70,38 @@ export const getSdks = (locale) => {
 }
 
 // 商务合作页文案接口，对应 Strapi 里的 api::team.team。
+export const getCameras = (locale) => {
+  return createStrapiRequest().get('/cameras', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// SDK 虚拟声卡模块接口，对应 Strapi 里的 api::soundcard.soundcard。
+export const getSoundcards = (locale) => {
+  return createStrapiRequest().get('/soundcards', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// SDK Demo 下载模块文案接口，对应 Strapi 里的 api::example.example。
+export const getExamples = (locale) => {
+  return createStrapiRequest().get('/examples', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 export const getTeams = (locale) => {
   return createStrapiRequest().get('/teams', {
     ...homeRequestOptions,
@@ -101,9 +133,64 @@ export const getLogin = (locale) => {
   })
 }
 
-// 政策中心接口，对应 Strapi 里的 api::privacy.privacy，REST 路由为 /api/privacys。
+// 隐私政策接口，对应 Strapi 里的 api::privacy.privacy，REST 路由为 /api/privacys。
 export const getPrivacys = (locale) => {
   return createStrapiRequest().get('/privacys', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// GDPR 与数据保护接口，对应 Strapi 的 gdpr 内容类型。
+export const getGdprs = (locale) => {
+  return createStrapiRequest().get('/gdprs', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 安全与隐私承诺接口，对应 Strapi 的 safety 内容类型。
+export const getSafetys = (locale) => {
+  return createStrapiRequest().get('/safetys', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 退款规则接口，对应 Strapi 的 refund 内容类型。
+export const getRefunds = (locale) => {
+  return createStrapiRequest().get('/refunds', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 用户协议接口，对应 Strapi 里的 api::agreement.agreement，REST 路由为 /api/agreements。
+export const getAgreements = (locale) => {
+  return createStrapiRequest().get('/agreements', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 会员订阅协议内容接口，对应 Strapi 中的 api::member.member。
+export const getMembers = (locale) => {
+  return createStrapiRequest().get('/members', {
     ...homeRequestOptions,
     params: {
       locale,
@@ -192,6 +279,17 @@ export const getStreamers = (locale) => {
 // 首页教程中心文案接口，对应 Strapi 里的 api::tutorial.tutorial，REST 路由为 /api/tutorials。
 export const getTutorials = (locale) => {
   return createStrapiRequest().get('/tutorials', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 视频教程页接口，对应 Strapi 里的 api::video.video，REST 路由为 /api/videos。
+export const getVideos = (locale) => {
+  return createStrapiRequest().get('/videos', {
     ...homeRequestOptions,
     params: {
       locale,

@@ -6,7 +6,7 @@
         <div class="site-footer-logo-row">
           <img
             class="site-footer-logo"
-            src="/images/common/logo.png"
+            src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png"
             alt=""
             aria-hidden="true"
             role="presentation"
@@ -78,23 +78,23 @@
           {{ footerText.description }}
         </p>
 
-        <!--
         <a class="site-footer-email" :href="businessEmailHref" aria-label="business email">
           <Icon name="lucide:mail" aria-hidden="true" />
           <span>{{ businessEmail }}</span>
         </a>
-        -->
 
-        <div v-if="footerText.socials.length" class="site-footer-socials" :aria-label="footerText.brand">
-          <button
-            v-for="item in footerText.socials"
+        <div class="site-footer-socials" aria-label="VicastCam social media">
+          <a
+            v-for="item in footerSocials"
             :key="item.key"
-            type="button"
+            :href="item.href"
             class="site-footer-social-button"
             :aria-label="item.label"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <Icon class="site-footer-social-icon" :name="item.icon" aria-hidden="true" />
-          </button>
+          </a>
         </div>
       </div>
 
@@ -136,8 +136,28 @@ const route = useRoute()
 const { currentTheme, initTheme, setTheme } = createThemeContext()
 const footerLocaleMenuOpen = ref(false)
 let closeFooterLocaleMenuOnOutsideClick = null
-// const businessEmail = 'business@vicastcam.com'
-// const businessEmailHref = `mailto:${businessEmail}`
+const businessEmail = 'business@vicastcam.com'
+const businessEmailHref = `mailto:${businessEmail}`
+const footerSocials = [
+  {
+    key: 'facebook',
+    label: 'Facebook',
+    href: 'https://www.facebook.com/',
+    icon: 'lucide:facebook',
+  },
+  {
+    key: 'x',
+    label: 'X',
+    href: 'https://x.com/',
+    icon: 'lucide:x',
+  },
+  {
+    key: 'github',
+    label: 'GitHub',
+    href: 'https://github.com/',
+    icon: 'lucide:github',
+  },
+]
 const copyrightText = 'Copyright © 2026 VicastCam'
 
 const footerLinkActionsByKey = {
@@ -147,7 +167,7 @@ const footerLinkActionsByKey = {
   changelog: { path: '/tutorial' },
   tutorial: { path: '/tutorial' },
   sdk: { path: '/sdk' },
-  apiDocs: { path: '/sdk' },
+  apiDocs: { path: '/sdk', query: { sdkTarget: 'api' } },
   faq: { path: '/faq' },
   privacy: { path: '/privacy' },
   about: { path: '/about' },
@@ -155,7 +175,18 @@ const footerLinkActionsByKey = {
   salesPolicy: { path: '/sales-policy' },
   docs: { path: '/tutorial' },
   contact: { path: '/about' },
+  cooperation: { path: '/team' },
 }
+
+const businessCooperationColumnKeys = new Set([
+  '商务合作',
+  '商務合作',
+  'businesscooperation',
+  'businesscollaboration',
+  'cooperation',
+  'partnership',
+  'partnerships',
+])
 
 const footerColumnActionOrder = [
   ['features', 'pricing', 'download', 'changelog'],
@@ -178,7 +209,7 @@ const footerLinkTextActionMap = {
   'changelog': 'changelog',
   'sdk': 'sdk',
   'api文档': 'apiDocs',
-  'sdk文档': 'apiDocs',
+  'sdk文档': 'sdk',
   'apidocumentation': 'apiDocs',
   'apidoc': 'apiDocs',
   'apidocs': 'apiDocs',
@@ -199,6 +230,9 @@ const footerLinkTextActionMap = {
   'userlicenseagreement': 'terms',
   '销售政策': 'salesPolicy',
   'salespolicy': 'salesPolicy',
+  '会员订阅协议': 'salesPolicy',
+  'membershipsubscriptionagreement': 'salesPolicy',
+  'membershipagreement': 'salesPolicy',
   '文档': 'docs',
   'documentation': 'docs',
   'docs': 'docs',
@@ -210,6 +244,9 @@ const footerLinkTextActionMap = {
   '联系我们': 'contact',
   'contactus': 'contact',
   'contact': 'contact',
+  '代理招募': 'cooperation',
+  'oem贴牌': 'cooperation',
+  '商务洽谈': 'cooperation',
 }
 
 const footerColumns = useState('site-footer-columns', () => [])
@@ -231,7 +268,6 @@ const footerText = computed(() => {
     brandMain,
     brandAccent,
     description: footerContent.value.brand?.description || '',
-    socials: [],
   }
 })
 const themeSwitchIcon = computed(() => currentTheme.value === 'dark' ? 'lucide:sun' : 'lucide:moon')
@@ -464,7 +500,7 @@ const getFooterContentData = (response) => {
   return response?.data?.attributes || response?.data || response || {}
 }
 
-const createFooterLink = (link = {}, columnIndex, linkIndex) => {
+const createFooterLink = (link = {}, columnIndex, linkIndex, forceCooperationPath = false) => {
   const text = String(link.text || '').trim()
   const directPath = String(link.path || link.href || link.url || '').trim()
   const explicitActionKey = [
@@ -475,15 +511,16 @@ const createFooterLink = (link = {}, columnIndex, linkIndex) => {
   const textActionKey = footerLinkTextActionMap[normalizeFooterActionText(text)]
   const actionKey = explicitActionKey || textActionKey || footerColumnActionOrder[columnIndex]?.[linkIndex] || ''
   const action = footerLinkActionsByKey[actionKey] || {}
+  const resolvedPath = forceCooperationPath ? footerLinkActionsByKey.cooperation.path : (directPath || action.path || '')
   const directPathBase = directPath.split(/[?#]/)[0]
   const shouldUseActionQuery = !directPath || (action.path && normalizePath(directPathBase) === normalizePath(action.path))
 
   return {
     key: `${columnIndex}-${linkIndex}-${text}`,
     label: text,
-    path: directPath || action.path || '',
-    query: shouldUseActionQuery ? action.query || {} : {},
-    sectionId: action.sectionId || '',
+    path: resolvedPath,
+    query: forceCooperationPath ? {} : (shouldUseActionQuery ? action.query || {} : {}),
+    sectionId: forceCooperationPath ? '' : (action.sectionId || ''),
   }
 }
 
@@ -499,13 +536,19 @@ const syncFooterContent = (footerData = {}) => {
   }
 
   footerColumns.value = Array.isArray(content.columns)
-    ? content.columns.map((column, columnIndex) => ({
-        key: `${columnIndex}-${column.title || ''}`,
-        title: column.title || '',
-        links: Array.isArray(column.links)
-          ? column.links.map((link, linkIndex) => createFooterLink(link, columnIndex, linkIndex)).filter(link => link.label)
-          : [],
-      })).filter(column => column.title || column.links.length)
+    ? content.columns.map((column, columnIndex) => {
+        const forceCooperationPath = [column.key, column.slug, column.title]
+          .map(normalizeFooterActionText)
+          .some(columnKey => businessCooperationColumnKeys.has(columnKey))
+
+        return {
+          key: `${columnIndex}-${column.title || ''}`,
+          title: column.title || '',
+          links: Array.isArray(column.links)
+            ? column.links.map((link, linkIndex) => createFooterLink(link, columnIndex, linkIndex, forceCooperationPath)).filter(link => link.label)
+            : [],
+        }
+      }).filter(column => column.title || column.links.length)
     : []
 }
 

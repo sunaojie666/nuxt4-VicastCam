@@ -72,7 +72,7 @@ setupStructuredData(() => [
     '@type': 'Organization',
     name: 'VicastCam',
     url: siteUrl.value,
-    logo: createAbsoluteUrl('/images/common/logo.png', siteUrl.value),
+    logo: createAbsoluteUrl('https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png', siteUrl.value),
     description: 'VicastCam provides virtual camera, virtual background, screen casting, and live streaming tools for creators, meetings, and multi-platform production.',
   },
   {

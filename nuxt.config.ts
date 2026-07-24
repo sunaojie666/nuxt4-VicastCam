@@ -60,6 +60,7 @@ export default defineNuxtConfig({
     public: {
       siteUrl,
       strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://192.168.18.100:1337',
+      mediaUrl: process.env.NUXT_PUBLIC_MEDIA_URL || 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721',
       paypalClientId: process.env.NUXT_PUBLIC_PAYPAL_CLIENT_ID || (process.env.NODE_ENV === 'development' ? 'test' : ''),
       paypalCurrency: process.env.NUXT_PUBLIC_PAYPAL_CURRENCY || 'USD',
     },
@@ -101,9 +102,9 @@ export default defineNuxtConfig({
         { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/images/common/logo.png' },
-        { rel: 'shortcut icon', type: 'image/png', href: '/images/common/logo.png' },
-        { rel: 'apple-touch-icon', href: '/images/common/logo.png' },
+        { rel: 'icon', type: 'image/png', href: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png' },
+        { rel: 'shortcut icon', type: 'image/png', href: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png' },
+        { rel: 'apple-touch-icon', href: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png' },
       ],
     },
   },

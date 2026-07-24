@@ -134,7 +134,7 @@ const agreementModel = defineModel('agreementAccepted', {
   type: Boolean,
   required: true,
 })
-const { requestLoadingText, showErrorToast, showRequestSuccessToast } = useSiteToast()
+const { requestLoadingText, showApiResponseErrorToast, showApiResponseSuccessToast, showErrorToast } = useSiteToast()
 const { loginWithEmailCode, loginWithPassword } = useAuth()
 const localePath = useLocalePath()
 const { locale } = useI18n()
@@ -152,10 +152,10 @@ let codeCountdownTimer = null
 let pendingPuzzleAction = null
 
 const puzzleImages = [
-  '/images/login/captcha-bg-1.png',
-  '/images/login/captcha-bg-2.png',
-  '/images/login/captcha-bg-3.png',
-  '/images/login/captcha-bg-4.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-1.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-2.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-3.png',
+  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-4.png',
 ]
 
 const puzzleCopyMap = {
@@ -256,14 +256,6 @@ const isValidEmail = (email) => {
 
 const getToastMessage = (key, fallback = '') => {
   return toastBox.value[key] || fallback
-}
-
-const getRequestErrorMessage = (error, fallback = '') => {
-  return error?.data?.message ||
-    error?.data?.data?.message ||
-    error?.data?.error?.message ||
-    error?.message ||
-    fallback
 }
 
 const normalizeEmailForVerification = email => String(email || '').trim().toLowerCase()
@@ -386,14 +378,17 @@ const sendEmailCodeAfterPuzzle = (email) => {
   isSendingCode.value = true
 
   sendEmailCode(email).then(
-    () => {
+    (response) => {
       isSendingCode.value = false
-      showRequestSuccessToast()
+      showApiResponseSuccessToast(response, { scope: 'auth' })
       startCodeCountdown()
     },
-    error => {
+    (error) => {
       isSendingCode.value = false
-      showErrorToast(getRequestErrorMessage(error, getToastMessage('requestFail', '发送失败，请稍后重试')))
+      showApiResponseErrorToast(error, {
+        scope: 'auth',
+        fallback: getToastMessage('requestFail', 'Request failed. Please try again'),
+      })
     }
   )
 }
@@ -452,14 +447,17 @@ const loginAfterPuzzle = ({ account, credential, isPassword }) => {
     : loginWithEmailCode({ email: account, captcha: credential })
 
   loginRequest.then(
-    () => {
+    (response) => {
       isLoggingIn.value = false
-      showRequestSuccessToast()
+      showApiResponseSuccessToast(response, { scope: 'auth' })
       navigateTo(localePath('/'))
     },
-    error => {
+    (error) => {
       isLoggingIn.value = false
-      showErrorToast(getRequestErrorMessage(error, getToastMessage('requestFail', '登录失败，请稍后重试')))
+      showApiResponseErrorToast(error, {
+        scope: 'auth',
+        fallback: getToastMessage('requestFail', 'Request failed. Please try again'),
+      })
     }
   )
 }

@@ -3,15 +3,19 @@ import { createRequest } from './index'
 // 登录相关接口统一走 Nuxt server/api，避免前端直接绑定真实业务接口域名。
 const authRequest = createRequest({
   baseURL: '/api/auth',
+  responseScope: 'auth',
 })
+
+const authResponseOptions = {
+  responseScope: 'auth',
+  skipAuthExpiredRedirect: true,
+}
 
 // 发送邮箱验证码。后端真实接口是 https://api.vicastcam.com/v1/SendEmail。
 export const sendEmailCode = (email) => {
   return authRequest.post('/send-email', {
     email: String(email || '').trim(),
-  }, {
-    skipAuthExpiredRedirect: true,
-  })
+  }, authResponseOptions)
 }
 
 // 邮箱验证码登录。服务端会转发到 https://api.vicastcam.com/v1/LoginByEmail。
@@ -19,9 +23,7 @@ export const loginByEmailCode = ({ email, captcha } = {}) => {
   return authRequest.post('/login-by-email', {
     email: String(email || '').trim(),
     captcha: String(captcha || '').trim(),
-  }, {
-    skipAuthExpiredRedirect: true,
-  })
+  }, authResponseOptions)
 }
 
 // 账号密码登录。服务端会转发到 https://api.vicastcam.com/v1/LoginByPassword。
@@ -29,15 +31,14 @@ export const loginByPassword = ({ account, password } = {}) => {
   return authRequest.post('/login-by-password', {
     account: String(account || '').trim(),
     password: String(password || ''),
-  }, {
-    skipAuthExpiredRedirect: true,
-  })
+  }, authResponseOptions)
 }
 
 // 获取扫码登录二维码。服务端会转发到 https://api.vicastcam.com/v1/GetQrcode。
 export const getLoginQrcode = () => {
   return authRequest.post('/get-qrcode', {}, {
-    skipAuthExpiredRedirect: true,
+    ...authResponseOptions,
+    responseScope: 'qr',
   })
 }
 
@@ -48,6 +49,7 @@ export const checkScanLoginStatus = (uuid) => {
   }, {
     skipAuthExpiredRedirect: true,
     skipGlobalLoading: true,
+    responseScope: 'qr',
   })
 }
 
@@ -85,6 +87,7 @@ export const getCommissionList = (payload = {}) => {
 export const getVipTypes = () => {
   return authRequest.post('/get-vip-types', {}, {
     skipAuthExpiredRedirect: true,
+    responseScope: 'general',
   })
 }
 
@@ -93,6 +96,8 @@ export const activeCard = (payload = {}) => {
   return authRequest.post('/active-card', {
     user_id: String(payload.user_id || '').trim(),
     card_pwd: String(payload.card_pwd || '').trim(),
+  }, {
+    responseScope: 'card',
   })
 }
 
@@ -101,4 +106,11 @@ export const getVipInfo = (payload = {}) => {
   return authRequest.post('/get-vip-info', {
     user_id: String(payload.user_id || '').trim(),
   })
+}
+
+// 退出登录。服务端会携带登录 token 转发到 https://api.vicastcam.com/v1/Logout。
+export const logout = (payload = {}) => {
+  return authRequest.post('/logout', {
+    user_id: String(payload.user_id || '').trim(),
+  }, authResponseOptions)
 }

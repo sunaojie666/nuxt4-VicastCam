@@ -47,7 +47,7 @@
 
       <NuxtLink :to="localePath('/faq')" class="home-faq-more theme-more-link" target="_blank" rel="noopener noreferrer">
         <span>{{ viewMoreText }}</span>
-        <img src="/images/common/arrow-right.png" alt="" aria-hidden="true" role="presentation">
+        <img src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/arrow-right.png" alt="" aria-hidden="true" role="presentation">
       </NuxtLink>
     </div>
   </section>

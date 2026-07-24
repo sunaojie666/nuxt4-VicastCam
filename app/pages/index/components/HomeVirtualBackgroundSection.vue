@@ -17,7 +17,7 @@
           <video
             class="home-virtual-video"
             :src="virtualVideoSrc"
-            poster="/images/login/background.png"
+            poster="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/background.png"
             autoplay
             muted
             loop
@@ -31,7 +31,7 @@
           <video
             class="home-virtual-reflection-video"
             :src="virtualVideoSrc"
-            poster="/images/login/background.png"
+            poster="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/background.png"
             autoplay
             muted
             loop
@@ -77,7 +77,7 @@ const createStrapiAssetURL = (url) => {
     return url
   }
 
-  return `${String(config.public.strapiUrl || '').replace(/\/+$/, '')}${url}`
+  return `${String(config.public.mediaUrl || '').replace(/\/+$/, '')}${url}`
 }
 
 const getVirtualVideoURL = (virtualData = {}) => {
@@ -191,7 +191,7 @@ const { loadContent: loadVirtualContent } = useLocalizedAsyncState({
   overflow: hidden;
   width: 100%;
   aspect-ratio: 887 / 582;
-  background: url("/images/home/virtual/camera-frame.png") center / 100% 100% no-repeat;
+  background: url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/virtual/camera-frame.png") center / 100% 100% no-repeat;
 }
 
 .home-virtual-video {
@@ -212,7 +212,7 @@ const { loadContent: loadVirtualContent } = useLocalizedAsyncState({
   width: 100%;
   aspect-ratio: 887 / 385;
   margin: 0 auto;
-  background: url("/images/home/virtual/camera-reflection-frame.png") center top / 100% 100% no-repeat;
+  background: url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/virtual/camera-reflection-frame.png") center top / 100% 100% no-repeat;
 }
 
 .home-virtual-reflection-video {
