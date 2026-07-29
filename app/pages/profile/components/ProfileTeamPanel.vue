@@ -769,9 +769,18 @@ onBeforeUnmount(() => {
 }
 
 .team-member-status {
+  min-width: 84px;
+  height: 28px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
   font-size: 14px;
   line-height: 20px;
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .team-table tbody td:nth-child(3) {
@@ -785,27 +794,15 @@ onBeforeUnmount(() => {
 }
 
 .status-free {
-  min-width: 84px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
   color: var(--theme-team-status-free-text, var(--theme-extra-154-167-189-1));
   background: var(--theme-team-status-free-background, var(--theme-extra-50-62-88-1));
-  border: 1px solid var(--theme-profile-field-border, transparent);
+  border: none;
 }
 
 .status-vip {
-  min-width: 84px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
   color: var(--theme-team-tab-active-text, var(--theme-extra-38-196-245-1));
   background: var(--theme-team-tab-active-background, var(--theme-extra-20-101-145-035));
-  border: 1px solid var(--theme-team-tab-active-border, var(--theme-cyan-hover));
+  border: none;
 }
 
 .status-life {
