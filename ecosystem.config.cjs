@@ -10,6 +10,8 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000,
         HOST: '0.0.0.0',
+        NUXT_PUBLIC_SITE_URL: 'https://www.vicastcam.com',
+        NUXT_SITE_URL: 'https://www.vicastcam.com',
       },
     },
   ],

@@ -189,15 +189,32 @@
 
       <!-- 手机端展开面板，复用同一份导航数据，避免桌面和手机两套文案不一致。 -->
       <div v-if="mobileMenuOpen" class="site-mobile-panel">
-        <button
+        <div
           v-for="item in navigationItems"
           :key="item.key"
-          type="button"
-          :class="['site-mobile-link', { 'site-mobile-link-active': activeNavigationKey === item.key }]"
-          @click="handleNavigationClick(item.key)"
+          class="site-mobile-group"
         >
-          <span>{{ item.label }}</span>
-        </button>
+          <button
+            type="button"
+            :class="['site-mobile-link', { 'site-mobile-link-active': activeNavigationKey === item.key }]"
+            @click="handleNavigationClick(item.key)"
+          >
+            <span>{{ item.label }}</span>
+          </button>
+
+          <div v-if="hasNavigationDropdown(item.key)" class="site-mobile-subnav">
+            <button
+              v-for="dropdownItem in getNavigationDropdownItems(item.key)"
+              :key="`${item.key}-${dropdownItem.key}`"
+              type="button"
+              class="site-mobile-subnav-link"
+              @click="handleNavigationDropdownItemClick(dropdownItem)"
+            >
+              <Icon :name="dropdownItem.icon" aria-hidden="true" />
+              <span>{{ dropdownItem.label }}</span>
+            </button>
+          </div>
+        </div>
 
         <NuxtLink
           v-if="!isLoggedIn"
@@ -1734,7 +1751,14 @@ onBeforeUnmount(() => {
   display: none;
 }
 
+.site-mobile-group {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
 .site-mobile-link {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1764,6 +1788,47 @@ onBeforeUnmount(() => {
 .site-mobile-link:active {
   color: var(--theme-header-text);
   background-color: transparent;
+}
+
+.site-mobile-subnav {
+  display: grid;
+  gap: 2px;
+  padding: 0 0 4px 10px;
+}
+
+.site-mobile-subnav-link {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 4px;
+  color: var(--theme-header-dropdown-text, var(--theme-text-muted));
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: left;
+}
+
+.site-mobile-subnav-link svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: var(--theme-accent-bright);
+}
+
+.site-mobile-subnav-link span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-mobile-subnav-link:hover,
+.site-mobile-subnav-link:focus {
+  color: var(--theme-header-text);
+  background-color: var(--theme-header-dropdown-hover-background, var(--theme-accent-hover));
 }
 
 .locale-flag-icon {
@@ -1975,6 +2040,8 @@ onBeforeUnmount(() => {
     width: max-content;
     min-width: 148px;
     max-width: calc(100vw - 32px);
+    max-height: calc(100vh - var(--page-header-height) - 24px);
+    overflow-y: auto;
     gap: 4px;
     padding: 8px;
     border: 1px solid var(--theme-header-dropdown-border, var(--theme-border));
@@ -1997,6 +2064,13 @@ onBeforeUnmount(() => {
   }
 
   .site-mobile-link {
+    position: relative;
+    z-index: 1;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .site-mobile-subnav-link {
     position: relative;
     z-index: 1;
     white-space: normal;

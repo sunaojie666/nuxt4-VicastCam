@@ -304,7 +304,6 @@ export const getCards = (locale) => {
     ...homeRequestOptions,
     params: {
       locale,
-      populate: 'coverImg',
     },
   })
 }

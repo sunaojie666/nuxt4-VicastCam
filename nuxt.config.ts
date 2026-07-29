@@ -1,7 +1,8 @@
 import { locales } from './i18n/locales.config'
 
 // 站点正式域名统一从环境变量读取，SEO、sitemap、robots、i18n 都使用同一个值。
-const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || process.env.NUXT_SITE_URL || 'https://vicastcam.com'
+const defaultSiteUrl = 'https://www.vicastcam.com'
+const siteUrl = (process.env.NUXT_PUBLIC_SITE_URL || process.env.NUXT_SITE_URL || defaultSiteUrl).replace(/\/+$/, '')
 
 // 站点名称用于 sitemap 展示、默认标题模板和生产环境识别。
 const siteName = process.env.NUXT_SITE_NAME || 'VicastCam'
@@ -46,8 +47,25 @@ const localizedRoutePaths = (paths: string[]) => {
   ])
 }
 const noindexSitemapExcludes = localizedRoutePaths(noindexRoutePaths)
+const legacyRefundRoutePaths = localizedRoutePaths(['/refund'])
+const sitemapExcludes = [
+  ...noindexSitemapExcludes,
+  ...legacyRefundRoutePaths,
+]
 const noindexRouteRules = Object.fromEntries(
   noindexSitemapExcludes.map(path => [path, createRouteRule({ robots: noindexRobotsRule, sitemap: false })])
+)
+const legacyRefundRouteRules = Object.fromEntries(
+  legacyRefundRoutePaths.map(path => [
+    path,
+    createRouteRule({
+      redirect: {
+        to: path.replace(/\/refund$/, '/refund-policy'),
+        statusCode: 301,
+      },
+      sitemap: false,
+    }),
+  ])
 )
 
 export default defineNuxtConfig({
@@ -113,6 +131,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': createRouteRule(),
     ...noindexRouteRules,
+    ...legacyRefundRouteRules,
   },
 
   hooks: {
@@ -153,7 +172,7 @@ export default defineNuxtConfig({
     // sitemap 自动读取 Nuxt 页面路由，并结合 @nuxtjs/i18n 生成多语言链接。
     autoI18n: true,
     // 登录、个人中心和结算页不进入 sitemap。
-    exclude: noindexSitemapExcludes,
+    exclude: sitemapExcludes,
     // 生成 sitemap 时自动发现页面中的图片，方便后续图片 SEO。
     discoverImages: true,
     defaults: {
@@ -166,7 +185,7 @@ export default defineNuxtConfig({
   robots: {
     // 生成 /robots.txt，并自动附带 sitemap 地址。
     robotsTxt: true,
-    sitemap: ['/sitemap.xml'],
+    sitemap: [`${siteUrl}/sitemap.xml`],
     allow: ['/'],
     // 默认不屏蔽 Nuxt 静态资源，避免影响搜索引擎正确渲染页面。
     disallow: [],

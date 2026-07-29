@@ -326,7 +326,7 @@ const openApplicationSelectName = ref('')
 const activeLocaleConfig = computed(() => {
   return locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
 })
-const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+const siteUrl = computed(() => String(config.public.siteUrl || 'https://www.vicastcam.com').replace(/\/+$/, ''))
 const defaultLocale = computed(() => config.public.i18n?.defaultLocale || 'en')
 const teamPageUrl = computed(() => createLocalizedUrl('/team', locale.value, siteUrl.value, defaultLocale.value))
 

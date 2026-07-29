@@ -23,7 +23,7 @@ setupPageSeo('tutorial')
 
 const config = useRuntimeConfig()
 const { locale } = useI18n()
-const siteUrl = String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, '')
+const siteUrl = String(config.public.siteUrl || 'https://www.vicastcam.com').replace(/\/+$/, '')
 const createAbsoluteUrl = path => /^https?:\/\//.test(path) ? path : `${siteUrl}${path.startsWith('/') ? path : `/${path}`}`
 const tutorialPoster = '/images/tutorial/video-poster.png'
 

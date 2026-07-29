@@ -78,7 +78,13 @@
                     </thead>
                     <tbody>
                       <tr v-for="(row, rowIndex) in block.rows" :key="rowIndex">
-                        <td v-for="(cell, cellIndex) in row" :key="cellIndex">{{ cell }}</td>
+                        <td
+                          v-for="(cell, cellIndex) in row"
+                          :key="cellIndex"
+                          :data-label="block.headers[cellIndex] || ''"
+                        >
+                          {{ cell }}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -94,7 +100,29 @@
               class="privacy-section"
             >
               <h3>{{ section.title }}</h3>
-              <p v-for="(paragraph, paragraphIndex) in section.paragraphs" :key="`${section.key}-${paragraphIndex}`">{{ paragraph }}</p>
+              <template v-for="(block, blockIndex) in section.blocks" :key="`${section.key}-${blockIndex}`">
+                <p v-if="block.type === 'paragraph'">{{ block.text }}</p>
+                <div v-else-if="block.type === 'table'" class="privacy-table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th v-for="(header, headerIndex) in block.headers" :key="headerIndex" scope="col">{{ header }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(row, rowIndex) in block.rows" :key="rowIndex">
+                        <td
+                          v-for="(cell, cellIndex) in row"
+                          :key="cellIndex"
+                          :data-label="block.headers[cellIndex] || ''"
+                        >
+                          {{ cell }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
             </section>
           </div>
         </article>
@@ -692,12 +720,47 @@ const normalizeHighlights = highlights => Array.isArray(highlights)
     })).filter(highlight => highlight.title || highlight.text)
   : []
 
+const normalizeSectionBlocks = (paragraphs) => {
+  const normalizedParagraphs = normalizeParagraphs(paragraphs)
+  const blocks = []
+
+  for (let index = 0; index < normalizedParagraphs.length; index += 1) {
+    const paragraph = normalizedParagraphs[index]
+    const isTableMarker = ['表格', 'table'].includes(paragraph.toLowerCase())
+    const firstTableRow = normalizedParagraphs[index + 1]
+
+    if (isTableMarker && firstTableRow?.includes('\t')) {
+      const tableRows = []
+      let rowIndex = index + 1
+
+      while (rowIndex < normalizedParagraphs.length && normalizedParagraphs[rowIndex].includes('\t')) {
+        tableRows.push(normalizedParagraphs[rowIndex].split('\t').map(cell => normalizeString(cell)))
+        rowIndex += 1
+      }
+
+      const [headers = [], ...rows] = tableRows
+      blocks.push({ type: 'table', headers, rows })
+      index = rowIndex - 1
+      continue
+    }
+
+    blocks.push({ type: 'paragraph', text: paragraph })
+  }
+
+  return blocks
+}
+
 const normalizeSections = sections => Array.isArray(sections)
-  ? sections.map((section = {}, sectionIndex) => ({
-      key: normalizeString(section.key) || `policy-section-${sectionIndex + 1}`,
-      title: normalizeString(section.title),
-      paragraphs: normalizeParagraphs(section.paragraphs),
-    })).filter(section => section.title || section.paragraphs.length)
+  ? sections.map((section = {}, sectionIndex) => {
+      const paragraphs = normalizeParagraphs(section.paragraphs)
+
+      return {
+        key: normalizeString(section.key) || `policy-section-${sectionIndex + 1}`,
+        title: normalizeString(section.title),
+        paragraphs,
+        blocks: normalizeSectionBlocks(paragraphs),
+      }
+    }).filter(section => section.title || section.paragraphs.length)
   : []
 
 const normalizePolicy = (policy = {}, index) => {
@@ -1210,7 +1273,7 @@ setupPageSeo(activePolicyKey, () => ({
 
 .privacy-table-wrap table {
   width: 100%;
-  min-width: 560px;
+  table-layout: auto;
   border-collapse: collapse;
   color: var(--theme-text-muted);
   font-size: 13px;
@@ -1224,6 +1287,9 @@ setupPageSeo(activePolicyKey, () => ({
   border-bottom: 1px solid var(--theme-border-muted-70);
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  white-space: normal;
 }
 
 .privacy-table-wrap th {
@@ -1302,6 +1368,57 @@ setupPageSeo(activePolicyKey, () => ({
   .privacy-article h2 {
     font-size: 24px;
     line-height: 32px;
+  }
+
+  .privacy-table-wrap {
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .privacy-table-wrap table,
+  .privacy-table-wrap tbody,
+  .privacy-table-wrap tr,
+  .privacy-table-wrap td {
+    display: block;
+    width: 100%;
+  }
+
+  .privacy-table-wrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .privacy-table-wrap tbody tr {
+    overflow: hidden;
+    border: 1px solid var(--theme-border-muted-70);
+    border-radius: 6px;
+  }
+
+  .privacy-table-wrap tbody tr + tr {
+    margin-top: 12px;
+  }
+
+  .privacy-table-wrap td {
+    display: grid;
+    grid-template-columns: minmax(88px, 32%) minmax(0, 1fr);
+    gap: 12px;
+    padding: 10px 12px;
+    border-right: 0;
+  }
+
+  .privacy-table-wrap td::before {
+    content: attr(data-label);
+    color: var(--theme-route-card-title, var(--theme-white));
+    font-weight: 700;
+    overflow-wrap: anywhere;
   }
 }
 </style>

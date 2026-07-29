@@ -64,7 +64,7 @@ const { locale, locales } = useI18n()
 const activeLocaleConfig = computed(() => {
   return locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
 })
-const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+const siteUrl = computed(() => String(config.public.siteUrl || 'https://www.vicastcam.com').replace(/\/+$/, ''))
 
 setupStructuredData(() => [
   {

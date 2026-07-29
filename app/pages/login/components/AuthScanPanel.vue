@@ -183,7 +183,7 @@ const expireQrcode = () => {
 
 const handleScanLoginSuccess = (response) => {
   stopScanStatusPolling()
-  showApiResponseSuccessToast(response, { scope: 'auth' })
+  showApiResponseSuccessToast(response, { scope: 'qr' })
   navigateTo(localePath('/'))
 }
 

@@ -85,7 +85,7 @@
         <table class="earnings-table">
           <thead>
             <tr>
-              <th>{{ earningsText.commissionHeaders?.mobile }}</th>
+              <th>{{ commissionUsernameHeader }}</th>
               <th>{{ earningsText.commissionHeaders?.saleTime }}</th>
               <th>{{ earningsText.commissionHeaders?.goodsInfo }}</th>
               <th>{{ earningsText.commissionHeaders?.commission }}</th>
@@ -93,10 +93,15 @@
           </thead>
           <tbody v-if="!isLoadingCommission && commissionRows.length">
             <tr v-for="row in commissionRows" :key="row.id">
-              <td>{{ row.mobile }}</td>
+              <td>{{ row.username }}</td>
               <td>{{ row.saleTime }}</td>
               <td>{{ row.goodsInfo }}</td>
-              <td>{{ row.commission }}</td>
+              <td>
+                <span class="earnings-commission-value">
+                  <span class="earnings-commission-amount">{{ row.commissionAmount }}</span>
+                  <span v-if="row.currency" class="earnings-commission-currency">{{ row.currency }}</span>
+                </span>
+              </td>
             </tr>
           </tbody>
           <tbody v-else>
@@ -105,6 +110,9 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="isLoadingCommission" class="earnings-table-loading" aria-hidden="true">
+          <span class="earnings-table-loading-spinner"></span>
+        </div>
       </div>
 
       <div v-if="!isLoadingCommission && commissionRows.length" class="earnings-pagination">
@@ -112,7 +120,7 @@
           type="button"
           :disabled="currentPage === 1 || isLoadingCommission"
           class="earnings-page-arrow"
-          @click="currentPage--"
+          @click="goToPage(currentPage - 1)"
         >
           <Icon name="lucide:chevron-left" aria-hidden="true" />
         </button>
@@ -122,7 +130,7 @@
           type="button"
           :class="['earnings-page-number', { 'earnings-page-number-active': currentPage === page }]"
           :disabled="isLoadingCommission"
-          @click="currentPage = page"
+          @click="goToPage(page)"
         >
           {{ page }}
         </button>
@@ -130,10 +138,16 @@
           type="button"
           :disabled="currentPage === totalPages || isLoadingCommission"
           class="earnings-page-arrow"
-          @click="currentPage++"
+          @click="goToPage(currentPage + 1)"
         >
           <Icon name="lucide:chevron-right" aria-hidden="true" />
         </button>
+        <ProfilePaginationJump
+          :current-page="currentPage"
+          :max-page="totalPages"
+          :disabled="isLoadingCommission"
+          @jump="goToPage"
+        />
       </div>
     </section>
 
@@ -228,7 +242,10 @@ import { getCommissionList } from '../../../api/request/auth'
 import { createThemeContext } from '../../../utils/theme'
 
 const createMoneyText = (value) => {
-  return `$ ${String(value || '0.00')}`
+  const prefix = String(profileBox.value?.earnings?.moneyPrefix || '')
+  const suffix = String(profileBox.value?.earnings?.moneySuffix || '')
+
+  return `${prefix}${String(value || '')}${suffix}`
 }
 
 const { profileBox } = useProfileText()
@@ -273,7 +290,6 @@ const summaryCards = computed(() => [
 ])
 
 const { authUser } = useAuth()
-const { requestLoadingText } = useSiteToast()
 const selectedMonth = ref('')
 const isMonthPickerOpen = ref(false)
 const pickerYear = ref(new Date().getFullYear())
@@ -323,7 +339,7 @@ const pages = computed(() => {
 })
 const commissionTableMessage = computed(() => {
   if (isLoadingCommission.value) {
-    return requestLoadingText.value
+    return ''
   }
 
   if (commissionLoadError.value) {
@@ -332,6 +348,10 @@ const commissionTableMessage = computed(() => {
 
   return earningsText.value.emptyCommission || ''
 })
+const commissionUsernameHeader = computed(() => {
+  return earningsText.value.commissionHeaders?.username || ''
+})
+const cardTypeText = computed(() => profileBox.value?.purchaseHistory?.cardTypes || {})
 const withdrawBalanceText = computed(() => {
   return String(withdrawText.value.balanceValue || '').trim()
 })
@@ -357,6 +377,108 @@ const createCommissionText = (...values) => {
   return value === undefined ? '' : String(value)
 }
 
+const commissionCardTypeFallbacks = {
+  month: '\u6708\u5361',
+  year: '\u5e74\u5361',
+  life: '\u7ec8\u8eab\u5361',
+}
+
+const parseCommissionGoodsInfo = (value) => {
+  if (typeof value !== 'string') {
+    return value
+  }
+
+  const text = value.trim()
+
+  if (!text || !/^[{[]/.test(text)) {
+    return value
+  }
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    return value
+  }
+}
+
+const normalizeCommissionGoodsInfoText = (value) => {
+  const goodsInfo = parseCommissionGoodsInfo(value)
+
+  if (Array.isArray(goodsInfo)) {
+    return normalizeCommissionGoodsInfoText(goodsInfo[0])
+  }
+
+  if (goodsInfo && typeof goodsInfo === 'object') {
+    return createCommissionText(
+      goodsInfo.goods_type,
+      goodsInfo.goodsType,
+      goodsInfo.card_type,
+      goodsInfo.cardType,
+      goodsInfo.vip_type,
+      goodsInfo.vipType,
+      goodsInfo.type,
+      goodsInfo.code,
+      goodsInfo.name,
+      goodsInfo.title,
+      goodsInfo.goods_name,
+      goodsInfo.goodsName,
+      ''
+    ).trim()
+  }
+
+  return createCommissionText(goodsInfo).trim()
+}
+
+const resolveCommissionGoodsType = (value) => {
+  const text = normalizeCommissionGoodsInfoText(value)
+  const code = text.toUpperCase()
+  const normalizedText = text.toLowerCase().replace(/[\s_-]+/g, '')
+
+  if (
+    code === 'L' ||
+    normalizedText.includes('life') ||
+    normalizedText.includes('lifetime') ||
+    normalizedText.includes('permanent') ||
+    text.includes('\u7ec8\u8eab') ||
+    text.includes('\u6c38\u4e45')
+  ) {
+    return 'life'
+  }
+
+  if (
+    code === 'Y' ||
+    code === 'N' ||
+    normalizedText.includes('year') ||
+    normalizedText.includes('annual') ||
+    text.includes('\u5e74')
+  ) {
+    return 'year'
+  }
+
+  if (
+    code === 'M' ||
+    normalizedText.includes('month') ||
+    normalizedText.includes('monthly') ||
+    text.includes('\u6708')
+  ) {
+    return 'month'
+  }
+
+  return ''
+}
+
+const createCommissionGoodsInfo = (...values) => {
+  const value = pickCommissionValue(...values)
+  const goodsInfoText = normalizeCommissionGoodsInfoText(value)
+  const goodsType = resolveCommissionGoodsType(value)
+
+  if (!goodsType) {
+    return goodsInfoText
+  }
+
+  return cardTypeText.value[goodsType] || commissionCardTypeFallbacks[goodsType] || goodsInfoText
+}
+
 const getCommissionData = (response) => {
   return response?.data || response || {}
 }
@@ -370,11 +492,12 @@ const getCommissionItems = (response) => {
 
 const createCommissionRow = (item = {}, index) => {
   return {
-    id: createCommissionText(item.id, item.mobile, item.sale_time, `${selectedMonth.value}-${currentPage.value}-${index}`),
-    mobile: createCommissionText(item.mobile, '-'),
-    saleTime: createCommissionText(item.sale_time, item.saleTime, '-'),
-    goodsInfo: createCommissionText(item.goods_info, item.goodsInfo, '-'),
-    commission: createCommissionText(item.commission, '0.00'),
+    id: createCommissionText(item.id, item.username, item.user_name, item.nickname, item.mobile, item.sale_time, `${selectedMonth.value}-${currentPage.value}-${index}`),
+    username: createCommissionText(item.username, item.user_name, item.nick_name, item.nickname, item.name, ''),
+    saleTime: createCommissionText(item.sale_time, item.saleTime, ''),
+    goodsInfo: createCommissionGoodsInfo(item.goods_info, item.goodsInfo, ''),
+    commissionAmount: createCommissionText(item.commission, ''),
+    currency: createCommissionText(item.currency),
   }
 }
 
@@ -443,6 +566,16 @@ const closeMonthPickerOnOutsideClick = (event) => {
   }
 
   isMonthPickerOpen.value = false
+}
+
+const goToPage = (page) => {
+  const nextPage = Math.min(Math.max(Number(page) || 1, 1), totalPages.value)
+
+  if (nextPage === currentPage.value) {
+    return
+  }
+
+  currentPage.value = nextPage
 }
 
 watch(totalPages, () => {
@@ -786,11 +919,37 @@ onBeforeUnmount(() => {
 }
 
 .earnings-table-wrap {
+  position: relative;
   margin-top: 20px;
   border: 1px solid var(--theme-profile-table-border, var(--theme-border-code));
   border-radius: 8px;
   overflow: hidden;
   background: var(--theme-profile-table-background, var(--theme-panel-code));
+}
+
+.earnings-table-loading {
+  position: absolute;
+  inset: 50px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-profile-table-loading-background, rgba(8, 16, 32, 0.34));
+  pointer-events: none;
+}
+
+.earnings-table-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--theme-extra-97-219-246-025, rgba(97, 219, 246, 0.25));
+  border-top-color: var(--theme-accent);
+  border-radius: 50%;
+  animation: earnings-table-loading-spin 0.8s linear infinite;
+}
+
+@keyframes earnings-table-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .earnings-table {
@@ -831,6 +990,29 @@ onBeforeUnmount(() => {
   width: 96px;
 }
 
+.earnings-commission-value {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.earnings-commission-amount {
+  color: var(--theme-profile-table-text, var(--theme-text-table));
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.earnings-commission-currency {
+  color: var(--theme-text-muted-alt);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
 .earnings-table th:first-child,
 .earnings-table td:first-child {
   text-align: left;
@@ -848,7 +1030,8 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px 10px;
+  flex-wrap: wrap;
 }
 
 .earnings-page-arrow,

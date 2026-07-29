@@ -18,7 +18,7 @@
             <p>{{ profileEmail }}</p>
             <span v-if="profileVipText" class="profile-vip-badge">
               <img class="profile-vip-badge-icon" :src="profileVipBadgeIcon" alt="" role="presentation">
-              <span>VIP</span>
+              <span>{{ profileVipBadgeLabel }}</span>
             </span>
           </section>
 
@@ -128,6 +128,9 @@ const profileAvatar = computed(() => {
 })
 const profileVipText = computed(() => {
   return authUser.value?.vip_type || ''
+})
+const profileVipBadgeLabel = computed(() => {
+  return profileBox.value?.common?.vipBadgeText || profileBox.value?.membership?.vipBadgeText || ''
 })
 const profileVipBadgeIcon = computed(() => {
   const vipType = String(authUser.value?.vip_type || '').trim()

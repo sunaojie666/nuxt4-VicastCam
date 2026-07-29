@@ -19,10 +19,11 @@
       </p>
 
       <div v-if="footerHeroButtons.length" class="home-hero-actions" aria-label="下载VicastCam">
-        <a
+        <component
+          :is="button.to ? 'NuxtLink' : 'a'"
           v-for="button in footerHeroButtons"
           :key="button.key"
-          href="#"
+          v-bind="button.to ? { to: button.to } : { href: button.href }"
           :class="['home-hero-download', button.buttonClass]"
         >
           <span class="home-hero-download-icon-wrap" aria-hidden="true">
@@ -30,7 +31,7 @@
             <img class="home-hero-download-icon-active" :src="button.activeIcon" alt="" role="presentation">
           </span>
           <span>{{ button.label }}</span>
-        </a>
+        </component>
       </div>
     </div>
   </section>
@@ -40,6 +41,7 @@
 import { getFooter, getHomes } from '../../../api/request/strapi'
 
 const { locale } = useI18n()
+const localePath = useLocalePath()
 const footerHero = useState('home-footer-hero-content', () => ({
   tag: '',
   title_main: '',
@@ -53,6 +55,7 @@ const homeDownloads = useState('home-footer-hero-downloads', () => ({
 }))
 const homeFooterHeroLocale = useState('home-footer-hero-locale', () => '')
 const homeFooterHeroDownloadsLocale = useState('home-footer-hero-downloads-locale', () => '')
+const downloadPagePath = computed(() => localePath('/download'))
 
 const footerHeroButtons = computed(() => {
   return [
@@ -62,6 +65,7 @@ const footerHeroButtons = computed(() => {
       icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/apple-default.svg',
       activeIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/apple-active.svg',
       buttonClass: 'home-hero-download-light',
+      to: downloadPagePath.value,
     },
     {
       key: 'android',
@@ -69,6 +73,7 @@ const footerHeroButtons = computed(() => {
       icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/android-default.svg',
       activeIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/android-active.svg',
       buttonClass: 'home-hero-download-light',
+      to: downloadPagePath.value,
     },
     {
       key: 'windows',
@@ -76,6 +81,7 @@ const footerHeroButtons = computed(() => {
       icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/windows-default.svg',
       activeIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/windows-active.svg',
       buttonClass: 'home-hero-download-primary',
+      href: '#',
     },
   ].filter(button => String(button.label || '').trim())
 })

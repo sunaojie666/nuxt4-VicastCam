@@ -10,13 +10,15 @@
 
       <article class="team-referrer-card">
         <div class="team-referrer-main">
-          <span class="team-referrer-avatar">{{ referrerInitial }}</span>
+          <span :class="['team-referrer-avatar', { 'team-referrer-avatar-image': referrerAvatar }]">
+            <img v-if="referrerAvatar" :src="referrerAvatar" :alt="referrerName">
+            <span v-else>{{ referrerInitial }}</span>
+          </span>
           <div>
             <p>{{ teamText.referrerLabel }}</p>
             <strong>{{ referrerName }}</strong>
           </div>
         </div>
-        <button type="button" class="team-referrer-action">{{ teamText.parentButton }}</button>
       </article>
 
       <div class="team-toolbar">
@@ -27,7 +29,7 @@
             @click="selectedLevel = '1'"
           >
             {{ teamText.levelOne }}
-            <span>{{ levelTotals[1] }}</span>
+            <span>{{ teamDisplayTotals[1] }}</span>
           </button>
           <button
             type="button"
@@ -35,7 +37,7 @@
             @click="selectedLevel = '2'"
           >
             {{ teamText.levelTwo }}
-            <span>{{ levelTotals[2] }}</span>
+            <span>{{ teamDisplayTotals[2] }}</span>
           </button>
         </div>
 
@@ -105,6 +107,9 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="isLoadingTeam" class="team-table-loading" aria-hidden="true">
+          <span class="team-table-loading-spinner"></span>
+        </div>
       </div>
 
       <div v-if="!isLoadingTeam && pagedRows.length" class="team-pagination">
@@ -112,16 +117,16 @@
           type="button"
           :disabled="currentPage === 1"
           class="team-page-arrow"
-          @click="currentPage--"
+          @click="goToPage(currentPage - 1)"
         >
           <Icon name="lucide:chevron-left" aria-hidden="true" />
         </button>
         <button
-          v-for="page in totalPages"
+          v-for="page in pages"
           :key="page"
           type="button"
           :class="['team-page-number', { 'team-page-number-active': currentPage === page }]"
-          @click="currentPage = page"
+          @click="goToPage(page)"
         >
           {{ page }}
         </button>
@@ -129,20 +134,25 @@
           type="button"
           :disabled="currentPage === totalPages"
           class="team-page-arrow"
-          @click="currentPage++"
+          @click="goToPage(currentPage + 1)"
         >
           <Icon name="lucide:chevron-right" aria-hidden="true" />
         </button>
+        <ProfilePaginationJump
+          :current-page="currentPage"
+          :max-page="totalPages"
+          :disabled="isLoadingTeam"
+          @jump="goToPage"
+        />
       </div>
     </section>
   </section>
 </template>
 
 <script setup>
-import { getTeamList } from '../../../api/request/auth'
+import { getTeamInfo, getTeamList } from '../../../api/request/auth'
 
 const { authUser } = useAuth()
-const { requestLoadingText } = useSiteToast()
 const { profileBox } = useProfileText()
 const selectedLevel = ref('1')
 const selectedMonth = ref('')
@@ -153,13 +163,17 @@ const currentPage = ref(1)
 const pageSize = 10
 const teamRows = ref([])
 const referrer = ref(null)
+const referrerDefaultAvatar = ref('')
 const levelTotals = reactive({
   1: 0,
   2: 0,
 })
+const teamInfoTotals = reactive({
+  1: null,
+  2: null,
+})
 const isLoadingTeam = ref(false)
 const teamLoadError = ref('')
-
 const commonText = computed(() => profileBox.value?.common || {})
 const teamText = computed(() => profileBox.value?.team || {})
 const currentMonth = computed(() => {
@@ -196,39 +210,55 @@ const getTeamItems = (response) => {
   return Array.isArray(items) ? items : []
 }
 
-const getTeamTotal = (response, fallbackLength) => {
+const getTeamTotal = (response, itemCount) => {
   const data = getResponseData(response)
   const total = pickTeamValue(data.total, data.count, data.total_count, data.totalCount, response?.total, response?.count)
 
-  return Number(total) || fallbackLength
+  return Number(total) || itemCount
+}
+
+const createTeamInfoCount = (value) => {
+  const count = Number(value)
+
+  return Number.isFinite(count) && count >= 0 ? count : 0
+}
+
+const applyTeamInfoTotals = (response) => {
+  const data = getResponseData(response)
+
+  teamInfoTotals[1] = createTeamInfoCount(pickTeamValue(data.first_count, data.firstCount))
+  teamInfoTotals[2] = createTeamInfoCount(pickTeamValue(data.second_count, data.secondCount))
+  referrerDefaultAvatar.value = String(data.default_avatar || '').trim()
 }
 
 const getTeamReferrer = (response) => {
   const data = getResponseData(response)
-  const referrerValue = data.parent || data.referrer || data.recommender || data.inviter || data.parent_user || data.parentUser || response?.parent || response?.referrer
+  const referrerValue = pickTeamValue(
+    data.superior,
+    response?.superior,
+    data.parent,
+    data.referrer,
+    data.recommender,
+    data.inviter,
+    data.parent_user,
+    data.parentUser,
+    response?.parent,
+    response?.referrer
+  )
 
-  return referrerValue && typeof referrerValue === 'object' ? referrerValue : null
+  return referrerValue || null
+}
+
+const getTeamMemberStatusText = (key) => {
+  return teamText.value.memberStatus?.[key] || ''
 }
 
 const createMemberStatus = (member = {}) => {
-  const rawStatus = String(pickTeamValue(member.vip_type, member.vipType, member.vip_level, member.vipLevel, member.member_type, member.memberType, member.status, '') || '')
-  const normalized = rawStatus.toLowerCase()
-
-  if (normalized.includes('life') || rawStatus.includes('终身')) {
-    return { status: teamText.value.memberStatus?.life || '', statusClass: 'status-life' }
-  }
-
-  if (normalized.includes('year') || rawStatus.includes('年')) {
-    return { status: teamText.value.memberStatus?.year || '', statusClass: 'status-year' }
-  }
-
-  if (normalized.includes('month') || rawStatus.includes('月')) {
-    return { status: teamText.value.memberStatus?.month || '', statusClass: 'status-month' }
-  }
+  const isVip = Number(pickTeamValue(member.is_vip, member.isVip, 0))
 
   return {
-    status: rawStatus || teamText.value.memberStatus?.free || '',
-    statusClass: rawStatus ? 'status-month' : 'status-free',
+    status: getTeamMemberStatusText(isVip === 1 ? 'vip' : 'free'),
+    statusClass: isVip === 1 ? 'status-vip' : 'status-free',
   }
 }
 
@@ -237,23 +267,42 @@ const createTeamRow = (member = {}, index) => {
 
   return {
     id: pickTeamValue(member.user_id, member.uid, member.id, member.email, `${selectedLevel.value}-${currentPage.value}-${index}`),
-    name: String(pickTeamValue(member.nickname, member.nick_name, member.name, member.username, member.email, member.mobile, teamText.value.emptyMemberName || '')),
-    joinedAt: String(pickTeamValue(member.created_at, member.createdAt, member.joined_at, member.joinedAt, member.create_time, member.createTime, '-')),
+    name: String(pickTeamValue(member.user_name, member.userName, teamText.value.emptyMemberName || '')),
+    joinedAt: String(pickTeamValue(member.created_at, member.createdAt, member.joined_at, member.joinedAt, member.create_time, member.createTime, '')),
     ...memberStatus,
   }
 }
 
 const totalPages = computed(() => Math.max(1, Math.ceil((levelTotals[selectedLevel.value] || 0) / pageSize)))
+const pages = computed(() => {
+  const pageWindowSize = 5
+  const halfWindow = Math.floor(pageWindowSize / 2)
+  const startPage = Math.max(1, Math.min(currentPage.value - halfWindow, totalPages.value - pageWindowSize + 1))
+  const endPage = Math.min(totalPages.value, startPage + pageWindowSize - 1)
+
+  return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index)
+})
+const teamDisplayTotals = computed(() => ({
+  1: teamInfoTotals[1] ?? levelTotals[1],
+  2: teamInfoTotals[2] ?? levelTotals[2],
+}))
 const pagedRows = computed(() => teamRows.value)
 const referrerName = computed(() => {
+  if (typeof referrer.value !== 'object') {
+    return String(pickTeamValue(referrer.value, teamText.value.emptyReferrer || ''))
+  }
+
   return pickTeamValue(referrer.value?.nickname, referrer.value?.nick_name, referrer.value?.name, referrer.value?.username, referrer.value?.email, referrer.value?.mobile, teamText.value.emptyReferrer || '')
 })
+const referrerAvatar = computed(() => {
+  return referrerDefaultAvatar.value
+})
 const referrerInitial = computed(() => {
-  return String(referrerName.value || '-').trim().slice(0, 1).toUpperCase() || '-'
+  return String(referrerName.value || '').trim().slice(0, 1).toUpperCase()
 })
 const teamTableMessage = computed(() => {
   if (isLoadingTeam.value) {
-    return requestLoadingText.value
+    return ''
   }
 
   if (teamLoadError.value) {
@@ -262,6 +311,30 @@ const teamTableMessage = computed(() => {
 
   return teamText.value.emptyTeam || ''
 })
+
+const loadTeamInfo = () => {
+  const userId = authUser.value?.user_id
+
+  if (!userId) {
+    teamInfoTotals[1] = null
+    teamInfoTotals[2] = null
+    referrerDefaultAvatar.value = ''
+    return
+  }
+
+  getTeamInfo({
+    user_id: userId,
+  }).then(
+    response => {
+      applyTeamInfoTotals(response)
+    },
+    () => {
+      teamInfoTotals[1] = null
+      teamInfoTotals[2] = null
+      referrerDefaultAvatar.value = ''
+    }
+  )
+}
 
 const loadTeamList = () => {
   const userId = authUser.value?.user_id
@@ -285,8 +358,11 @@ const loadTeamList = () => {
   }).then(
     response => {
       const items = getTeamItems(response)
+      const nextReferrer = getTeamReferrer(response)
 
-      referrer.value = getTeamReferrer(response)
+      if (nextReferrer) {
+        referrer.value = nextReferrer
+      }
       teamRows.value = items.map(createTeamRow)
       levelTotals[selectedLevel.value] = getTeamTotal(response, items.length)
       isLoadingTeam.value = false
@@ -329,6 +405,16 @@ const closeMonthPickerOnOutsideClick = (event) => {
   isMonthPickerOpen.value = false
 }
 
+const goToPage = (page) => {
+  const nextPage = Math.min(Math.max(Number(page) || 1, 1), totalPages.value)
+
+  if (nextPage === currentPage.value) {
+    return
+  }
+
+  currentPage.value = nextPage
+}
+
 watch([selectedLevel, selectedMonth], () => {
   if (currentPage.value !== 1) {
     currentPage.value = 1
@@ -354,6 +440,7 @@ watch(totalPages, () => {
 })
 
 onMounted(() => {
+  loadTeamInfo()
   loadTeamList()
   document.addEventListener('click', closeMonthPickerOnOutsideClick)
 })
@@ -378,14 +465,17 @@ onBeforeUnmount(() => {
 .team-panel-heading {
   min-height: 81px;
   height: 81px;
-  padding-bottom: 0;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .team-referrer-card {
   min-height: 72px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin-top: 20px;
   padding: 0 14px;
   border: 1px solid var(--theme-team-referrer-border, var(--theme-extra-46-58-84-1));
@@ -401,16 +491,29 @@ onBeforeUnmount(() => {
 }
 
 .team-referrer-avatar {
-  width: 30px;
-  height: 30px;
+  width: 45px;
+  height: 45px;
+  flex: 0 0 45px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   color: var(--theme-extra-237-247-255-1);
   background: var(--theme-extra-52-189-255-1);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
+}
+
+.team-referrer-avatar-image {
+  background: transparent;
+}
+
+.team-referrer-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  object-fit: cover;
 }
 
 .team-referrer-main p {
@@ -426,17 +529,6 @@ onBeforeUnmount(() => {
   font-size: 16px;
   line-height: 22px;
   font-weight: 700;
-}
-
-.team-referrer-action {
-  width: 84px;
-  height: 34px;
-  border-radius: 999px;
-  color: var(--theme-text-button, var(--theme-extra-27-213-244-1));
-  background: var(--theme-profile-field-action, var(--theme-extra-25-126-159-035));
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 .team-level-tabs {
@@ -602,12 +694,38 @@ onBeforeUnmount(() => {
 }
 
 .team-table-wrap {
+  position: relative;
   margin-top: 20px;
   align-self: start;
   border: 1px solid var(--theme-profile-table-border, var(--theme-border-code));
   border-radius: 8px;
   overflow: hidden;
   background: var(--theme-profile-table-background, var(--theme-panel-code));
+}
+
+.team-table-loading {
+  position: absolute;
+  inset: 50px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-profile-table-loading-background, rgba(8, 16, 32, 0.34));
+  pointer-events: none;
+}
+
+.team-table-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--theme-extra-97-219-246-025, rgba(97, 219, 246, 0.25));
+  border-top-color: var(--theme-accent);
+  border-radius: 50%;
+  animation: team-table-loading-spin 0.8s linear infinite;
+}
+
+@keyframes team-table-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .team-table {
@@ -650,13 +768,6 @@ onBeforeUnmount(() => {
   padding-left: 14px;
 }
 
-.team-member-name {
-  color: var(--theme-team-member-name, var(--theme-extra-242-247-255-1)) !important;
-  font-size: 16px !important;
-  line-height: 22px;
-  font-weight: 700;
-}
-
 .team-member-status {
   font-size: 14px;
   line-height: 20px;
@@ -685,6 +796,18 @@ onBeforeUnmount(() => {
   border: 1px solid var(--theme-profile-field-border, transparent);
 }
 
+.status-vip {
+  min-width: 84px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--theme-team-tab-active-text, var(--theme-extra-38-196-245-1));
+  background: var(--theme-team-tab-active-background, var(--theme-extra-20-101-145-035));
+  border: 1px solid var(--theme-team-tab-active-border, var(--theme-cyan-hover));
+}
+
 .status-life {
   color: var(--theme-accent);
 }
@@ -702,7 +825,8 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px 10px;
+  flex-wrap: wrap;
 }
 
 .team-page-arrow,

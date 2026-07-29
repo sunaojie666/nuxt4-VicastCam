@@ -64,12 +64,28 @@ export const getTeamList = (payload = {}) => {
   })
 }
 
+// 获取团队信息。服务端会转发到 https://api.vicastcam.com/v1/GetTeamInfo。
+export const getTeamInfo = (payload = {}) => {
+  return authRequest.post('/get-team-info', {
+    user_id: String(payload.user_id || '').trim(),
+  })
+}
+
 // 获取购买记录。服务端会转发到 https://api.vicastcam.com/v1/GetBuyRecords。
 export const getBuyRecords = (payload = {}) => {
   return authRequest.post('/get-buy-records', {
     user_id: String(payload.user_id || '').trim(),
     page: Number(payload.page) || 1,
-    limit: Number(payload.limit) || 5,
+    limit: Number(payload.limit) || 10,
+  })
+}
+
+// Server proxy for https://api.vicastcam.com/v1/GetActivatedCardList.
+export const getActivatedCardList = (payload = {}) => {
+  return authRequest.post('/get-activated-card-list', {
+    user_id: String(payload.user_id || '').trim(),
+    page: Number(payload.page) || 1,
+    limit: Number(payload.limit) || 10,
   })
 }
 

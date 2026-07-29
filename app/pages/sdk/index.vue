@@ -158,7 +158,16 @@
 
               <h2 id="sdk-content-title">{{ activeNoticeDoc.title }}</h2>
               <p class="sdk-download-copy">{{ activeNoticeDoc.description }}</p>
-              <button type="button" class="sdk-notice-download-button">
+              <a
+                v-if="activeNoticeDownloadUrl"
+                class="sdk-notice-download-button"
+                :href="activeNoticeDownloadUrl"
+                download
+              >
+                <Icon name="lucide:download" aria-hidden="true" />
+                <span>{{ cameraLabels.downloadComponent }}</span>
+              </a>
+              <button v-else type="button" class="sdk-notice-download-button">
                 <Icon name="lucide:download" aria-hidden="true" />
                 <span>{{ cameraLabels.downloadComponent }}</span>
               </button>
@@ -235,24 +244,28 @@
 
             <div v-else-if="isEmptyContentView" id="sdk-content-title" class="sdk-empty-doc"></div>
 
-            <div v-else class="sdk-api-doc">
-              <h3 class="sdk-language-title">{{ cameraLabels.developmentLanguage }}</h3>
-              <div class="sdk-code-tabs sdk-language-tabs" role="tablist" aria-label="Function language">
-                <button
-                  v-for="tab in apiDoc.codeTabs"
-                  :key="'path-' + tab"
-                  type="button"
-                  :class="['sdk-code-tab', { 'sdk-code-tab-active': tab === activeCodeTab }]"
-                  @click="activeCodeTab = tab"
-                >
-                  {{ tab }}
-                </button>
-              </div>
+            <div v-else-if="isApiDocView" class="sdk-api-doc">
+              <template v-if="hasApiLanguageTabs">
+                <h3 class="sdk-language-title">{{ cameraLabels.developmentLanguage }}</h3>
+                <div class="sdk-code-tabs sdk-language-tabs" role="tablist" aria-label="Function language">
+                  <button
+                    v-for="tab in apiDoc.codeTabs"
+                    :key="'path-' + tab"
+                    type="button"
+                    :class="['sdk-code-tab', { 'sdk-code-tab-active': tab === activeCodeTab }]"
+                    @click="activeCodeTab = tab"
+                  >
+                    {{ tab }}
+                  </button>
+                </div>
+              </template>
 
-              <h2 id="sdk-content-title">{{ cameraLabels.callFunction }}</h2>
-              <div class="sdk-api-path">{{ activeFunctionPath }}</div>
+              <template v-if="activeFunctionPath">
+                <h2 id="sdk-content-title">{{ cameraLabels.callFunction }}</h2>
+                <div class="sdk-api-path">{{ activeFunctionPath }}</div>
+              </template>
 
-              <section class="sdk-doc-section" aria-labelledby="sdk-function-params-title">
+              <section v-if="apiDoc.params.length" class="sdk-doc-section" aria-labelledby="sdk-function-params-title">
                 <h3 id="sdk-function-params-title">{{ cameraLabels.functionParameters }}</h3>
                 <div class="sdk-table">
                   <div v-for="(param, index) in apiDoc.params" :key="`${param.name}-${index}`" class="sdk-table-row">
@@ -263,7 +276,7 @@
                 </div>
               </section>
 
-              <section class="sdk-doc-section" aria-labelledby="sdk-code-title">
+              <section v-if="activeCode" class="sdk-doc-section" aria-labelledby="sdk-code-title">
                 <h3 id="sdk-code-title">{{ cameraLabels.exampleCode }}</h3>
                 <div class="sdk-code-block">
                   <button
@@ -278,7 +291,7 @@
                 </div>
               </section>
 
-              <section class="sdk-doc-section" aria-labelledby="sdk-return-title">
+              <section v-if="apiDoc.responseFields.length" class="sdk-doc-section" aria-labelledby="sdk-return-title">
                 <h3 id="sdk-return-title">{{ cameraLabels.returnValues }}</h3>
                 <div class="sdk-response-card">
                   <div class="sdk-response-body">
@@ -348,6 +361,22 @@ const exampleModule = useState('sdk-example-module', () => null)
 const exampleModuleLocale = useState('sdk-example-module-locale', () => '')
 
 const normalizeList = value => Array.isArray(value) ? value.filter(Boolean) : []
+const getSingleQueryValue = value => Array.isArray(value) ? value[0] : value
+const getSdkTargetFromRoute = () => String(getSingleQueryValue(route.query.sdkTarget) || '').trim().toLowerCase()
+
+const createInitialSdkSelection = () => {
+  const target = getSdkTargetFromRoute()
+
+  if (target === 'audio') {
+    return { groupKey: 'audio', itemKey: 'audio-notice' }
+  }
+
+  if (target === 'api') {
+    return { groupKey: 'camera', itemKey: 'camera-load-dll' }
+  }
+
+  return { groupKey: 'camera', itemKey: 'camera-notice' }
+}
 
 const parseStrapiJsonField = (value) => {
   if (typeof value !== 'string') {
@@ -571,9 +600,20 @@ const demoContent = computed(() => {
 })
 const demoDownloads = computed(() => demoContent.value.downloads.filter(item => item.key !== 'cast'))
 
-const activeGroupKey = ref('camera')
-const activeItemKey = ref('camera-notice')
+const initialSdkSelection = createInitialSdkSelection()
+const activeGroupKey = ref(initialSdkSelection.groupKey)
+const activeItemKey = ref(initialSdkSelection.itemKey)
 const activeCodeTab = ref('C')
+const soundcardSdkDownloadUrls = {
+  C: 'https://cdn.vicastcam.com/demos/VirtualSoundCard/c.zip',
+  'C++': 'https://cdn.vicastcam.com/demos/VirtualSoundCard/c%2B%2B.zip',
+  'C#': 'https://cdn.vicastcam.com/demos/VirtualSoundCard/c%23.zip',
+}
+const cameraSdkDownloadUrls = {
+  C: 'https://cdn.vicastcam.com/demos/virtualCamera/c.zip',
+  'C++': 'https://cdn.vicastcam.com/demos/virtualCamera/c%2B%2B.zip',
+  'C#': 'https://cdn.vicastcam.com/demos/virtualCamera/c%23.zip',
+}
 const sdkNoticeComponentImages = {
   C: {
     src: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/notice-c.png',
@@ -915,340 +955,34 @@ const activeNoticeDoc = computed(() => cameraNoticeDocs.value[activeCodeTab.valu
 const activeNoticeComponentImage = computed(() => {
   return cameraNoticeComponentImages.value[activeCodeTab.value] || {}
 })
+const activeNoticeDownloadUrl = computed(() => {
+  const downloadUrls = activeGroupKey.value === 'audio'
+    ? soundcardSdkDownloadUrls
+    : cameraSdkDownloadUrls
+
+  return downloadUrls[activeCodeTab.value] || ''
+})
 const isDemoDownloadView = computed(() => activeGroupKey.value === 'demo' || activeItemKey.value.includes('demo'))
 const isEmptyContentView = computed(() => activeSdkGroup.value && !activeSdkGroup.value.items?.length && !isNoticeView.value)
+const isApiDocView = computed(() => {
+  const functionName = activeSdkItem.value?.functionName
+  const sdkDoc = activeSdkModule.value?.documents?.functions?.[functionName]
 
-const createSdkFunctionCodeSamples = (functionName) => {
-  if (!functionName) {
-    return {
-      C: '// 待补充',
-      'C++': '// 待补充',
-      'C#': '// 待补充',
-    }
-  }
-
-  return {
-    C: `${functionName}(...);`,
-    'C++': `${functionName}(...);`,
-    'C#': `${functionName}(...);`,
-  }
-}
-
-const sdkFunctionParams = {
-  InitVcam: [
-    { name: '无参数', description: '' },
-  ],
-  SetOutputFormat: [
-    { name: 'width', description: '输出宽度，必须 > 0，内部会规范为偶数，最大 4096。' },
-    { name: 'height', description: '输出高度，必须 > 0，内部会规范为偶数，最大 4096。' },
-    { name: 'format', description: '输出格式，0 = YUY2，非 0 = NV12；不再指定 fps。' },
-  ],
-  SendFrameYUY2: [
-    { name: 'i_yuy2', description: 'YUY2 原始帧数据指针。' },
-    { name: 'i_width', description: '输入帧宽度，建议偶数。' },
-    { name: 'i_height', description: '输入帧高度，建议偶数。' },
-    { name: 'i_stride', description: '每行字节数，通常为 i_width * 2。' },
-  ],
-  SendFrameNV12: [
-    { name: 'i_nv12', description: 'NV12 原始帧数据指针，Y 平面后接交错 UV 平面。' },
-    { name: 'i_width', description: '输入帧宽度，必须为偶数。' },
-    { name: 'i_height', description: '输入帧高度，必须为偶数。' },
-    { name: 'i_stride', description: 'Y/UV 每行字节数，通常为 i_width。' },
-  ],
-  getMultiMediaToCamera: [
-    { name: 'tmpPath', description: '多媒体文件路径，wchar_t*，支持绝对路径或相对调用方 EXE 目录路径。' },
-    { name: '', description: '支持格式：由当前 FFmpeg 构建决定，常见 mp4/avi/mkv/mov 等。' },
-    { name: '', description: '函数为阻塞式播放：音频送默认扬声器，视频按媒体时间轴送虚拟相机。' },
-  ],
-  getImageToCamera: [
-    { name: 'tmpPath', description: '图片文件路径，wchar_t*，支持绝对路径或相对调用方 EXE 目录路径。' },
-    { name: '', description: '支持格式：由当前 FFmpeg 构建决定，常见 png/jpg/jpeg/bmp/webp/gif 等。' },
-    { name: '', description: '静态图发送一帧；动态图/GIF 按自身时间戳逐帧推送。' },
-  ],
-  SetFriendlyName: [
-    { name: 'friendly_name', description: '虚拟相机显示名称，wchar_t*。' },
-    { name: '', description: '支持多语言 Unicode 名称；内部会去除非法注册表/设备名字符并限制长度。' },
-  ],
-  SetLicenseCode: [
-    { name: 'license_code', description: '授权码字符串，char*。' },
-    { name: '', description: '当前示例校验码为 ASCII 字符串；未调用或校验失败时，画面会显示居中 “vicastcam” 水印。' },
-  ],
-  setVcamOn: [
-    { name: 'isOn', description: '相机输出开关，int。' },
-    { name: '', description: '0 = false，始终显示占位图。' },
-    { name: '', description: '非 0 = true，优先显示真实输入帧。' },
-  ],
-  SetMirrorEnabled: [
-    { name: 'enabled', description: '左右镜像开关，int。' },
-    { name: '', description: '0 = false，关闭镜像。' },
-    { name: '', description: '非 0 = true，开启左右镜像。' },
-  ],
-  SetFlipEnabled: [
-    { name: 'enabled', description: '上下翻转开关，int。' },
-    { name: '', description: '0 = false，关闭上下翻转。' },
-    { name: '', description: '非 0 = true，开启上下翻转。' },
-  ],
-  SetRotateRightDegree: [
-    { name: 'degree', description: '顺时针旋转幅度。' },
-    { name: '', description: '0 = +90°，1 = +180°，2 = +270°。' },
-    { name: '', description: '调用效果会累积；非法值会设置 ERROR_INVALID_PARAMETER。' },
-  ],
-  SetVacantImg: [
-    { name: 'imgPath', description: 'BMP 占位图路径，wchar_t*。' },
-    { name: '', description: '支持绝对路径或相对调用方 EXE 目录路径。' },
-    { name: '', description: '仅支持 BMP；设置成功后按当前用户持久化保存。' },
-  ],
-}
-
-const sdkFunctionCodeSamples = {
-  InitVcam: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-int ret = InitVcam();
-if (ret != ERROR_SUCCESS) { DWORD err = GetLastError(); }`,
-    'C++': String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-int ret = InitVcam();
-if (ret != ERROR_SUCCESS) { DWORD err = ::GetLastError(); }`,
-    'C#': String.raw`using System.Runtime.InteropServices;
-[DllImport("vicastcam_sdk.dll", CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int InitVcam();
-int ret = InitVcam();
-int err = Marshal.GetLastWin32Error();`,
-  },
-  SetOutputFormat: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-int ret = SetOutputFormat(1280, 720, 1); // 1=NV12`,
-    'C++': String.raw`int ret = SetOutputFormat(1920, 1080, 0); // 0=YUY2
-if (ret != ERROR_SUCCESS) DWORD err = ::GetLastError();`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int SetOutputFormat(int width, int height, int format);
-int ret = SetOutputFormat(1280, 720, 1);`,
-  },
-  SendFrameYUY2: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-unsigned char* yuy2 = frameBuffer;
-int ret = SendFrameYUY2(yuy2, width, height, width * 2);`,
-    'C++': String.raw`std::vector<unsigned char> yuy2(width * height * 2);
-int ret = SendFrameYUY2(yuy2.data(), width, height, width * 2);`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int SendFrameYUY2(byte[] data, int w, int h, int stride);
-byte[] yuy2 = new byte[w * h * 2];
-int ret = SendFrameYUY2(yuy2, w, h, w * 2);`,
-  },
-  SendFrameNV12: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-unsigned char* nv12 = frameBuffer;
-int ret = SendFrameNV12(nv12, width, height, width);`,
-    'C++': String.raw`std::vector<unsigned char> nv12(width * height * 3 / 2);
-int ret = SendFrameNV12(nv12.data(), width, height, width);`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int SendFrameNV12(byte[] data, int w, int h, int stride);
-byte[] nv12 = new byte[w * h * 3 / 2];
-int ret = SendFrameNV12(nv12, w, h, w);`,
-  },
-  getMultiMediaToCamera: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-int ret = getMultiMediaToCamera(L"media\\demo.mp4");`,
-    'C++': String.raw`std::wstring path = L"media\\demo.mp4";
-int ret = getMultiMediaToCamera((wchar_t*)path.c_str());`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CharSet=CharSet.Unicode, CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int getMultiMediaToCamera(string path);
-int ret = getMultiMediaToCamera(@"media\demo.mp4");`,
-  },
-  getImageToCamera: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-int ret = getImageToCamera(L"images\\demo.png");`,
-    'C++': String.raw`std::wstring path = L"images\\demo.png";
-int ret = getImageToCamera((wchar_t*)path.c_str());`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CharSet=CharSet.Unicode, CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int getImageToCamera(string path);
-int ret = getImageToCamera(@"images\demo.png");`,
-  },
-  SetFriendlyName: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-int ret = SetFriendlyName(L"影优尽优虚拟相机");`,
-    'C++': String.raw`std::wstring name = L"VicastCam 虚拟相机";
-int ret = SetFriendlyName((wchar_t*)name.c_str());`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CharSet=CharSet.Unicode, CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int SetFriendlyName(string name);
-int ret = SetFriendlyName("影优尽优虚拟相机");`,
-  },
-  SetLicenseCode: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-int ret = SetLicenseCode("VICAST-SDK-LICENSE-2026");`,
-    'C++': String.raw`const char* code = "VICAST-SDK-LICENSE-2026";
-int ret = SetLicenseCode((char*)code);`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int SetLicenseCode(string code);
-int ret = SetLicenseCode("VICAST-SDK-LICENSE-2026");`,
-  },
-  setVcamOn: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-setVcamOn(1);`,
-    'C++': String.raw`setVcamOn(0);
-DWORD err = ::GetLastError();`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern void setVcamOn(int isOn);
-setVcamOn(1);
-int err = Marshal.GetLastWin32Error();`,
-  },
-  SetMirrorEnabled: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-SetMirrorEnabled(1);`,
-    'C++': String.raw`SetMirrorEnabled(0);
-DWORD err = ::GetLastError();`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern void SetMirrorEnabled(int enabled);
-SetMirrorEnabled(1);
-int err = Marshal.GetLastWin32Error();`,
-  },
-  SetFlipEnabled: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-SetFlipEnabled(1);`,
-    'C++': String.raw`SetFlipEnabled(0);
-DWORD err = ::GetLastError();`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern void SetFlipEnabled(int enabled);
-SetFlipEnabled(1);
-int err = Marshal.GetLastWin32Error();`,
-  },
-  SetRotateRightDegree: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-SetRotateRightDegree(0); // 顺时针90度`,
-    'C++': String.raw`SetRotateRightDegree(1); // 顺时针180度
-DWORD err = ::GetLastError();`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern void SetRotateRightDegree(int degree);
-SetRotateRightDegree(2);
-int err = Marshal.GetLastWin32Error();`,
-  },
-  SetVacantImg: {
-    C: String.raw`#include <windows.h>
-#include "vicastcam_sdk.h"
-int ret = SetVacantImg(L"images\\vacant.bmp");`,
-    'C++': String.raw`std::wstring path = L"images\\vacant.bmp";
-int ret = SetVacantImg((wchar_t*)path.c_str());`,
-    'C#': String.raw`[DllImport("vicastcam_sdk.dll", CharSet=CharSet.Unicode, CallingConvention=CallingConvention.Cdecl, SetLastError=true)]
-static extern int SetVacantImg(string path);
-int ret = SetVacantImg(@"images\vacant.bmp");`,
-  },
-}
-
-const sdkFunctionReturns = {
-  InitVcam: [
-    { name: 'ERROR_SUCCESS(0)', description: '初始化成功' },
-    { name: 'ERROR_OPEN_FAILED', description: '共享内存/新帧事件创建或打开失败' },
-  ],
-  SetOutputFormat: [
-    { name: 'ERROR_SUCCESS(0)', description: '设置成功' },
-    { name: 'ERROR_INVALID_PARAMETER', description: '宽高非法、超过上限或偶数规范后无效' },
-    { name: 'ERROR_OPEN_FAILED', description: 'SDK共享资源打开失败' },
-  ],
-  SendFrameYUY2: [
-    { name: 'ERROR_SUCCESS(0)', description: '发送成功' },
-    { name: 'ERROR_INVALID_PARAMETER', description: '数据指针为空或宽高非法' },
-    { name: 'ERROR_OPEN_FAILED', description: '共享资源打开失败' },
-    { name: 'ERROR_INVALID_DATA', description: 'YUY2数据尺寸/步长/格式不合法或转换失败' },
-    { name: 'ERROR_WRITE_FAULT', description: '写入共享内存失败' },
-  ],
-  SendFrameNV12: [
-    { name: 'ERROR_SUCCESS(0)', description: '发送成功' },
-    { name: 'ERROR_INVALID_PARAMETER', description: '数据指针为空或宽高非法' },
-    { name: 'ERROR_OPEN_FAILED', description: '共享资源打开失败' },
-    { name: 'ERROR_INVALID_DATA', description: 'NV12数据尺寸/步长/格式不合法或转换失败' },
-    { name: 'ERROR_WRITE_FAULT', description: '写入共享内存失败' },
-  ],
-  getMultiMediaToCamera: [
-    { name: 'ERROR_SUCCESS(0)', description: '播放完成或推送成功' },
-    { name: 'ERROR_INVALID_PARAMETER', description: '路径参数为空' },
-    { name: 'ERROR_BAD_PATHNAME', description: '路径解析失败' },
-    { name: 'ERROR_FILE_NOT_FOUND', description: '文件不存在' },
-    { name: 'ERROR_UNSUPPORTED_TYPE / ERROR_INVALID_DATA', description: '无视频流、解码器不支持或媒体数据损坏' },
-  ],
-  getImageToCamera: [
-    { name: 'ERROR_SUCCESS(0)', description: '图片推送成功' },
-    { name: 'ERROR_INVALID_PARAMETER', description: '路径参数为空' },
-    { name: 'ERROR_BAD_PATHNAME', description: '路径解析失败' },
-    { name: 'ERROR_FILE_NOT_FOUND', description: '文件不存在' },
-    { name: 'ERROR_UNSUPPORTED_TYPE / ERROR_INVALID_DATA', description: '无可解码图像流、格式不支持或数据损坏' },
-  ],
-  SetFriendlyName: [
-    { name: 'ERROR_SUCCESS(0)', description: '设置并写入成功' },
-    { name: 'ERROR_INVALID_PARAMETER', description: '名称为空或清理后为空' },
-    { name: 'ERROR_ACCESS_DENIED', description: '无权限写入用户配置或注册表' },
-    { name: 'ERROR_NOT_READY', description: '相机尚未注册或当前位数注册表视图未找到' },
-  ],
-  SetLicenseCode: [
-    { name: 'ERROR_SUCCESS(0)', description: '授权校验成功，去除水印' },
-    { name: 'ERROR_ACCESS_DENIED', description: '授权码为空、错误或校验失败' },
-    { name: 'ERROR_OPEN_FAILED', description: '共享资源打开失败，无法写入授权状态' },
-  ],
-  setVcamOn: [
-    { name: '无返回值', description: '调用后通过 GetLastError() 判断' },
-    { name: 'ERROR_SUCCESS(0)', description: '设置成功' },
-    { name: 'ERROR_OPEN_FAILED', description: '共享资源打开失败' },
-    { name: 'ERROR_WRITE_FAULT', description: '控制状态写入/通知失败' },
-  ],
-  SetMirrorEnabled: [
-    { name: '无返回值', description: '调用后通过 GetLastError() 判断' },
-    { name: 'ERROR_SUCCESS(0)', description: '设置成功' },
-    { name: 'ERROR_OPEN_FAILED', description: '共享资源打开失败' },
-    { name: 'ERROR_WRITE_FAULT', description: '控制状态写入/通知失败' },
-  ],
-  SetFlipEnabled: [
-    { name: '无返回值', description: '调用后通过 GetLastError() 判断' },
-    { name: 'ERROR_SUCCESS(0)', description: '设置成功' },
-    { name: 'ERROR_OPEN_FAILED', description: '共享资源打开失败' },
-    { name: 'ERROR_WRITE_FAULT', description: '控制状态写入/通知失败' },
-  ],
-  SetRotateRightDegree: [
-    { name: '无返回值', description: '调用后通过 GetLastError() 判断' },
-    { name: 'ERROR_SUCCESS(0)', description: '设置成功' },
-    { name: 'ERROR_INVALID_PARAMETER', description: 'degree 不是 0/1/2' },
-    { name: 'ERROR_OPEN_FAILED', description: '共享资源打开失败' },
-    { name: 'ERROR_WRITE_FAULT', description: '控制状态写入/通知失败' },
-  ],
-  SetVacantImg: [
-    { name: 'ERROR_SUCCESS(0)', description: '占位图设置成功' },
-    { name: 'ERROR_INVALID_PARAMETER', description: '路径参数为空' },
-    { name: 'ERROR_BAD_PATHNAME', description: '路径解析失败' },
-    { name: 'ERROR_FILE_NOT_FOUND', description: 'BMP 文件不存在' },
-    { name: 'ERROR_INVALID_DATA / ERROR_ACCESS_DENIED', description: '不是有效BMP、尺寸/格式不支持或持久化失败' },
-  ],
-}
-
-const apiDocBase = {
-  params: [
-    { name: '', description: '请根据 SDK 头文件填写该函数参数。' },
-  ],
-  codeTabs: ['C', 'C++', 'C#'],
-  responseFields: [
-    { name: '', description: '请根据 SDK 头文件填写返回值及其含义。' },
-  ],
-}
+  return Boolean(functionName && sdkDoc && ['path', 'params', 'returns', 'codeSamples'].some((key) => {
+    return String(sdkDoc[key] || '').replace(/\r\n?/g, '\n').trim()
+  }))
+})
 
 const normalizeSdkDocText = value => String(value || '').replace(/\r\n?/g, '\n').trim()
 
-const parseSdkDocRows = (value, fallbackRows = []) => {
+const parseSdkDocRows = (value) => {
   const lines = normalizeSdkDocText(value)
     .split('\n')
     .map(line => line.trim())
     .filter(Boolean)
 
   if (!lines.length) {
-    return fallbackRows
+    return []
   }
 
   return lines.map((line) => {
@@ -1276,13 +1010,12 @@ const parseSdkDocRows = (value, fallbackRows = []) => {
 
 const parseSdkCodeSamples = (value) => {
   const text = normalizeSdkDocText(value)
-  const fallback = createSdkFunctionCodeSamples('')
 
   if (!text) {
-    return fallback
+    return {}
   }
 
-  const samples = { ...fallback }
+  const samples = {}
   const pattern = /^(C|C\+\+|C#):\n([\s\S]*?)(?=^(?:C|C\+\+|C#):\n|(?![\s\S]))/gm
   let match = pattern.exec(text)
 
@@ -1294,27 +1027,9 @@ const parseSdkCodeSamples = (value) => {
   return samples
 }
 
-const createSdkFunctionPathSamples = (functionName) => {
-  if (!functionName) {
-    return {
-      C: '\u5f85\u8865\u5145',
-      'C++': '\u5f85\u8865\u5145',
-      'C#': '\u5f85\u8865\u5145',
-    }
-  }
-
-  return {
-    C: functionName,
-    'C++': functionName,
-    'C#': functionName === 'loadvicastcamdll'
-      ? 'PreVicastCam.LoadVicastCamDll'
-      : 'PreVicastCam.' + functionName,
-  }
-}
-
-const parseSdkFunctionPathSamples = (value, functionName) => {
+const parseSdkFunctionPathSamples = (value) => {
   const text = normalizeSdkDocText(value)
-  const samples = createSdkFunctionPathSamples(functionName)
+  const samples = {}
 
   if (!text) {
     return samples
@@ -1348,35 +1063,35 @@ const apiDoc = computed(() => {
     const codeSamples = parseSdkCodeSamples(sdkDoc.codeSamples)
 
     return {
-      ...apiDocBase,
       codeTabs: sdkLanguageTabs.value,
       title: activeSdkItem.value?.title || 'SDK函数说明',
-      path: normalizeSdkDocText(sdkDoc.path) || functionName,
-      pathSamples: parseSdkFunctionPathSamples(sdkDoc.path, functionName),
-      params: parseSdkDocRows(sdkDoc.params, apiDocBase.params),
-      responseFields: parseSdkDocRows(sdkDoc.returns, apiDocBase.responseFields),
-      code: codeSamples.C,
+      path: normalizeSdkDocText(sdkDoc.path),
+      pathSamples: parseSdkFunctionPathSamples(sdkDoc.path),
+      params: parseSdkDocRows(sdkDoc.params),
+      responseFields: parseSdkDocRows(sdkDoc.returns),
+      code: codeSamples.C || '',
       codeSamples,
     }
   }
 
-  const codeSamples = createSdkFunctionCodeSamples('')
-
   return {
-    ...apiDocBase,
-    codeTabs: sdkLanguageTabs.value,
-    title: activeSdkItem.value?.title || 'SDK函数说明',
+    codeTabs: [],
+    title: '',
     path: '',
-    pathSamples: createSdkFunctionPathSamples(''),
+    pathSamples: {},
     params: [],
     responseFields: [],
-    code: codeSamples.C,
-    codeSamples,
+    code: '',
+    codeSamples: {},
   }
 })
 
-const activeFunctionPath = computed(() => apiDoc.value.pathSamples?.[activeCodeTab.value] || apiDoc.value.path)
-const activeCode = computed(() => apiDoc.value.codeSamples?.[activeCodeTab.value] || apiDoc.value.code)
+const activeFunctionPath = computed(() => apiDoc.value.pathSamples?.[activeCodeTab.value] || apiDoc.value.path || '')
+const activeCode = computed(() => apiDoc.value.codeSamples?.[activeCodeTab.value] || apiDoc.value.code || '')
+const hasApiLanguageTabs = computed(() => {
+  return apiDoc.value.codeTabs.length > 0
+    && (Object.keys(apiDoc.value.pathSamples || {}).length > 0 || Object.keys(apiDoc.value.codeSamples || {}).length > 0)
+})
 const copiedCodeKey = ref('')
 let copyCodeResetTimer = null
 const activeCodeCopyKey = computed(() => `${activeSdkItem.value?.key || 'sdk'}:${activeCodeTab.value}`)
@@ -1472,26 +1187,29 @@ const copyActiveCode = async () => {
   }, 1600)
 }
 
-const getSingleQueryValue = value => Array.isArray(value) ? value[0] : value
-
 const selectSdkGroupByKey = (key) => {
   const group = sdkGroups.value.find(item => item.key === key)
 
   if (!group) {
-    return
+    return false
   }
 
   activeGroupKey.value = group.key
 
-  if (group.items?.[0]) {
-    activeItemKey.value = group.items[0].key
+  const defaultItem = group.items?.find(item => item.key === group.defaultItemKey)
+  const firstItem = defaultItem || group.items?.[0]
+
+  if (firstItem) {
+    activeItemKey.value = firstItem.key
   } else {
     activeItemKey.value = ''
   }
+
+  return true
 }
 
 const syncSdkTargetFromRoute = () => {
-  const target = String(getSingleQueryValue(route.query.sdkTarget) || '').trim().toLowerCase()
+  const target = getSdkTargetFromRoute()
 
   if (target === 'api') {
     const apiGroup = sdkGroups.value.find(group => group.items?.some(item => item.functionName))
@@ -1511,6 +1229,18 @@ const syncSdkTargetFromRoute = () => {
   }
 
   if (targetMap[target]) {
+    if (target === 'audio' && !soundcardModule.value) {
+      activeGroupKey.value = 'audio'
+      activeItemKey.value = 'audio-notice'
+      return
+    }
+
+    if (target === 'camera' && !cameraModule.value) {
+      activeGroupKey.value = 'camera'
+      activeItemKey.value = 'camera-notice'
+      return
+    }
+
     selectSdkGroupByKey(targetMap[target])
   }
 }
@@ -1582,7 +1312,7 @@ watch(cameraModule, (module) => {
     return
   }
 
-  if (!sdkLanguageTabs.value.includes(activeCodeTab.value)) {
+  if (activeGroupKey.value === 'camera' && !sdkLanguageTabs.value.includes(activeCodeTab.value)) {
     activeCodeTab.value = sdkLanguageTabs.value[0] || ''
   }
 
@@ -1594,7 +1324,7 @@ watch(soundcardModule, (module) => {
     return
   }
 
-  if (!sdkLanguageTabs.value.includes(activeCodeTab.value)) {
+  if (activeGroupKey.value === 'audio' && !sdkLanguageTabs.value.includes(activeCodeTab.value)) {
     activeCodeTab.value = sdkLanguageTabs.value[0] || ''
   }
 
@@ -1822,9 +1552,7 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
 
 .sdk-sidebar-title strong,
 .sdk-sidebar-title small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .sdk-sidebar-title strong {
@@ -1885,7 +1613,7 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
   grid-template-columns: 16px minmax(0, 1fr) 14px;
   align-items: center;
   gap: 8px;
-  padding: 0 13px 0 18px;
+  padding: 7px 13px 7px 18px;
   color: var(--theme-sdk-muted, var(--theme-text-muted));
   font-size: 12px;
   line-height: 18px;
@@ -1894,9 +1622,8 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
 }
 
 .sdk-sidebar-item span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .sdk-sidebar-item svg {
@@ -1994,8 +1721,9 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
   position: relative;
   overflow: hidden;
   width: 770px;
-  height: 240px;
-  aspect-ratio: 770 / 240;
+  height: auto;
+  min-height: 240px;
+  aspect-ratio: auto;
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
   gap: 24px;
@@ -2036,7 +1764,7 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
 
 .sdk-demo-content p {
   margin-top: 9px;
-  color: var(--theme-text-secondary);
+  color: rgba(255, 255, 255, 0.78);
   font-size: 12px;
   line-height: 20px;
 }
@@ -2044,6 +1772,8 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
 .sdk-download-button {
   width: 100%;
   height: 38px;
+  min-height: 38px;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2141,6 +1871,7 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
   background: linear-gradient(90deg, var(--theme-accent), var(--theme-primary-strong));
   font-size: 13px;
   font-weight: 800;
+  text-decoration: none;
 }
 
 .sdk-notice-download-button svg {
@@ -2378,37 +2109,114 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
 
   .sdk-content-layout {
     grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .sdk-sidebar {
-    order: 2;
+    order: 1;
   }
 
   .sdk-download-panel {
     width: 100%;
-    order: 1;
+    order: 2;
   }
 
   .sdk-demo-card {
     width: 100%;
     max-width: 770px;
     height: auto;
-    min-height: auto;
-    aspect-ratio: 770 / 240;
+    min-height: 240px;
+    aspect-ratio: auto;
   }
 
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .sdk-hero {
-    padding-top: 34px;
+    display: none;
   }
 
-  .sdk-hero h1 {
-    font-size: 34px;
-    line-height: 42px;
+  .sdk-content-section {
+    padding: 18px 0 64px;
   }
 
+  .sdk-content-layout {
+    gap: 14px;
+  }
+
+  .sdk-sidebar {
+    width: 100%;
+  }
+
+  .sdk-download-panel {
+    padding: 22px 16px;
+  }
+
+  .sdk-breadcrumb {
+    flex-wrap: wrap;
+  }
+
+  .sdk-download-panel h2 {
+    margin-top: 22px;
+    font-size: 22px;
+    line-height: 30px;
+  }
+
+  .sdk-api-doc,
+  .sdk-notice-doc {
+    margin-top: 24px;
+  }
+
+  .sdk-code-tabs {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sdk-code-tab {
+    width: auto;
+    min-width: 78px;
+    padding: 0 14px;
+  }
+
+  .sdk-api-path {
+    min-height: 0;
+    align-items: flex-start;
+    padding: 14px 16px;
+    overflow-wrap: anywhere;
+  }
+
+  .sdk-table-row,
+  .sdk-notice-table-row,
+  .sdk-notice-table-2-columns .sdk-notice-table-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 8px;
+    min-height: 0;
+    padding: 14px 16px;
+  }
+
+  .sdk-table-row > span[aria-hidden="true"] {
+    display: none;
+  }
+
+  .sdk-table-row > span,
+  .sdk-notice-table-row > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .sdk-param-name {
+    max-width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .sdk-code-block pre {
+    padding: 50px 16px 16px;
+  }
+}
+
+@media (max-width: 640px) {
   .sdk-feature-row {
     gap: 16px;
   }
@@ -2416,8 +2224,8 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
   .sdk-demo-card {
     width: 100%;
     height: auto;
-    min-height: auto;
-    aspect-ratio: 770 / 240;
+    min-height: 240px;
+    aspect-ratio: auto;
     grid-template-columns: 1fr;
   }
 
@@ -2425,18 +2233,5 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
     min-height: 112px;
   }
 
-  .sdk-download-panel {
-    padding: 22px 16px;
-  }
-
-  .sdk-table-row {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .sdk-notice-table-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
 }
 </style>

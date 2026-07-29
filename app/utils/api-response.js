@@ -73,6 +73,7 @@ const SCOPED_RESPONSE_CODES = {
     200408: ['orderRevoked', 'success'],
   },
   qr: {
+    200200: ['loginSuccess', 'success'],
     2100005: ['missingParameters', 'error'],
     2100006: ['waitingForScan', 'pending'],
     2100007: ['scannedWaitingForConfirmation', 'pending'],
@@ -481,6 +482,7 @@ export const getApiResponseMessage = (payload, {
   scope = 'general',
   messages = {},
   fallback = '',
+  useLocalMessages = true,
 } = {}) => {
   const definition = getApiResponseDefinition(payload, scope)
   const directKey = payload?.responseKey
@@ -489,13 +491,13 @@ export const getApiResponseMessage = (payload, {
     return String(fallback || '').trim()
   }
 
-  const localeMessages = API_RESPONSE_MESSAGES[locale]
+  const localeMessages = useLocalMessages ? API_RESPONSE_MESSAGES[locale] : {}
   const messageKey = definition?.key || directKey
   return String(
     getMessageOverride(messages, definition, messageKey) ||
     localeMessages?.[messageKey] ||
     fallback ||
-    API_RESPONSE_MESSAGES.en[messageKey] ||
+    (useLocalMessages ? API_RESPONSE_MESSAGES.en[messageKey] : '') ||
     ''
   ).trim()
 }

@@ -2,6 +2,7 @@ import { computed, unref, useHead, useI18n, useLocaleHead, useRoute, useRuntimeC
 import { defaultDescription, defaultRobots, defaultSeoImage, getPageSeoCopy } from './seo-copy'
 
 const siteName = 'VicastCam'
+const defaultSiteUrl = 'https://www.vicastcam.com'
 
 const isNoindexRobots = (robots = '') => {
   return String(robots).toLowerCase().split(/[,\s]+/).includes('noindex')
@@ -49,7 +50,7 @@ const normalizeStructuredDataEntries = (value) => {
   return entries.filter(entry => entry && typeof entry === 'object')
 }
 
-export const createAbsoluteUrl = (path, siteUrl = 'https://vicastcam.com') => {
+export const createAbsoluteUrl = (path, siteUrl = defaultSiteUrl) => {
   const url = String(path || '').trim()
 
   if (!url) {
@@ -60,7 +61,7 @@ export const createAbsoluteUrl = (path, siteUrl = 'https://vicastcam.com') => {
     return url
   }
 
-  const normalizedSiteUrl = String(siteUrl || 'https://vicastcam.com').replace(/\/+$/, '')
+  const normalizedSiteUrl = String(siteUrl || defaultSiteUrl).replace(/\/+$/, '')
   const normalizedPath = url.startsWith('/') ? url : `/${url}`
 
   return `${normalizedSiteUrl}${normalizedPath}`
@@ -76,7 +77,7 @@ export const createLocalizedPath = (path = '/', localeCode = '', defaultLocale =
   return normalizePath(`/${localeCode}${normalizedPath === '/' ? '' : normalizedPath}`)
 }
 
-export const createLocalizedUrl = (path = '/', localeCode = '', siteUrl = 'https://vicastcam.com', defaultLocale = 'en') => {
+export const createLocalizedUrl = (path = '/', localeCode = '', siteUrl = defaultSiteUrl, defaultLocale = 'en') => {
   return createAbsoluteUrl(createLocalizedPath(path, localeCode, defaultLocale), siteUrl)
 }
 
@@ -113,7 +114,7 @@ export const setupPageSeo = (pageKey, options = {}) => {
   })
 
   const shouldIndexPage = computed(() => !isNoindexRobots(pageSeo.value.robots))
-  const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+  const siteUrl = computed(() => String(config.public.siteUrl || defaultSiteUrl).replace(/\/+$/, ''))
   const defaultLocale = computed(() => config.public.i18n?.defaultLocale || 'en')
   const localeCodes = computed(() => locales.value.map(getLocaleCode).filter(Boolean))
   const routeBasePath = computed(() => removeLocalePrefix(route.path, localeCodes.value))

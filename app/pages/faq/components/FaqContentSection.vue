@@ -478,6 +478,10 @@ const activeQuestion = computed(() => {
 }
 
 @media (max-width: 900px) {
+  .faq-content-section {
+    padding-top: 18px;
+  }
+
   .faq-content-layout {
     grid-template-columns: 1fr;
   }

@@ -31,7 +31,7 @@
 
       <p class="membership-activation-agreement">
         {{ redeemText.agreementPrefix }}
-        <a href="javascript:void(0)">《{{ redeemText.userProtocolText }}》</a>
+        <a :href="redeemText.userProtocolHref || 'javascript:void(0)'">{{ redeemText.userProtocolText }}</a>
       </p>
     </section>
   </section>
@@ -39,15 +39,23 @@
 
 <script setup>
 import { activeCard } from '../../../api/request/auth'
+import { getApiResponseMessage } from '../../../utils/api-response'
 
 const cardPwd = ref('')
 const isActivating = ref(false)
 const { authUser, refreshVipInfo } = useAuth()
-const { showApiResponseErrorToast, showApiResponseSuccessToast } = useSiteToast()
+const { showErrorToast, showSuccessToast } = useSiteToast()
 const { profileBox } = useProfileText()
-const profileText = computed(() => profileBox.value || {})
 const redeemText = computed(() => profileBox.value?.redeem || {})
-const activeCardMessages = computed(() => profileText.value.cardErrors || {})
+const activeCardMessages = computed(() => profileBox.value?.cardErrors || {})
+
+const getCardResponseMessage = (payload) => {
+  return getApiResponseMessage(payload, {
+    scope: 'card',
+    messages: activeCardMessages.value,
+    useLocalMessages: false,
+  })
+}
 
 const handleActiveCard = () => {
   const card_pwd = cardPwd.value.trim()
@@ -63,20 +71,16 @@ const handleActiveCard = () => {
     card_pwd,
   }).then((response) => {
     cardPwd.value = ''
-    showApiResponseSuccessToast(response, {
-      scope: 'card',
-      messages: activeCardMessages.value,
-      fallback: profileText.value.successMessage,
-    })
+    showSuccessToast(getCardResponseMessage(response))
 
     refreshVipInfo().catch(() => null)
     return response
   }).catch((error) => {
-    showApiResponseErrorToast(error, {
-      scope: 'card',
-      messages: activeCardMessages.value,
-      fallback: redeemText.value.errors?.activateFail,
-    })
+    if (error?.authExpiredHandled) {
+      return
+    }
+
+    showErrorToast(getCardResponseMessage(error))
   }).finally(() => {
     isActivating.value = false
   })

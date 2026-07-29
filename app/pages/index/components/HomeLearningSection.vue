@@ -13,9 +13,10 @@
       </p>
 
       <div class="home-learning-grid">
-        <article
+        <NuxtLink
           v-for="(course, index) in learningCards"
           :key="createLearningCardKey(course, index)"
+          :to="createLearningCardTutorialUrl(course)"
           class="home-learning-card"
           data-reveal="scale"
           :style="{ '--reveal-delay': `${course.delay}ms` }"
@@ -36,7 +37,7 @@
 
             <h3 class="home-learning-card-title" :dir="activeLocaleDir">{{ course.title }}</h3>
           </div>
-        </article>
+        </NuxtLink>
       </div>
 
       <NuxtLink :to="localePath('/tutorial')" class="home-learning-more theme-more-link" target="_blank" rel="noopener noreferrer">
@@ -73,8 +74,32 @@ const learningCards = useState('home-learning-cards', () => [])
 const homeLearningTutorialLocale = useState('home-learning-tutorial-locale', () => '')
 const homeLearningCardsLocale = useState('home-learning-cards-locale', () => '')
 
+const learningCardCoverImages = [
+  '/images/tutorial/cards/create-live-room.png',
+  '/images/tutorial/cards/chroma-key-mode.png',
+  '/images/tutorial/cards/layer-features.png',
+  '/images/tutorial/cards/desktop-app-overview.png',
+  '/images/tutorial/cards/ios-wireless-connection.png',
+  '/images/tutorial/cards/local-media-assets.png',
+]
+
+const learningCardLessonIds = [
+  'beginner-1',
+  'beginner-2',
+  'beginner-3',
+  'beginner-1',
+  'beginner-1',
+  'beginner-7',
+]
+
 const createLearningCardKey = (course, index) => {
   return `${locale.value}-${course.id || course.title || index}`
+}
+
+const createLearningCardTutorialUrl = (course) => {
+  const lesson = encodeURIComponent(course.lessonId || 'beginner-1')
+
+  return `${localePath('/tutorial')}?lesson=${lesson}&autoplay=1#tutorial-player`
 }
 
 const createStrapiAssetUrl = (url) => {
@@ -149,7 +174,8 @@ const syncLearningCards = (cards = []) => {
     title: card.title || '',
     tag1: card.tag1 || '',
     tag2: card.tag2 || '',
-    coverImg: getStrapiMediaUrl(card.coverImg),
+    coverImg: getStrapiMediaUrl(card.coverImg) || learningCardCoverImages[index] || '',
+    lessonId: card.lessonId || learningCardLessonIds[index] || 'beginner-1',
     delay: (index % 3) * 90,
   })).filter(card => card.title || card.tag1 || card.tag2 || card.coverImg)
 }
@@ -264,11 +290,14 @@ useLocalizedAsyncState({
 .home-learning-card {
   position: relative;
   overflow: hidden;
+  display: block;
   width: 368px;
   height: 310px;
   border-radius: 8px;
   background-color: var(--theme-learning-card-background, var(--theme-page));
   border: 1px solid var(--theme-learning-card-border, transparent);
+  cursor: pointer;
+  text-decoration: none;
   direction: ltr;
   transition: border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
 }

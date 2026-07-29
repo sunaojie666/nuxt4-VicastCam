@@ -38,21 +38,21 @@
           </p>
 
           <div class="home-hero-actions" aria-label="下载VicastCam">
-            <a href="#" class="home-hero-download home-hero-download-light">
+            <NuxtLink :to="downloadPagePath" class="home-hero-download home-hero-download-light">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
                 <img class="home-hero-download-icon-default" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/apple-default.svg" alt="" role="presentation">
                 <img class="home-hero-download-icon-active" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/apple-active.svg" alt="" role="presentation">
               </span>
               <span>{{ appStoreUrl }}</span>
-            </a>
+            </NuxtLink>
 
-            <a href="#" class="home-hero-download home-hero-download-light">
+            <NuxtLink :to="downloadPagePath" class="home-hero-download home-hero-download-light">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
                 <img class="home-hero-download-icon-default" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/android-default.svg" alt="" role="presentation">
                 <img class="home-hero-download-icon-active" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/android-active.svg" alt="" role="presentation">
               </span>
               <span>{{ googlePlayUrl }}</span>
-            </a>
+            </NuxtLink>
 
             <a href="#" class="home-hero-download home-hero-download-primary">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
@@ -112,6 +112,7 @@
 import { getHomes } from '../../../api/request/strapi'
 
 const config = useRuntimeConfig()
+const localePath = useLocalePath()
 const { locale } = useI18n()
 const heroVideoSrc = useState('home-hero-video-src', () => '')
 const topBadge = useState('home-hero-top-badge', () => '')
@@ -129,6 +130,7 @@ const homeHeroLocale = useState('home-hero-locale', () => '')
 const { setToastText } = useSiteToast()
 const heroBadgeText = computed(() => String(topBadge.value || '').trim())
 const isLongHeroTitle = computed(() => `${heroTitle.value || ''}${heroSubtitle.value || ''}`.length > 56)
+const downloadPagePath = computed(() => localePath('/download'))
 
 // Strapi 本地上传文件返回 /uploads/...，前端播放时需要补上 Strapi 服务地址。
 const createStrapiAssetUrl = (url) => {

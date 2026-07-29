@@ -260,7 +260,9 @@ const membershipPlans = computed(() => {
 })
 
 const currentVipName = computed(() => {
-  return authUser.value?.vip_type ? 'VIP' : membershipText.value.defaultVipName || ''
+  return authUser.value?.vip_type
+    ? membershipText.value.activeVipName || membershipText.value.vipName || ''
+    : membershipText.value.defaultVipName || ''
 })
 
 const currentVipExpireText = computed(() => {

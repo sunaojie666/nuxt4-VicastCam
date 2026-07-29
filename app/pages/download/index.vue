@@ -132,7 +132,7 @@ import { createAbsoluteUrl, createLocalizedUrl, setupPageSeo, setupStructuredDat
 
 const config = useRuntimeConfig()
 const { locale, locales } = useI18n()
-const siteUrl = computed(() => String(config.public.siteUrl || 'https://vicastcam.com').replace(/\/+$/, ''))
+const siteUrl = computed(() => String(config.public.siteUrl || 'https://www.vicastcam.com').replace(/\/+$/, ''))
 const defaultLocale = computed(() => config.public.i18n?.defaultLocale || 'en')
 const downloadPageUrl = computed(() => createLocalizedUrl('/download', locale.value, siteUrl.value, defaultLocale.value))
 const activeLocaleConfig = computed(() => {

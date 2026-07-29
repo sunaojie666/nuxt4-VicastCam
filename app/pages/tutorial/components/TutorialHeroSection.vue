@@ -90,7 +90,11 @@ defineProps({
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  .tutorial-hero-section {
+    display: none;
+  }
+
   .tutorial-hero-inner {
     min-height: 294px;
     padding-top: 28px;

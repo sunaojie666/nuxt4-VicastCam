@@ -1,5 +1,5 @@
 <template>
-  <section class="tutorial-player-section" :aria-label="content.sectionAriaLabel">
+  <section id="tutorial-player" class="tutorial-player-section" :aria-label="content.sectionAriaLabel">
     <div class="tutorial-player-layout">
       <aside class="tutorial-sidebar" :aria-label="content.catalogAriaLabel">
         <section
@@ -104,6 +104,7 @@ const props = defineProps({
 
 const tutorialGroups = computed(() => props.groups)
 const tutorialPoster = '/images/tutorial/video-poster.png'
+const route = useRoute()
 
 const activeGroupKey = ref('beginner')
 const activeLessonId = ref('beginner-1')
@@ -118,11 +119,11 @@ const toggleTutorialGroup = (group) => {
 }
 
 const activeLesson = computed(() => {
-  const lessons = tutorialGroups.value.flatMap(group => group.lessons)
+  const lessons = tutorialGroups.value.flatMap(group => group.lessons || [])
   return lessons.find(lesson => lesson.id === activeLessonId.value) || lessons[0]
 })
 
-const allLessons = computed(() => tutorialGroups.value.flatMap(group => group.lessons))
+const allLessons = computed(() => tutorialGroups.value.flatMap(group => group.lessons || []))
 const activeLessonIndex = computed(() => allLessons.value.findIndex(lesson => lesson.id === activeLessonId.value))
 const previousLesson = computed(() => activeLessonIndex.value > 0 ? allLessons.value[activeLessonIndex.value - 1] : null)
 const nextLesson = computed(() => activeLessonIndex.value >= 0 && activeLessonIndex.value < allLessons.value.length - 1 ? allLessons.value[activeLessonIndex.value + 1] : null)
@@ -137,13 +138,30 @@ const playActiveLesson = async () => {
   }
 }
 
+const getRouteLessonId = () => {
+  const lesson = route.query.lesson
+
+  return Array.isArray(lesson) ? lesson[0] : lesson
+}
+
+const shouldAutoplayRouteLesson = () => route.query.autoplay === '1'
+
 const selectLesson = (lesson, autoplay = false) => {
   if (!lesson) return
   activeLessonId.value = lesson.id
-  activeGroupKey.value = tutorialGroups.value.find(group => group.lessons.some(item => item.id === lesson.id))?.key || activeGroupKey.value
+  activeGroupKey.value = tutorialGroups.value.find(group => (group.lessons || []).some(item => item.id === lesson.id))?.key || activeGroupKey.value
 
   if (autoplay) {
     void playActiveLesson()
+  }
+}
+
+const syncRouteLesson = () => {
+  const lessonId = getRouteLessonId()
+  const lesson = allLessons.value.find(item => item.id === lessonId)
+
+  if (lesson) {
+    selectLesson(lesson, shouldAutoplayRouteLesson())
   }
 }
 
@@ -157,6 +175,11 @@ watch(tutorialGroups, (groups) => {
   if (!groups.some(group => group.key === activeGroupKey.value)) {
     activeGroupKey.value = groups[0]?.key || ''
   }
+  syncRouteLesson()
+}, { immediate: true })
+
+watch(() => route.query.lesson, () => {
+  syncRouteLesson()
 })
 </script>
 
@@ -448,6 +471,10 @@ watch(tutorialGroups, (groups) => {
 }
 
 @media (max-width: 900px) {
+  .tutorial-player-section {
+    padding-top: 18px;
+  }
+
   .tutorial-player-layout {
     grid-template-columns: 1fr;
     gap: 18px;

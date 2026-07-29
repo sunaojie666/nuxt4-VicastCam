@@ -210,19 +210,28 @@ const { loadContent: loadVirtualContent } = useLocalizedAsyncState({
   z-index: 1;
   overflow: hidden;
   width: 100%;
-  aspect-ratio: 887 / 385;
+  aspect-ratio: 888 / 388;
   margin: 0 auto;
-  background: url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/virtual/camera-reflection-frame.png") center top / 100% 100% no-repeat;
+}
+
+.home-virtual-reflection::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: url("/images/home/virtual/camera-reflection-bg.png") center / 100% 100% no-repeat;
+  content: "";
 }
 
 .home-virtual-reflection-video {
   position: absolute;
-  left: 2.8%;
-  top: 4.2%;
-  width: 94.4%;
-  height: 91.6%;
+  z-index: 1;
+  left: 3.15%;
+  top: 8.25%;
+  width: 93.92%;
+  height: 91.75%;
   object-fit: cover;
-  transform: rotate(180deg);
+  transform: scaleY(-1);
   opacity: 0.42;
 }
 

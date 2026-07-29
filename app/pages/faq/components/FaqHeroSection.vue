@@ -122,7 +122,11 @@
   color: var(--theme-route-card-text, var(--theme-text-muted));
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  .faq-hero-section {
+    display: none;
+  }
+
   .faq-hero-inner {
     min-height: 360px;
     padding-top: 28px;
