@@ -6,7 +6,7 @@
         <div class="site-footer-logo-row">
           <img
             class="site-footer-logo"
-            src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png"
+            :src="mediaUrl('/images/common/logo.png')"
             alt=""
             aria-hidden="true"
             role="presentation"
@@ -128,6 +128,7 @@
 <script setup>
 import { getFooter } from '../api/request/strapi'
 import { createThemeContext } from '../utils/theme'
+const mediaUrl = useMediaUrl()
 
 const localePath = useLocalePath()
 const switchLocalePath = useSwitchLocalePath()

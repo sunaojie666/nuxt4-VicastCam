@@ -38,7 +38,7 @@ defineProps({
 }
 
 :root[data-theme="light"] .tutorial-hero-section {
-  background: url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/light-page-hero-bg.png") center / cover no-repeat;
+  background: var(--media-images-common-light-page-hero-bg-png) center / cover no-repeat;
 }
 
 .tutorial-hero-inner {

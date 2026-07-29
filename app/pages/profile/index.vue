@@ -63,6 +63,7 @@ import ProfilePurchaseHistoryPanel from './components/ProfilePurchaseHistoryPane
 import ProfileRedeemPanel from './components/ProfileRedeemPanel.vue'
 import ProfileTeamPanel from './components/ProfileTeamPanel.vue'
 import { setupPageSeo } from '../../utils/seo'
+const mediaUrl = useMediaUrl()
 
 definePageMeta({
   middleware: 'auth',
@@ -145,7 +146,7 @@ const profileVipBadgeIcon = computed(() => {
     normalizedVipType.includes('\u7ec8\u8eab') ||
     normalizedVipType.includes('\u6c38\u4e45')
   ) {
-    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/gold.png'
+    return mediaUrl('/images/profile/gold.png')
   }
 
   if (
@@ -154,7 +155,7 @@ const profileVipBadgeIcon = computed(() => {
     normalizedVipType.includes('annual') ||
     normalizedVipType.includes('\u5e74')
   ) {
-    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png'
+    return mediaUrl('/images/profile/year.png')
   }
 
   if (
@@ -163,10 +164,10 @@ const profileVipBadgeIcon = computed(() => {
     normalizedVipType.includes('monthly') ||
     normalizedVipType.includes('\u6708')
   ) {
-    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/month.png'
+    return mediaUrl('/images/profile/month.png')
   }
 
-  return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png'
+  return mediaUrl('/images/profile/year.png')
 })
 
 watch(activeTab, (tab) => {

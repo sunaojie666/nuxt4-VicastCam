@@ -1,7 +1,7 @@
 <template>
   <section class="auth-brand-panel" aria-labelledby="auth-brand-title">
     <NuxtLink :to="localePath('/')" class="auth-logo">
-      <img src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png" alt="" aria-hidden="true" role="presentation">
+      <img :src="mediaUrl('/images/common/logo.png')" alt="" aria-hidden="true" role="presentation">
       <span>Vicast<span>Cam</span></span>
     </NuxtLink>
 
@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+const mediaUrl = useMediaUrl()
 const localePath = useLocalePath()
 
 const props = defineProps({
@@ -46,9 +47,9 @@ const loginCopy = reactive({
 })
 
 const features = reactive([
-  { key: 'feature-1', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/feature-ai-cutout.png', title: '', description: '' },
-  { key: 'feature-2', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/feature-multiplatform.png', title: '', description: '' },
-  { key: 'feature-3', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/feature-virtual-camera.png', title: '', description: '' },
+  { key: 'feature-1', icon: mediaUrl('/images/login/feature-ai-cutout.png'), title: '', description: '' },
+  { key: 'feature-2', icon: mediaUrl('/images/login/feature-multiplatform.png'), title: '', description: '' },
+  { key: 'feature-3', icon: mediaUrl('/images/login/feature-virtual-camera.png'), title: '', description: '' },
 ])
 
 const visibleFeatures = computed(() => {

@@ -9,7 +9,7 @@
           :key="aboutHeroVideoSrc"
           class="about-hero-video"
           :src="aboutHeroVideoSrc"
-          poster="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/background.png"
+          :poster="mediaUrl('/images/login/background.png')"
           autoplay
           muted
           loop
@@ -27,7 +27,7 @@
             <span>{{ aboutBox.hero.titleMain }}</span>
             <span class="theme-gradient-text">
               {{ aboutBox.hero.titleHighlight }}
-              <img class="about-hero-title-line" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
+              <img class="about-hero-title-line" :src="mediaUrl('/images/common/title-underline.png')" alt="" aria-hidden="true" role="presentation">
             </span>
           </h1>
 
@@ -154,6 +154,7 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import { getAbouts, getHomes } from '../../api/request/strapi'
 import { setupPageSeo } from '../../utils/seo'
+const mediaUrl = useMediaUrl()
 
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
@@ -272,31 +273,31 @@ const socialItems = [
     key: 'tiktok',
     title: 'TikTok',
     href: 'https://www.tiktok.com/',
-    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/tiktok.png',
+    icon: mediaUrl('/images/about/social/tiktok.png'),
   },
   {
     key: 'youtube',
     title: 'YouTube',
     href: 'https://www.youtube.com/',
-    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/youtube.png',
+    icon: mediaUrl('/images/about/social/youtube.png'),
   },
   {
     key: 'facebook',
     title: 'Facebook',
     href: 'https://www.facebook.com/',
-    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/facebook.png',
+    icon: mediaUrl('/images/about/social/facebook.png'),
   },
   {
     key: 'instagram',
     title: 'Instagram',
     href: 'https://www.instagram.com/',
-    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/instagram.png',
+    icon: mediaUrl('/images/about/social/instagram.png'),
   },
   {
     key: 'twitch',
     title: 'Twitch',
     href: 'https://www.twitch.tv/',
-    icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/about/social/twitch.png',
+    icon: mediaUrl('/images/about/social/twitch.png'),
   },
 ]
 

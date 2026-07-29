@@ -29,7 +29,7 @@
               :key="group.key"
               :class="['sdk-sidebar-single', { 'sdk-sidebar-single-active': group.key === activeGroupKey }]"
             >
-              <button type="button" class="sdk-sidebar-group-button" @click="selectStandaloneGroup(group)">
+              <button type="button" class="sdk-sidebar-group-button" @click="selectStandaloneGroup(group, true)">
                 <span class="sdk-sidebar-icon">
                   <Icon :name="group.icon" aria-hidden="true" />
                 </span>
@@ -67,7 +67,7 @@
                       :key="item.key"
                       type="button"
                       :class="['sdk-sidebar-item', { 'sdk-sidebar-item-active': item.key === activeItemKey }]"
-                      @click="activeItemKey = item.key"
+                      @click="selectSdkItem(item)"
                     >
                       <Icon name="lucide:file-text" aria-hidden="true" />
                       <span>{{ item.title }}</span>
@@ -83,7 +83,7 @@
               :key="group.key"
               :class="['sdk-sidebar-single', { 'sdk-sidebar-single-active': group.key === activeGroupKey }]"
             >
-              <button type="button" class="sdk-sidebar-group-button" @click="selectStandaloneGroup(group)">
+              <button type="button" class="sdk-sidebar-group-button" @click="selectStandaloneGroup(group, true)">
                 <span class="sdk-sidebar-icon">
                   <Icon :name="group.icon" aria-hidden="true" />
                 </span>
@@ -105,7 +105,7 @@
             </div>
           </aside>
 
-          <section class="sdk-download-panel" aria-labelledby="sdk-content-title">
+          <section ref="sdkDownloadPanel" class="sdk-download-panel" aria-labelledby="sdk-content-title">
             <nav class="sdk-breadcrumb" :aria-label="cameraLabels.breadcrumbAriaLabel">
               <span>{{ cameraLabels.breadcrumbRoot }}</span>
               <Icon name="lucide:chevron-right" aria-hidden="true" />
@@ -320,16 +320,17 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import { getCameras, getExamples, getSdks, getSoundcards } from '../../api/request/strapi'
 import { setupPageSeo } from '../../utils/seo'
+const mediaUrl = useMediaUrl()
 
 const { showRequestSuccessToast, showRequestFailToast } = useSiteToast()
 const route = useRoute()
 const { locale } = useI18n()
 
 const sdkFeatureAssets = [
-  { key: 'compatible', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/feature-compatible.png' },
-  { key: 'support', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/feature-support.png' },
-  { key: 'api', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/feature-api.png' },
-  { key: 'secure', icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/feature-secure.png' },
+  { key: 'compatible', icon: mediaUrl('/images/sdk/feature-compatible.png') },
+  { key: 'support', icon: mediaUrl('/images/sdk/feature-support.png') },
+  { key: 'api', icon: mediaUrl('/images/sdk/feature-api.png') },
+  { key: 'secure', icon: mediaUrl('/images/sdk/feature-secure.png') },
 ]
 
 const createEmptySdkBox = () => ({
@@ -575,14 +576,14 @@ const defaultDemoContent = {
       key: 'camera',
       title: '虚拟相机SDK-Demo下载',
       description: '虚拟相机 SDK 可将图片、视频素材封装成系统原生摄像头源，兼容所有直播、推流、会议软件，可无缝集成至自有 Windows 项目，自定义画面输出。',
-      image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/demo-camera.png',
+      image: mediaUrl('/images/sdk/demo-camera.png'),
       theme: 'purple',
     },
     {
       key: 'audio',
       title: '虚拟声卡SDK-Demo下载',
       description: '虚拟声卡 SDK 可将外部音频、视频里的音频流转为系统麦克风输入源；支持自定义声卡与麦克风名称，能够无缝集成进 Windows 项目，适配直播推流、语音房间、线上会议等软件。',
-      image: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/demo-basic.png',
+      image: mediaUrl('/images/sdk/demo-basic.png'),
       theme: 'cyan',
     },
   ],
@@ -604,6 +605,7 @@ const initialSdkSelection = createInitialSdkSelection()
 const activeGroupKey = ref(initialSdkSelection.groupKey)
 const activeItemKey = ref(initialSdkSelection.itemKey)
 const activeCodeTab = ref('C')
+const sdkDownloadPanel = ref(null)
 const soundcardSdkDownloadUrls = {
   C: 'https://cdn.vicastcam.com/demos/VirtualSoundCard/c.zip',
   'C++': 'https://cdn.vicastcam.com/demos/VirtualSoundCard/c%2B%2B.zip',
@@ -616,15 +618,15 @@ const cameraSdkDownloadUrls = {
 }
 const sdkNoticeComponentImages = {
   C: {
-    src: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/notice-c.png',
+    src: mediaUrl('/images/sdk/notice-c.png'),
     alt: 'VicastCam SDK C component folder',
   },
   'C++': {
-    src: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/notice-cpp.png',
+    src: mediaUrl('/images/sdk/notice-cpp.png'),
     alt: 'VicastCam SDK C++ component folder',
   },
   'C#': {
-    src: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/sdk/notice-csharp.png',
+    src: mediaUrl('/images/sdk/notice-csharp.png'),
     alt: 'VicastCam SDK C# component folder',
   },
 }
@@ -1100,24 +1102,42 @@ const copyCodeButtonAriaLabel = computed(() => {
   return isActiveCodeCopied.value ? cameraLabels.value.codeCopied : cameraLabels.value.copyCode
 })
 
-const toggleGroup = (key) => {
-  activeGroupKey.value = activeGroupKey.value === key ? '' : key
+const isMobileSdkLayout = () => {
+  return import.meta.client && window.matchMedia('(max-width: 980px)').matches
+}
 
-  const group = sdkGroups.value.find(item => item.key === key)
-  if (group?.items?.[0]) {
-    activeItemKey.value = group.items[0].key
-  } else {
-    activeItemKey.value = ''
+const scrollToSdkDownloadPanel = async () => {
+  if (!isMobileSdkLayout()) return
+
+  await nextTick()
+  sdkDownloadPanel.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+const selectSdkItem = (item, scrollOnMobile = true) => {
+  if (!item) return
+
+  activeItemKey.value = item.key
+
+  if (scrollOnMobile) {
+    void scrollToSdkDownloadPanel()
   }
 }
 
-const selectStandaloneGroup = (group) => {
+const toggleGroup = (key) => {
+  activeGroupKey.value = activeGroupKey.value === key ? '' : key
+}
+
+const selectStandaloneGroup = (group, scrollOnMobile = false) => {
   activeGroupKey.value = group.key
 
   if (group.items?.[0]) {
     activeItemKey.value = group.items[0].key
   } else {
     activeItemKey.value = ''
+  }
+
+  if (scrollOnMobile) {
+    void scrollToSdkDownloadPanel()
   }
 }
 
@@ -1501,6 +1521,7 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
   display: grid;
   align-content: start;
   gap: 14px;
+  overflow-anchor: none;
 }
 
 .sdk-sidebar-accordion,
@@ -1587,6 +1608,7 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
 
 .sdk-sidebar-items-wrap {
   display: grid;
+  overflow-anchor: none;
   grid-template-rows: 0fr;
   overflow: hidden;
   transition: grid-template-rows 0.25s ease;
@@ -1671,6 +1693,7 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
 .sdk-download-panel {
   width: 830px;
   min-width: 0;
+  scroll-margin-top: calc(var(--page-header-height) + 12px);
   padding: 28px 24px 24px;
   border: 1px solid var(--theme-sdk-card-border, var(--theme-surface-soft));
   border-radius: 10px;

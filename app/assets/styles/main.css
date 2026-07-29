@@ -284,7 +284,7 @@ body .auth-puzzle .auth-body_ {
   border: 1px solid var(--theme-border-muted);
   border-radius: 7px;
   background:
-    url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-1.png") center / cover no-repeat,
+    var(--media-images-login-captcha-bg-1-png) center / cover no-repeat,
     var(--theme-surface-deep);
   box-shadow: inset 0 0 0 1px var(--theme-white-04);
 }

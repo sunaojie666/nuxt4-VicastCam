@@ -6,7 +6,7 @@
         <NuxtLink :to="localePath('/')" class="site-brand" target="_blank" rel="noopener noreferrer">
           <img
             class="site-brand-image"
-            src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png"
+            :src="mediaUrl('/images/common/logo.png')"
             alt=""
             aria-hidden="true"
             role="presentation"
@@ -232,6 +232,7 @@
 
 <script setup>
 import { getNavigation } from '../api/request/strapi'
+const mediaUrl = useMediaUrl()
 
 const { locale, locales } = useI18n()
 

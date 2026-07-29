@@ -1,4 +1,5 @@
 import { locales } from './i18n/locales.config'
+import { createMediaUrl, defaultMediaUrl } from './media.config'
 
 // 站点正式域名统一从环境变量读取，SEO、sitemap、robots、i18n 都使用同一个值。
 const defaultSiteUrl = 'https://www.vicastcam.com'
@@ -6,6 +7,7 @@ const siteUrl = (process.env.NUXT_PUBLIC_SITE_URL || process.env.NUXT_SITE_URL |
 
 // 站点名称用于 sitemap 展示、默认标题模板和生产环境识别。
 const siteName = process.env.NUXT_SITE_NAME || 'VicastCam'
+const mediaUrl = process.env.NUXT_PUBLIC_MEDIA_URL || defaultMediaUrl
 
 const defaultLocale = 'en'
 const noindexRobotsRule = 'noindex, nofollow, noarchive'
@@ -78,7 +80,7 @@ export default defineNuxtConfig({
     public: {
       siteUrl,
       strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://192.168.18.100:1337',
-      mediaUrl: process.env.NUXT_PUBLIC_MEDIA_URL || 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721',
+      mediaUrl,
       paypalClientId: process.env.NUXT_PUBLIC_PAYPAL_CLIENT_ID || (process.env.NODE_ENV === 'development' ? 'test' : ''),
       paypalCurrency: process.env.NUXT_PUBLIC_PAYPAL_CURRENCY || 'USD',
     },
@@ -120,9 +122,9 @@ export default defineNuxtConfig({
         { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png' },
-        { rel: 'shortcut icon', type: 'image/png', href: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png' },
-        { rel: 'apple-touch-icon', href: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png' },
+        { rel: 'icon', type: 'image/png', href: createMediaUrl('/images/common/logo.png', mediaUrl) },
+        { rel: 'shortcut icon', type: 'image/png', href: createMediaUrl('/images/common/logo.png', mediaUrl) },
+        { rel: 'apple-touch-icon', href: createMediaUrl('/images/common/logo.png', mediaUrl) },
       ],
     },
   },

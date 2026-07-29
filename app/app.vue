@@ -8,6 +8,7 @@
 import { isValidThemeCode, themeStorageKey } from './utils/theme'
 
 const siteName = 'VicastCam'
+const mediaUrl = useMediaUrl()
 const { locale, locales } = useI18n()
 const route = useRoute()
 const themeCookie = useCookie(themeStorageKey)
@@ -33,6 +34,14 @@ useHead(() => ({
     'data-theme': activeTheme.value,
     style: {
       'color-scheme': activeTheme.value === 'light' ? 'light' : 'dark',
+      '--media-images-common-light-page-hero-bg-png': `url(${mediaUrl('/images/common/light-page-hero-bg.png')})`,
+      '--media-images-home-features-card-bg-png': `url(${mediaUrl('/images/home/features/card-bg.png')})`,
+      '--media-images-home-footer-hero-rings-png': `url(${mediaUrl('/images/home/footer-hero-rings.png')})`,
+      '--media-images-home-virtual-camera-frame-png': `url(${mediaUrl('/images/home/virtual/camera-frame.png')})`,
+      '--media-images-login-background-png': `url(${mediaUrl('/images/login/background.png')})`,
+      '--media-images-login-captcha-bg-1-png': `url(${mediaUrl('/images/login/captcha-bg-1.png')})`,
+      '--media-images-login-qr-panel-bg-png': `url(${mediaUrl('/images/login/qr-panel-bg.png')})`,
+      '--media-images-team-partner-plan-hero-bg-png': `url(${mediaUrl('/images/team/partner-plan-hero-bg.png')})`,
     },
   },
   titleTemplate: (titleChunk) => {

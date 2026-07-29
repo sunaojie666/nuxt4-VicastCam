@@ -25,7 +25,7 @@
                 :key="lesson.id"
                 type="button"
                 :class="['tutorial-lesson', { 'tutorial-lesson-active': lesson.id === activeLessonId }]"
-                @click="selectLesson(lesson)"
+                @click="selectLesson(lesson, false, true)"
               >
                 <span class="tutorial-lesson-index">{{ lesson.index }}</span>
                 <span>{{ lesson.title }}</span>
@@ -39,7 +39,7 @@
         </section>
       </aside>
 
-      <div class="tutorial-content">
+      <div ref="tutorialContent" class="tutorial-content">
         <header class="tutorial-content-header">
           <h2>{{ activeLesson.title }}</h2>
           <p>{{ activeLesson.description }}</p>
@@ -109,13 +109,10 @@ const route = useRoute()
 const activeGroupKey = ref('beginner')
 const activeLessonId = ref('beginner-1')
 const videoPlayer = ref(null)
+const tutorialContent = ref(null)
 
 const toggleTutorialGroup = (group) => {
   activeGroupKey.value = activeGroupKey.value === group.key ? '' : group.key
-
-  if (group.key && group.lessons?.[0]) {
-    activeLessonId.value = group.lessons[0].id
-  }
 }
 
 const activeLesson = computed(() => {
@@ -146,10 +143,29 @@ const getRouteLessonId = () => {
 
 const shouldAutoplayRouteLesson = () => route.query.autoplay === '1'
 
-const selectLesson = (lesson, autoplay = false) => {
+const isMobileTutorialLayout = () => {
+  return import.meta.client && window.matchMedia('(max-width: 900px)').matches
+}
+
+const scrollToTutorialContent = async () => {
+  if (!isMobileTutorialLayout()) return
+
+  await nextTick()
+  tutorialContent.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+const shouldScrollToRouteLesson = () => {
+  return route.hash === '#tutorial-player' || shouldAutoplayRouteLesson()
+}
+
+const selectLesson = (lesson, autoplay = false, scrollOnMobile = false) => {
   if (!lesson) return
   activeLessonId.value = lesson.id
   activeGroupKey.value = tutorialGroups.value.find(group => (group.lessons || []).some(item => item.id === lesson.id))?.key || activeGroupKey.value
+
+  if (scrollOnMobile) {
+    void scrollToTutorialContent()
+  }
 
   if (autoplay) {
     void playActiveLesson()
@@ -161,7 +177,7 @@ const syncRouteLesson = () => {
   const lesson = allLessons.value.find(item => item.id === lessonId)
 
   if (lesson) {
-    selectLesson(lesson, shouldAutoplayRouteLesson())
+    selectLesson(lesson, shouldAutoplayRouteLesson(), shouldScrollToRouteLesson())
   }
 }
 
@@ -196,13 +212,15 @@ watch(() => route.query.lesson, () => {
   width: min(100%, var(--page-max-width));
   display: grid;
   grid-template-columns: 242px minmax(0, 1fr);
+  align-items: start;
   gap: 20px;
   padding: 0 var(--page-padding-x);
 }
 
 .tutorial-sidebar {
   overflow: hidden;
-  height: 508px;
+  overflow-anchor: none;
+  align-self: start;
   border: 1px solid var(--theme-route-card-border, var(--theme-border-soft));
   border-radius: var(--theme-route-card-radius, 15px);
   background: var(--theme-route-card-background, var(--theme-surface));
@@ -285,6 +303,7 @@ watch(() => route.query.lesson, () => {
 
 .tutorial-lessons-wrap {
   display: grid;
+  overflow-anchor: none;
   grid-template-rows: 0fr;
   overflow: hidden;
   opacity: 0;
@@ -360,6 +379,7 @@ watch(() => route.query.lesson, () => {
 .tutorial-content {
   min-width: 0;
   width: 774px;
+  scroll-margin-top: calc(var(--page-header-height) + 12px);
 }
 
 .tutorial-content-header {

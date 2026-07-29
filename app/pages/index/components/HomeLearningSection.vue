@@ -42,7 +42,7 @@
 
       <NuxtLink :to="localePath('/tutorial')" class="home-learning-more theme-more-link" target="_blank" rel="noopener noreferrer">
         <span>{{ tutorialContent.buttonText }}</span>
-        <img src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/arrow-right.png" alt="" aria-hidden="true" role="presentation">
+        <img :src="mediaUrl('/images/common/arrow-right.png')" alt="" aria-hidden="true" role="presentation">
       </NuxtLink>
 
     </div>
@@ -51,6 +51,7 @@
 
 <script setup>
 import { getCards, getTutorials } from '../../../api/request/strapi'
+const mediaUrl = useMediaUrl()
 
 const localePath = useLocalePath()
 const { locale, locales } = useI18n()

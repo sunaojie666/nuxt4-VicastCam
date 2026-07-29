@@ -10,10 +10,12 @@
 
       <article class="team-referrer-card">
         <div class="team-referrer-main">
-          <span :class="['team-referrer-avatar', { 'team-referrer-avatar-image': referrerAvatar }]">
-            <img v-if="referrerAvatar" :src="referrerAvatar" :alt="referrerName">
-            <span v-else>{{ referrerInitial }}</span>
-          </span>
+          <img
+            v-if="referrerDefaultAvatar"
+            class="team-referrer-avatar"
+            :src="referrerDefaultAvatar"
+            :alt="referrerName"
+          >
           <div>
             <p>{{ teamText.referrerLabel }}</p>
             <strong>{{ referrerName }}</strong>
@@ -228,25 +230,8 @@ const applyTeamInfoTotals = (response) => {
 
   teamInfoTotals[1] = createTeamInfoCount(pickTeamValue(data.first_count, data.firstCount))
   teamInfoTotals[2] = createTeamInfoCount(pickTeamValue(data.second_count, data.secondCount))
-  referrerDefaultAvatar.value = String(data.default_avatar || '').trim()
-}
-
-const getTeamReferrer = (response) => {
-  const data = getResponseData(response)
-  const referrerValue = pickTeamValue(
-    data.superior,
-    response?.superior,
-    data.parent,
-    data.referrer,
-    data.recommender,
-    data.inviter,
-    data.parent_user,
-    data.parentUser,
-    response?.parent,
-    response?.referrer
-  )
-
-  return referrerValue || null
+  referrer.value = data.superior || null
+  referrerDefaultAvatar.value = data.default_avatar || ''
 }
 
 const getTeamMemberStatusText = (key) => {
@@ -288,17 +273,7 @@ const teamDisplayTotals = computed(() => ({
 }))
 const pagedRows = computed(() => teamRows.value)
 const referrerName = computed(() => {
-  if (typeof referrer.value !== 'object') {
-    return String(pickTeamValue(referrer.value, teamText.value.emptyReferrer || ''))
-  }
-
-  return pickTeamValue(referrer.value?.nickname, referrer.value?.nick_name, referrer.value?.name, referrer.value?.username, referrer.value?.email, referrer.value?.mobile, teamText.value.emptyReferrer || '')
-})
-const referrerAvatar = computed(() => {
-  return referrerDefaultAvatar.value
-})
-const referrerInitial = computed(() => {
-  return String(referrerName.value || '').trim().slice(0, 1).toUpperCase()
+  return referrer.value?.user_name || teamText.value.emptyReferrer || ''
 })
 const teamTableMessage = computed(() => {
   if (isLoadingTeam.value) {
@@ -318,6 +293,7 @@ const loadTeamInfo = () => {
   if (!userId) {
     teamInfoTotals[1] = null
     teamInfoTotals[2] = null
+    referrer.value = null
     referrerDefaultAvatar.value = ''
     return
   }
@@ -331,6 +307,7 @@ const loadTeamInfo = () => {
     () => {
       teamInfoTotals[1] = null
       teamInfoTotals[2] = null
+      referrer.value = null
       referrerDefaultAvatar.value = ''
     }
   )
@@ -358,11 +335,7 @@ const loadTeamList = () => {
   }).then(
     response => {
       const items = getTeamItems(response)
-      const nextReferrer = getTeamReferrer(response)
 
-      if (nextReferrer) {
-        referrer.value = nextReferrer
-      }
       teamRows.value = items.map(createTeamRow)
       levelTotals[selectedLevel.value] = getTeamTotal(response, items.length)
       isLoadingTeam.value = false
@@ -494,25 +467,8 @@ onBeforeUnmount(() => {
   width: 45px;
   height: 45px;
   flex: 0 0 45px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  color: var(--theme-extra-237-247-255-1);
-  background: var(--theme-extra-52-189-255-1);
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.team-referrer-avatar-image {
-  background: transparent;
-}
-
-.team-referrer-avatar img {
-  width: 100%;
-  height: 100%;
   display: block;
-  border-radius: inherit;
+  border-radius: 999px;
   object-fit: cover;
 }
 

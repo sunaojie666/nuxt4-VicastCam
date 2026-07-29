@@ -17,7 +17,7 @@
           <video
             class="home-virtual-video"
             :src="virtualVideoSrc"
-            poster="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/background.png"
+            :poster="mediaUrl('/images/login/background.png')"
             autoplay
             muted
             loop
@@ -31,7 +31,7 @@
           <video
             class="home-virtual-reflection-video"
             :src="virtualVideoSrc"
-            poster="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/background.png"
+            :poster="mediaUrl('/images/login/background.png')"
             autoplay
             muted
             loop
@@ -46,6 +46,7 @@
 
 <script setup>
 import { getVirtual } from '../../../api/request/strapi'
+const mediaUrl = useMediaUrl()
 
 const { locale } = useI18n()
 const config = useRuntimeConfig()
@@ -191,7 +192,7 @@ const { loadContent: loadVirtualContent } = useLocalizedAsyncState({
   overflow: hidden;
   width: 100%;
   aspect-ratio: 887 / 582;
-  background: url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/virtual/camera-frame.png") center / 100% 100% no-repeat;
+  background: var(--media-images-home-virtual-camera-frame-png) center / 100% 100% no-repeat;
 }
 
 .home-virtual-video {

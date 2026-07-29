@@ -2,7 +2,7 @@
   <section v-if="hasHeroContent" class="home-footer-hero-section" aria-labelledby="home-footer-hero-title">
     <div class="page-container home-footer-hero-inner">
       <span v-if="footerHero.tag" class="home-footer-hero-eyebrow">
-        <img src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/badge-star.png" alt="" aria-hidden="true" role="presentation">
+        <img :src="mediaUrl('/images/common/badge-star.png')" alt="" aria-hidden="true" role="presentation">
         {{ footerHero.tag }}
       </span>
 
@@ -10,7 +10,7 @@
         <span>{{ footerHero.title_main }}</span>
         <span class="theme-gradient-text">
           {{ footerHero.title_highlight }}
-          <img class="home-footer-hero-line" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
+          <img class="home-footer-hero-line" :src="mediaUrl('/images/common/title-underline.png')" alt="" aria-hidden="true" role="presentation">
         </span>
       </h2>
 
@@ -39,6 +39,7 @@
 
 <script setup>
 import { getFooter, getHomes } from '../../../api/request/strapi'
+const mediaUrl = useMediaUrl()
 
 const { locale } = useI18n()
 const localePath = useLocalePath()
@@ -62,24 +63,24 @@ const footerHeroButtons = computed(() => {
     {
       key: 'app-store',
       label: homeDownloads.value.appStoreUrl,
-      icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/apple-default.svg',
-      activeIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/apple-active.svg',
+      icon: mediaUrl('/images/home/download-buttons/apple-default.svg'),
+      activeIcon: mediaUrl('/images/home/download-buttons/apple-active.svg'),
       buttonClass: 'home-hero-download-light',
       to: downloadPagePath.value,
     },
     {
       key: 'android',
       label: homeDownloads.value.googlePlayUrl,
-      icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/android-default.svg',
-      activeIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/android-active.svg',
+      icon: mediaUrl('/images/home/download-buttons/android-default.svg'),
+      activeIcon: mediaUrl('/images/home/download-buttons/android-active.svg'),
       buttonClass: 'home-hero-download-light',
       to: downloadPagePath.value,
     },
     {
       key: 'windows',
       label: homeDownloads.value.desktopClientUrl,
-      icon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/windows-default.svg',
-      activeIcon: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/download-buttons/windows-active.svg',
+      icon: mediaUrl('/images/home/download-buttons/windows-default.svg'),
+      activeIcon: mediaUrl('/images/home/download-buttons/windows-active.svg'),
       buttonClass: 'home-hero-download-primary',
       href: '#',
     },
@@ -170,7 +171,7 @@ useLocalizedAsyncState({
   z-index: 0;
   width: 1350px;
   height: 840px;
-  background: url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/home/footer-hero-rings.png") center / contain no-repeat;
+  background: var(--media-images-home-footer-hero-rings-png) center / contain no-repeat;
   transform: translateX(-50%);
   pointer-events: none;
 }

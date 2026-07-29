@@ -113,6 +113,7 @@
 import { sendEmailCode } from '../../../api/request/auth'
 import Vcode from 'vue-sliding-puzzle'
 import 'vue-sliding-puzzle/css'
+const mediaUrl = useMediaUrl()
 
 const props = defineProps({
   loginMethod: {
@@ -152,10 +153,10 @@ let codeCountdownTimer = null
 let pendingPuzzleAction = null
 
 const puzzleImages = [
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-1.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-2.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-3.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/captcha-bg-4.png',
+  mediaUrl('/images/login/captcha-bg-1.png'),
+  mediaUrl('/images/login/captcha-bg-2.png'),
+  mediaUrl('/images/login/captcha-bg-3.png'),
+  mediaUrl('/images/login/captcha-bg-4.png'),
 ]
 
 const puzzleCopyMap = {

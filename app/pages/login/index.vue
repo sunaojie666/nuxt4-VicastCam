@@ -4,7 +4,7 @@
       <AuthBrandPanel :login-data="loginContent" />
 
       <NuxtLink :to="localePath('/')" class="auth-mobile-logo">
-        <img src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png" alt="" aria-hidden="true" role="presentation">
+        <img :src="mediaUrl('/images/common/logo.png')" alt="" aria-hidden="true" role="presentation">
         <span>Vicast<span>Cam</span></span>
       </NuxtLink>
 
@@ -42,6 +42,7 @@ import AuthBrandPanel from './components/AuthBrandPanel.vue'
 import AuthScanPanel from './components/AuthScanPanel.vue'
 import { getLogin } from '../../api/request/strapi'
 import { setupPageSeo } from '../../utils/seo'
+const mediaUrl = useMediaUrl()
 
 setupPageSeo('login')
 
@@ -214,8 +215,8 @@ const authCardTitle = computed(() => {
 
   return loginBoxCopy.loginPageTitle
 })
-const headingIcon = computed(() => loginView.value === 'scan' ? 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/scan-code-icon.png' : 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/email-icon.png')
-const cornerIcon = computed(() => loginView.value === 'scan' ? 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/lock-icon.png' : 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/qr-toggle-icon.png')
+const headingIcon = computed(() => loginView.value === 'scan' ? mediaUrl('/images/login/scan-code-icon.png') : mediaUrl('/images/login/email-icon.png'))
+const cornerIcon = computed(() => loginView.value === 'scan' ? mediaUrl('/images/login/lock-icon.png') : mediaUrl('/images/login/qr-toggle-icon.png'))
 const cornerLabel = computed(() => {
   return loginView.value === 'scan' ? loginBoxCopy.loginPageTitle : loginBoxCopy.qrLoginTab
 })
@@ -360,7 +361,7 @@ useLocalizedAsyncState({
   color: var(--theme-white);
   background:
     linear-gradient(90deg, var(--theme-page-08) 0%, var(--theme-page-12) 45%, var(--theme-page-28) 100%),
-    url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/background.png") center / cover no-repeat,
+    var(--media-images-login-background-png) center / cover no-repeat,
     var(--page-route-background);
 }
 
@@ -442,7 +443,7 @@ useLocalizedAsyncState({
   overflow: hidden;
   clip-path: polygon(0 0, 100% 0, 100% 100%);
   background:
-    url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/qr-panel-bg.png") center / 100% 100% no-repeat,
+    var(--media-images-login-qr-panel-bg-png) center / 100% 100% no-repeat,
     var(--theme-surface-alt);
   cursor: pointer;
 }

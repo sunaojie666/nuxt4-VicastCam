@@ -71,6 +71,7 @@
           <thead>
             <tr>
               <th>{{ membershipText.compareHeaders?.feature }}</th>
+              <th>{{ membershipText.compareHeaders?.normal }}</th>
               <th>{{ membershipText.compareHeaders?.month }}</th>
               <th>{{ membershipText.compareHeaders?.year }}</th>
               <th>{{ membershipText.compareHeaders?.life }}</th>
@@ -79,6 +80,15 @@
           <tbody>
             <tr v-for="(row, rowIndex) in compareRows" :key="`${row.feature}-${rowIndex}`">
               <td>{{ row.feature }}</td>
+              <td>
+                <span v-if="row.normal === 'check'" class="compare-icon compare-check">
+                  <Icon name="lucide:check" aria-hidden="true" />
+                </span>
+                <span v-else-if="row.normal === 'cross'" class="compare-icon compare-cross">
+                  <Icon name="lucide:x" aria-hidden="true" />
+                </span>
+                <span v-else class="compare-text compare-normal">{{ row.normal }}</span>
+              </td>
               <td>
                 <span v-if="row.month === 'check'" class="compare-icon compare-check">
                   <Icon name="lucide:check" aria-hidden="true" />
@@ -116,6 +126,7 @@
 </template>
 
 <script setup>
+const mediaUrl = useMediaUrl()
 const { authUser } = useAuth()
 const { vipPlans, loadVipTypes } = useVipTypes()
 const { profileBox } = useProfileText()
@@ -145,15 +156,15 @@ const normalizePlanType = value => {
 const membershipPlanMeta = {
   month: {
     theme: 'theme-cyan',
-    badgeImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/month.png',
+    badgeImage: mediaUrl('/images/profile/month.png'),
   },
   year: {
     theme: 'theme-blue',
-    badgeImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png',
+    badgeImage: mediaUrl('/images/profile/year.png'),
   },
   life: {
     theme: 'theme-violet',
-    badgeImage: 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/gold.png',
+    badgeImage: mediaUrl('/images/profile/gold.png'),
   },
 }
 
@@ -223,7 +234,7 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('\u7ec8\u8eab') ||
     normalizedVipType.includes('\u6c38\u4e45')
   ) {
-    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/gold.png'
+    return mediaUrl('/images/profile/gold.png')
   }
 
   if (
@@ -232,7 +243,7 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('annual') ||
     normalizedVipType.includes('\u5e74')
   ) {
-    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png'
+    return mediaUrl('/images/profile/year.png')
   }
 
   if (
@@ -241,10 +252,10 @@ const resolveVipBadgeImage = (value) => {
     normalizedVipType.includes('monthly') ||
     normalizedVipType.includes('\u6708')
   ) {
-    return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/month.png'
+    return mediaUrl('/images/profile/month.png')
   }
 
-  return 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/profile/year.png'
+  return mediaUrl('/images/profile/year.png')
 }
 
 const membershipPlans = computed(() => {
@@ -592,7 +603,7 @@ onMounted(() => {
 .membership-compare-panel {
   width: 869px;
   min-height: 0;
-  height: 725px;
+  height: auto;
   padding-bottom: 20px;
 }
 
@@ -651,9 +662,16 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.compare-month,
-.compare-year {
+.compare-normal {
+  color: var(--theme-extra-255-95-58-1);
+}
+
+.compare-month {
   color: var(--theme-accent);
+}
+
+.compare-year {
+  color: var(--theme-extra-72-156-255-1);
 }
 
 .compare-life {
@@ -681,6 +699,19 @@ onMounted(() => {
 
 .compare-cross {
   color: var(--theme-extra-255-95-58-1);
+}
+
+.membership-compare-table tbody td:nth-child(2) .compare-text,
+.membership-compare-table tbody td:nth-child(2) .compare-icon {
+  color: var(--theme-text-muted-alt);
+}
+
+.membership-compare-table tbody td:nth-child(3) .compare-icon {
+  color: var(--theme-accent);
+}
+
+.membership-compare-table tbody td:nth-child(4) .compare-icon {
+  color: var(--theme-extra-72-156-255-1);
 }
 
 @media (max-width: 900px) {

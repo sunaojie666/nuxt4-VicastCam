@@ -11,7 +11,7 @@
             <span>{{ teamBox.hero.title }}</span>
             <span class="theme-gradient-text team-hero-title-highlight">
               {{ teamBox.hero.highlight }}
-              <img class="team-hero-title-line" src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/title-underline.png" alt="" aria-hidden="true" role="presentation">
+              <img class="team-hero-title-line" :src="mediaUrl('/images/common/title-underline.png')" alt="" aria-hidden="true" role="presentation">
             </span>
           </h1>
 
@@ -314,6 +314,7 @@ import SiteHeader from '../../components/SiteHeader.vue'
 import { addBusinessCooperation, getBusinessWechatQrcode } from '../../api/request/business'
 import { getTeams } from '../../api/request/strapi'
 import { createAbsoluteUrl, createLocalizedUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
+const mediaUrl = useMediaUrl()
 
 const config = useRuntimeConfig()
 const { locale, locales } = useI18n()
@@ -398,20 +399,20 @@ const requiredApplicationFieldNames = new Set(['contactName', 'email', 'country'
 
 const contactIconDefaults = ['lucide:mail', 'lucide:message-circle', 'lucide:clock']
 const advantageIconDefaults = [
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/advantage-creators-icon.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/advantage-delivery-icon.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/advantage-competition-icon.png',
+  mediaUrl('/images/team/advantage-creators-icon.png'),
+  mediaUrl('/images/team/advantage-delivery-icon.png'),
+  mediaUrl('/images/team/advantage-competition-icon.png'),
 ]
 const supportIconDefaults = [
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/support-marketing-materials-icon.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/support-technical-service-icon.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/support-brand-authorization-icon.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/support-priority-beta-icon.png',
+  mediaUrl('/images/team/support-marketing-materials-icon.png'),
+  mediaUrl('/images/team/support-technical-service-icon.png'),
+  mediaUrl('/images/team/support-brand-authorization-icon.png'),
+  mediaUrl('/images/team/support-priority-beta-icon.png'),
 ]
 const planImageDefaults = [
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/plan-channel-agent-image.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/plan-oem-sdk-image.png',
-  'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/plan-enterprise-custom-image.png',
+  mediaUrl('/images/team/plan-channel-agent-image.png'),
+  mediaUrl('/images/team/plan-oem-sdk-image.png'),
+  mediaUrl('/images/team/plan-enterprise-custom-image.png'),
 ]
 
 const defaultTeamBox = {
@@ -1108,7 +1109,7 @@ setupStructuredData(() => {
       name: pageTitle,
       description: pageDescription,
       url: teamPageUrl.value,
-      image: createAbsoluteUrl(teamBox.value.seo.image || 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/partner-plan-hero-bg.png', siteUrl.value),
+      image: createAbsoluteUrl(teamBox.value.seo.image || mediaUrl('/images/team/partner-plan-hero-bg.png'), siteUrl.value),
       inLanguage,
     },
     {
@@ -1116,7 +1117,7 @@ setupStructuredData(() => {
       '@type': 'Organization',
       name: 'VicastCam',
       url: siteUrl.value,
-      logo: createAbsoluteUrl('https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png', siteUrl.value),
+      logo: createAbsoluteUrl(mediaUrl('/images/common/logo.png'), siteUrl.value),
       ...(contactPoint.length ? { contactPoint } : {}),
     },
   ]
@@ -1137,7 +1138,7 @@ setupStructuredData(() => {
     linear-gradient(180deg, rgba(2, 6, 23, 0.12) 0%, rgba(2, 6, 23, 0.34) 100%);
   --team-hero-background:
     linear-gradient(180deg, rgba(3, 7, 18, 0.06) 0%, rgba(3, 7, 18, 0.16) 100%),
-    url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/partner-plan-hero-bg.png") center / cover no-repeat,
+    var(--media-images-team-partner-plan-hero-bg-png) center / cover no-repeat,
     #040915;
   --team-primary-button-background: linear-gradient(135deg, #16a8f8 0%, #2563eb 100%);
   --team-primary-button-shadow: rgba(37, 99, 235, 0.34);
@@ -2230,7 +2231,7 @@ setupStructuredData(() => {
     linear-gradient(180deg, rgba(2, 6, 23, 0.12) 0%, rgba(2, 6, 23, 0.34) 100%);
   --team-hero-background:
     linear-gradient(180deg, rgba(3, 7, 18, 0.06) 0%, rgba(3, 7, 18, 0.16) 100%),
-    url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/team/partner-plan-hero-bg.png") center / cover no-repeat,
+    var(--media-images-team-partner-plan-hero-bg-png) center / cover no-repeat,
     #040915;
   --team-primary-button-background: linear-gradient(135deg, rgba(6, 182, 212, 1) 0%, rgba(37, 99, 235, 1) 100%);
   --team-primary-button-shadow: rgba(37, 99, 235, 0.2);

@@ -19,7 +19,7 @@
     </div>
 
     <p class="auth-scan-tip">
-      <img src="https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/login/scan-code-icon.png" alt="" aria-hidden="true" role="presentation">
+      <img :src="mediaUrl('/images/login/scan-code-icon.png')" alt="" aria-hidden="true" role="presentation">
       <span>{{ loginBox.qrLoginTip }}</span>
     </p>
 
@@ -48,6 +48,7 @@
 
 <script setup>
 import { getLoginQrcode } from '../../../api/request/auth'
+const mediaUrl = useMediaUrl()
 
 const props = defineProps({
   loginBox: {

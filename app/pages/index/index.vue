@@ -55,6 +55,7 @@ import HomeFaqSection from './components/HomeFaqSection.vue'
 import HomeLearningSection from './components/HomeLearningSection.vue'
 import HomeFooterHeroSection from './components/HomeFooterHeroSection.vue'
 import { createAbsoluteUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
+const mediaUrl = useMediaUrl()
 
 setupPageSeo('home')
 
@@ -72,7 +73,7 @@ setupStructuredData(() => [
     '@type': 'Organization',
     name: 'VicastCam',
     url: siteUrl.value,
-    logo: createAbsoluteUrl('https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/logo.png', siteUrl.value),
+    logo: createAbsoluteUrl(mediaUrl('/images/common/logo.png'), siteUrl.value),
     description: 'VicastCam provides virtual camera, virtual background, screen casting, and live streaming tools for creators, meetings, and multi-platform production.',
   },
   {

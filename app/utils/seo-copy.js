@@ -1,7 +1,9 @@
+import { createMediaUrl as mediaUrl } from '../../media.config'
+
 export const defaultRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
 const privateRobots = 'noindex, nofollow, noarchive'
 export const defaultDescription = 'VicastCam provides virtual camera, virtual background, screen casting, and live streaming tools for creators, meetings, and multi-platform production.'
-export const defaultSeoImage = 'https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/og-default.png'
+export const defaultSeoImage = mediaUrl('/images/common/og-default.png')
 
 const fallbackPageSeoCopy = {
   about: {

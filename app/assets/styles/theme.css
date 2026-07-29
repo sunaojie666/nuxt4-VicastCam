@@ -709,7 +709,7 @@
   --theme-profile-tab-count-active-background: rgba(219, 234, 254, 1);
   --theme-profile-tab-count-active-text: rgba(40, 115, 253, 1);
   --theme-sdk-hero-background:
-    url("https://cdn2.douyinggongchang.com/vicastcam-website-media-20260721/images/common/light-page-hero-bg.png") center / cover no-repeat;
+    var(--media-images-common-light-page-hero-bg-png) center / cover no-repeat;
   --theme-sdk-hero-title: rgba(17, 24, 39, 1);
   --theme-sdk-hero-text: rgba(31, 41, 55, 1);
   --theme-sdk-card-background: rgba(255, 255, 255, 1);
