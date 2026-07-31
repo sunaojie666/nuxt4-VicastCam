@@ -125,7 +125,7 @@
                   v-for="demo in demoDownloads"
                   :key="demo.key"
                   :class="['sdk-demo-card', `sdk-demo-card-${demo.theme}`]"
-                  :style="{ backgroundImage: `url(${demo.image})` }"
+                  :style="{ '--sdk-demo-image': `url(${demo.image})` }"
                 >
                   <div class="sdk-demo-art" aria-hidden="true"></div>
 
@@ -318,6 +318,7 @@
 <script setup>
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
+import { getPlatformDownload } from '../../api/request/download'
 import { getCameras, getExamples, getSdks, getSoundcards } from '../../api/request/strapi'
 import { setupPageSeo } from '../../utils/seo'
 const mediaUrl = useMediaUrl()
@@ -360,6 +361,7 @@ const soundcardModule = useState('sdk-soundcard-module', () => null)
 const soundcardModuleLocale = useState('sdk-soundcard-module-locale', () => '')
 const exampleModule = useState('sdk-example-module', () => null)
 const exampleModuleLocale = useState('sdk-example-module-locale', () => '')
+const sdkDownloadConfig = useState('sdk-download-config', () => ({}))
 
 const normalizeList = value => Array.isArray(value) ? value.filter(Boolean) : []
 const getSingleQueryValue = value => Array.isArray(value) ? value[0] : value
@@ -606,15 +608,53 @@ const activeGroupKey = ref(initialSdkSelection.groupKey)
 const activeItemKey = ref(initialSdkSelection.itemKey)
 const activeCodeTab = ref('C')
 const sdkDownloadPanel = ref(null)
-const soundcardSdkDownloadUrls = {
-  C: 'https://cdn.vicastcam.com/demos/VirtualSoundCard/c.zip',
-  'C++': 'https://cdn.vicastcam.com/demos/VirtualSoundCard/c%2B%2B.zip',
-  'C#': 'https://cdn.vicastcam.com/demos/VirtualSoundCard/c%23.zip',
+const sdkDownloadKeys = {
+  audio: {
+    C: 'sdk-card-c',
+    'C++': 'sdk-card-cjj',
+    'C#': 'sdk-card-cx',
+  },
+  camera: {
+    C: 'sdk-camera-c',
+    'C++': 'sdk-camera-cjj',
+    'C#': 'sdk-camera-cx',
+  },
 }
-const cameraSdkDownloadUrls = {
-  C: 'https://cdn.vicastcam.com/demos/virtualCamera/c.zip',
-  'C++': 'https://cdn.vicastcam.com/demos/virtualCamera/c%2B%2B.zip',
-  'C#': 'https://cdn.vicastcam.com/demos/virtualCamera/c%23.zip',
+const sdkDemoDownloadKeys = {
+  audio: 'sdk-card-demo',
+  camera: 'sdk-camera-demo',
+}
+const pickFirstText = (source, keys) => {
+  return keys
+    .map(key => source?.[key])
+    .find(value => String(value || '').trim()) || ''
+}
+const getSdkDownloadDataFromResponse = (response) => {
+  const data = response?.data || response
+
+  return data && typeof data === 'object' ? data : {}
+}
+const normalizeSdkDownloadConfig = (config = {}) => {
+  return {
+    downloadUrl: pickFirstText(config, ['file_url', 'downloadUrl', 'download_url', 'url', 'link', 'value']),
+  }
+}
+const getAllSdkDownloadsSafely = () => {
+  const entries = Object.entries(sdkDownloadKeys).flatMap(([groupKey, languageKeys]) => {
+    return Object.entries(languageKeys).map(([language, apiKey]) => ({ groupKey, language, apiKey }))
+  })
+  const demoEntries = Object.entries(sdkDemoDownloadKeys).map(([demoKey, apiKey]) => ({
+    groupKey: 'demo',
+    language: demoKey,
+    apiKey,
+  }))
+
+  return Promise.all([...entries, ...demoEntries].map(({ groupKey, language, apiKey }) => {
+    return getPlatformDownload(apiKey).then(
+      response => [`${groupKey}:${language}`, getSdkDownloadDataFromResponse(response)],
+      () => [`${groupKey}:${language}`, {}]
+    )
+  })).then(downloadEntries => Object.fromEntries(downloadEntries))
 }
 const sdkNoticeComponentImages = {
   C: {
@@ -958,12 +998,23 @@ const activeNoticeComponentImage = computed(() => {
   return cameraNoticeComponentImages.value[activeCodeTab.value] || {}
 })
 const activeNoticeDownloadUrl = computed(() => {
-  const downloadUrls = activeGroupKey.value === 'audio'
-    ? soundcardSdkDownloadUrls
-    : cameraSdkDownloadUrls
+  const groupKey = activeGroupKey.value === 'audio' ? 'audio' : 'camera'
+  const config = normalizeSdkDownloadConfig(sdkDownloadConfig.value?.[`${groupKey}:${activeCodeTab.value}`])
 
-  return downloadUrls[activeCodeTab.value] || ''
+  return config.downloadUrl
 })
+const getDemoDownloadUrl = (demo = {}) => {
+  const directConfig = normalizeSdkDownloadConfig(demo)
+
+  if (directConfig.downloadUrl) {
+    return directConfig.downloadUrl
+  }
+
+  const demoKey = String(demo.key || '').trim()
+  const config = normalizeSdkDownloadConfig(sdkDownloadConfig.value?.[`demo:${demoKey}`])
+
+  return config.downloadUrl
+}
 const isDemoDownloadView = computed(() => activeGroupKey.value === 'demo' || activeItemKey.value.includes('demo'))
 const isEmptyContentView = computed(() => activeSdkGroup.value && !activeSdkGroup.value.items?.length && !isNoticeView.value)
 const isApiDocView = computed(() => {
@@ -1146,6 +1197,20 @@ const handleDemoDownload = (demo) => {
     return
   }
 
+  const downloadUrl = getDemoDownloadUrl(demo)
+
+  if (!downloadUrl) {
+    showRequestFailToast()
+    return
+  }
+
+  const link = document.createElement('a')
+  link.href = downloadUrl
+  link.download = ''
+  link.rel = 'noopener noreferrer'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 const copyCode = async (code) => {
@@ -1315,6 +1380,9 @@ useLocalizedAsyncState({
 
 onMounted(() => {
   syncSdkTargetFromRoute()
+  getAllSdkDownloadsSafely().then((downloads) => {
+    sdkDownloadConfig.value = downloads
+  })
 })
 
 onBeforeUnmount(() => {
@@ -1754,6 +1822,7 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
   border: 0;
   border-radius: 10px;
   background-color: var(--theme-surface);
+  background-image: var(--sdk-demo-image);
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -2250,10 +2319,42 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
     min-height: 240px;
     aspect-ratio: auto;
     grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0;
+    background-image: none;
+    background-color: var(--theme-surface);
   }
 
   .sdk-demo-art {
-    min-height: 112px;
+    min-height: 0;
+    aspect-ratio: 770 / 242;
+    background-image: var(--sdk-demo-image);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+
+  .sdk-demo-content {
+    padding: 16px 18px 18px;
+    background: linear-gradient(180deg, rgba(31, 20, 74, 0.98), rgba(17, 24, 39, 1));
+  }
+
+  .sdk-demo-card-cyan .sdk-demo-content {
+    background: linear-gradient(180deg, rgba(8, 58, 64, 0.98), rgba(17, 24, 39, 1));
+  }
+
+  .sdk-demo-content h3 {
+    font-size: 18px;
+    line-height: 25px;
+  }
+
+  .sdk-demo-content p {
+    margin-top: 8px;
+    line-height: 20px;
+  }
+
+  .sdk-download-button {
+    margin-top: 14px;
   }
 
 }

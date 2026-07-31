@@ -127,6 +127,7 @@
 <script setup>
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
+import { getPlatformDownload } from '../../api/request/download'
 import { getDownloads } from '../../api/request/strapi'
 import { createAbsoluteUrl, createLocalizedUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
 const mediaUrl = useMediaUrl()
@@ -196,6 +197,12 @@ const platformAssets = [
   },
 ]
 
+const platformConfigKeys = {
+  android: 'Android',
+  ios: 'ios',
+  windows: 'win',
+}
+
 const reasonAssets = [
   {
     key: 'secure',
@@ -224,6 +231,7 @@ const createEmptyDownloadBox = () => ({
 
 const downloadBox = useState('download-box', () => createEmptyDownloadBox())
 const downloadBoxLocale = useState('download-box-locale', () => '')
+const platformDownloadConfig = useState('download-platform-config', () => ({}))
 
 const normalizeList = (items) => {
   return Array.isArray(items) ? items.filter(Boolean) : []
@@ -263,14 +271,59 @@ const getDownloadBoxFromResponse = (response) => {
   return normalizeDownloadBox(data.downloadBox || data)
 }
 
+const getPlatformDownloadFromResponse = (response) => {
+  const data = response?.data
+
+  if (!data || typeof data !== 'object') {
+    return {}
+  }
+
+  return data
+}
+
+const pickFirstText = (source, keys) => {
+  return keys
+    .map(key => source?.[key])
+    .map(value => value === null || value === undefined ? '' : String(value).trim())
+    .find(Boolean) || ''
+}
+
+const normalizePlatformDownloadConfig = (config = {}) => {
+  return {
+    downloadUrl: pickFirstText(config, ['downloadUrl', 'download_url', 'file_url', 'url', 'link', 'value']),
+    qrImage: pickFirstText(config, ['qrImage', 'qr_image', 'qrcode', 'qrCode', 'img_path', 'img']),
+    version: pickFirstText(config, ['version', 'app_version', 'appVersion']),
+    updatedAt: pickFirstText(config, ['description', 'updatedAt', 'updated_at', 'updateTime', 'update_time', 'release_time']),
+    size: pickFirstText(config, ['file_size', 'size', 'fileSize']),
+  }
+}
+
+const getAllPlatformDownloadsSafely = () => {
+  const platformEntries = Object.entries(platformConfigKeys)
+
+  return Promise.all(platformEntries.map(([platformKey, apiKey]) => {
+    return getPlatformDownload(apiKey).then(
+      response => [platformKey, getPlatformDownloadFromResponse(response)],
+      () => [platformKey, {}]
+    )
+  })).then(entries => Object.fromEntries(entries))
+}
+
 const platforms = computed(() => {
   return normalizeList(downloadBox.value.platform.items).map(item => {
     const asset = platformAssets.find(platform => platform.key === item.key) || {}
+    const platformKey = item.key || asset.key || ''
+    const platformConfig = normalizePlatformDownloadConfig(platformDownloadConfig.value?.[platformKey])
 
     return {
       ...asset,
       ...item,
-      key: item.key || asset.key || '',
+      key: platformKey,
+      downloadUrl: platformConfig.downloadUrl || item.downloadUrl || item.url || '',
+      qrImage: platformConfig.qrImage || item.qrImage || asset.qrImage || '',
+      version: platformConfig.version || item.version,
+      updatedAt: platformConfig.updatedAt || item.updatedAt,
+      size: platformConfig.size || item.size,
     }
   }).filter(item => item.key)
 })
@@ -292,8 +345,19 @@ const handleDownload = (platform) => {
     return
   }
 
-  if (platform.key === 'android' || platform.key === 'ios') {
+  if ((platform.key === 'android' || platform.key === 'ios') && platform.qrImage) {
     activeQrPlatform.value = activeQrPlatform.value === platform.key ? '' : platform.key
+    return
+  }
+
+  if (platform.downloadUrl) {
+    const link = document.createElement('a')
+    link.href = platform.downloadUrl
+    link.download = ''
+    link.rel = 'noopener noreferrer'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 }
 
@@ -306,15 +370,26 @@ const closeDownloadQr = () => {
 useLocalizedAsyncState({
   locale,
   loadedLocale: downloadBoxLocale,
-  load: currentLocale => getDownloads(currentLocale),
-  sync: response => {
-    downloadBox.value = getDownloadBoxFromResponse(response)
+  load: currentLocale => Promise.all([
+    getDownloads(currentLocale),
+    getAllPlatformDownloadsSafely(),
+  ]),
+  sync: ([downloadsResponse, platformDownloads]) => {
+    downloadBox.value = getDownloadBoxFromResponse(downloadsResponse)
+    platformDownloadConfig.value = platformDownloads
     closeDownloadQr()
   },
   reset: () => {
     downloadBox.value = createEmptyDownloadBox()
+    platformDownloadConfig.value = {}
     closeDownloadQr()
   },
+})
+
+onMounted(() => {
+  getAllPlatformDownloadsSafely().then((platformDownloads) => {
+    platformDownloadConfig.value = platformDownloads
+  })
 })
 
 setupPageSeo('download', () => downloadBox.value.seo)
@@ -327,7 +402,7 @@ setupStructuredData(() => {
     applicationCategory: 'MultimediaApplication',
     operatingSystem: platform.system || platform.name || platform.key,
     description: platform.subtitle || downloadBox.value.platform.description || downloadBox.value.seo.description,
-    url: downloadPageUrl.value,
+    url: platform.downloadUrl || downloadPageUrl.value,
     image: createAbsoluteUrl(platform.mobileIcon || platform.image || mediaUrl('/images/common/og-default.png'), siteUrl.value),
     inLanguage: activeLocaleConfig.value.language || locale.value,
   }))
@@ -709,13 +784,14 @@ setupStructuredData(() => {
   position: absolute;
   left: 24px;
   right: 24px;
+  top: 24px;
   bottom: 24px;
   z-index: 5;
-  min-height: 240px;
   display: grid;
   justify-items: center;
   align-content: center;
-  padding: 26px 18px 24px;
+  box-sizing: border-box;
+  padding: 30px 20px 24px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
   color: var(--theme-white);
@@ -725,33 +801,50 @@ setupStructuredData(() => {
   -webkit-backdrop-filter: blur(16px);
 }
 
+:root[data-theme="light"] .download-qr-panel {
+  color: rgba(17, 24, 39, 1);
+  border-color: rgba(226, 232, 240, 1);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.18);
+}
+
 .download-qr-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 28px;
-  height: 28px;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
   color: var(--theme-white-86);
   background: var(--theme-white-10);
+  line-height: 1;
   cursor: pointer;
 }
 
+:root[data-theme="light"] .download-qr-close {
+  color: rgba(51, 65, 85, 1);
+  background: rgba(241, 245, 249, 1);
+}
+
 .download-qr-close svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex: 0 0 auto;
 }
 
 .download-qr-code {
-  width: 118px;
-  height: 118px;
+  width: 154px;
+  height: 154px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 8px;
   border-radius: 14px;
   background: var(--theme-white);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
@@ -764,20 +857,32 @@ setupStructuredData(() => {
 }
 
 .download-qr-panel strong {
-  margin-top: 18px;
+  width: 100%;
+  margin-top: 16px;
   color: var(--theme-white);
   font-size: 16px;
   font-weight: 800;
   line-height: 22px;
   text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+:root[data-theme="light"] .download-qr-panel strong {
+  color: rgba(17, 24, 39, 1);
 }
 
 .download-qr-panel span {
-  margin-top: 6px;
+  width: 100%;
   color: var(--theme-text-muted);
   font-size: 12px;
   line-height: 18px;
   text-align: center;
+  white-space: normal;
+}
+
+:root[data-theme="light"] .download-qr-panel span {
+  color: rgba(71, 85, 105, 1);
 }
 
 .download-qr-pop-enter-active,
@@ -929,20 +1034,21 @@ setupStructuredData(() => {
   }
 
   .download-qr-panel {
-    left: auto;
-    right: min(3.7037vw, 40px);
-    bottom: 50%;
-    width: min(23.3333vw, 252px);
-    min-height: min(17.7778vw, 192px);
-    padding: min(2.2222vw, 24px) min(1.6667vw, 18px);
+    left: min(2.2222vw, 24px);
+    right: min(2.2222vw, 24px);
+    top: min(2.2222vw, 24px);
+    bottom: min(2.2222vw, 24px);
+    width: auto;
+    min-height: 0;
+    padding: min(2.7778vw, 30px) min(1.8519vw, 20px) min(2.2222vw, 24px);
     border-radius: min(1.3889vw, 15px);
-    transform: translateY(50%);
+    transform: none;
   }
 
   .download-qr-code {
-    width: min(10.3704vw, 112px);
-    height: min(10.3704vw, 112px);
-    padding: min(2.2222vw, 24px);
+    width: min(14.8148vw, 160px);
+    height: min(14.8148vw, 160px);
+    padding: min(0.7407vw, 8px);
     border-radius: min(1.2963vw, 14px);
   }
 
@@ -951,6 +1057,7 @@ setupStructuredData(() => {
     right: min(0.9259vw, 10px);
     width: min(2.5926vw, 28px);
     height: min(2.5926vw, 28px);
+    padding: 0;
   }
 
   .download-qr-close svg {
@@ -965,24 +1072,23 @@ setupStructuredData(() => {
   }
 
   .download-qr-panel span {
-    margin-top: min(0.5556vw, 6px);
     font-size: clamp(5px, 1.2037vw, 13px);
     line-height: 1.2;
   }
 
   .download-qr-pop-enter-active,
   .download-qr-pop-leave-active {
-    transform-origin: right center;
+    transform-origin: center;
   }
 
   .download-qr-pop-enter-from,
   .download-qr-pop-leave-to {
-    transform: translateY(50%) scale(0.72);
+    transform: scale(0.72);
   }
 
   .download-qr-pop-enter-to,
   .download-qr-pop-leave-from {
-    transform: translateY(50%) scale(1);
+    transform: scale(1);
   }
 
   .download-card-title p {
