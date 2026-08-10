@@ -213,6 +213,7 @@
   --theme-profile-table-row-background: var(--theme-panel);
   --theme-profile-table-row-alt-background: var(--theme-panel-row);
   --theme-profile-table-text: var(--theme-text-table);
+  --theme-profile-table-loading-background: rgba(8, 16, 32, 0.34);
   --theme-membership-card-background: var(--theme-panel-code);
   --theme-membership-card-border: var(--theme-border-card);
   --theme-membership-card-body-text: var(--theme-extra-148-164-187-1);
@@ -668,6 +669,7 @@
   --theme-profile-table-row-background: rgba(255, 255, 255, 1);
   --theme-profile-table-row-alt-background: rgba(249, 250, 251, 1);
   --theme-profile-table-text: rgba(55, 65, 81, 1);
+  --theme-profile-table-loading-background: rgba(255, 255, 255, 0.72);
   --theme-membership-card-background: rgba(255, 255, 255, 1);
   --theme-membership-card-border: rgba(229, 231, 235, 1);
   --theme-membership-card-body-text: rgba(31, 41, 55, 1);

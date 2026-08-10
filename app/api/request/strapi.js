@@ -232,6 +232,17 @@ export const getFaq = (locale) => {
   })
 }
 
+// 图文教程页接口，对应独立的 api::graphic.graphic，REST 路由为 /api/graphics。
+export const getGraphics = (locale) => {
+  return createStrapiRequest().get('/graphics', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 // 首页多平台支持文案接口，对应 Strapi 里的 api::form.form。
 export const getForm = (locale) => {
   return createStrapiRequest().get('/forms', {

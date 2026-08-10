@@ -19,11 +19,10 @@
       </p>
 
       <div v-if="footerHeroButtons.length" class="home-hero-actions" aria-label="下载VicastCam">
-        <component
-          :is="button.to ? 'NuxtLink' : 'a'"
+        <NuxtLink
           v-for="button in footerHeroButtons"
           :key="button.key"
-          v-bind="button.to ? { to: button.to } : { href: button.href }"
+          :to="button.to"
           :class="['home-hero-download', button.buttonClass]"
         >
           <span class="home-hero-download-icon-wrap" aria-hidden="true">
@@ -31,7 +30,7 @@
             <img class="home-hero-download-icon-active" :src="button.activeIcon" alt="" role="presentation">
           </span>
           <span>{{ button.label }}</span>
-        </component>
+        </NuxtLink>
       </div>
     </div>
   </section>
@@ -82,7 +81,7 @@ const footerHeroButtons = computed(() => {
       icon: mediaUrl('/images/home/download-buttons/windows-default.svg'),
       activeIcon: mediaUrl('/images/home/download-buttons/windows-active.svg'),
       buttonClass: 'home-hero-download-primary',
-      href: '#',
+      to: downloadPagePath.value,
     },
   ].filter(button => String(button.label || '').trim())
 })
@@ -218,7 +217,7 @@ useLocalizedAsyncState({
   max-width: min(100%, 980px);
   margin-top: 22px;
   color: var(--theme-footer-hero-title, var(--theme-white));
-  font-size: 58px;
+  font-size: 34px;
   font-weight: 900;
   line-height: 68px;
   overflow-wrap: anywhere;
@@ -265,6 +264,7 @@ useLocalizedAsyncState({
 }
 
 .home-hero-download {
+  cursor: pointer;
   transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 

@@ -291,6 +291,7 @@ const summaryCards = computed(() => [
 
 const { authUser } = useAuth()
 const selectedMonth = ref('')
+const hasSelectedMonth = ref(false)
 const isMonthPickerOpen = ref(false)
 const pickerYear = ref(new Date().getFullYear())
 const monthFilter = ref(null)
@@ -364,8 +365,6 @@ const syncWithdrawDefaults = () => {
     withdrawForm.name = String(withdrawText.value.defaultName || '').trim()
   }
 }
-
-selectedMonth.value = currentMonth.value
 
 const pickCommissionValue = (...values) => {
   return values.find(value => value !== undefined && value !== null && value !== '')
@@ -516,7 +515,7 @@ const loadCommissionList = () => {
 
   getCommissionList({
     user_id: userId,
-    month: selectedMonth.value,
+    month: hasSelectedMonth.value ? selectedMonth.value : '',
     page_index: currentPage.value,
     page_size: pageSize,
   }).then(
@@ -557,6 +556,7 @@ const selectMonth = (year, month) => {
   }
 
   selectedMonth.value = createMonthValue(year, month)
+  hasSelectedMonth.value = true
   isMonthPickerOpen.value = false
 }
 
@@ -620,6 +620,8 @@ const submitWithdraw = () => {
 }
 
 onMounted(() => {
+  hasSelectedMonth.value = false
+  selectedMonth.value = ''
   syncWithdrawDefaults()
   loadCommissionList()
   document.addEventListener('click', closeMonthPickerOnOutsideClick)

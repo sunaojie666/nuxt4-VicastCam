@@ -1,7 +1,12 @@
 <template>
-  <section class="faq-content-section" aria-label="问答列表">
+  <section
+    v-if="activeQuestion && activeQuestionGroup"
+    id="faq-content"
+    class="faq-content-section"
+    :aria-label="content.sectionAriaLabel"
+  >
     <div class="faq-content-layout">
-      <aside class="faq-sidebar" aria-label="问答分类">
+      <aside class="faq-sidebar" :aria-label="content.catalogAriaLabel">
         <section
           v-for="group in faqGroups"
           :key="group.key"
@@ -21,171 +26,166 @@
           <div :class="['faq-questions-wrap', { 'faq-questions-wrap-open': group.key === activeGroupKey }]">
             <div class="faq-questions">
               <button
-                v-for="question in group.questions"
+                v-for="(question, index) in group.questions"
                 :key="question.id"
                 type="button"
-                :class="['faq-question-item', { 'faq-question-item-active': question.id === activeQuestionId }]"
-                @click="activeQuestionId = question.id"
+                :class="['faq-question', { 'faq-question-active': question.id === activeQuestionId }]"
+                @click="selectQuestion(question, true)"
               >
-                <Icon name="lucide:file-text" aria-hidden="true" />
+                <span class="faq-question-index">{{ String(index + 1).padStart(2, '0') }}</span>
                 <span>{{ question.title }}</span>
-                <Icon name="lucide:chevron-right" aria-hidden="true" />
               </button>
             </div>
           </div>
         </section>
       </aside>
 
-      <article class="faq-article">
-        <header class="faq-article-header">
-          <div class="faq-breadcrumb">
-            <span>常见问题</span>
-            <Icon name="lucide:chevron-right" aria-hidden="true" />
-            <span>{{ activeQuestion.title }}</span>
-          </div>
-
-          <button type="button" class="faq-share-button" aria-label="分享">
-            <Icon name="lucide:share-2" aria-hidden="true" />
-          </button>
+      <div ref="faqContent" class="faq-content">
+        <header class="faq-content-header">
+          <h2>{{ activeQuestion.title }}</h2>
+          <p>{{ questionProgress }}</p>
         </header>
 
-        <h2>{{ activeQuestion.title }}</h2>
+        <article class="faq-answer-shell">
+          <div class="faq-answer-label">
+            <Icon name="lucide:circle-help" aria-hidden="true" />
+            <span>{{ content.answerLabel }}</span>
+          </div>
 
-        <div class="faq-meta">
-          <span>
-            <Icon name="lucide:clock-3" aria-hidden="true" />
-            更新时间：2025-04-10
-          </span>
-          <span>
-            <Icon name="lucide:eye" aria-hidden="true" />
-            12,403次浏览
-          </span>
-        </div>
+          <div class="faq-answer-content">
+            <template v-for="(block, index) in activeQuestion.answer || []" :key="`${activeQuestion.id}-${index}`">
+              <h3 v-if="block.type === 'heading'">{{ block.text }}</h3>
+              <ul v-else-if="block.type === 'list'">
+                <li v-for="item in block.items" :key="item">{{ item }}</li>
+              </ul>
+              <p v-else>{{ block.text }}</p>
+            </template>
+          </div>
+        </article>
 
-        <p class="faq-summary">5步快速上手 VicastCam</p>
-
-        <div class="faq-rich-content">
-          <p>本文将手把手教你在 VicastCam 中完成基础设置，并快速理解直播背景、画面调整和常用功能入口。</p>
-
-          <h3>第一步：打开VicastCam手机App，进入直播间</h3>
-          <p>点击软件中的直播入口，按照提示进入直播预览界面，并确认摄像头和麦克风权限已经开启。</p>
-
-          <img class="faq-article-image faq-article-image-small" :src="mediaUrl('/images/login/background.png')" alt="VicastCam手机端直播界面">
-
-          <h3>第二步：打开VicastCam手机App，进入直播间</h3>
-          <p>点击软件中的直播入口进入直播间后，选择合适的背景效果和画面比例。你也可以在直播过程中随时调整画面参数。</p>
-
-          <img class="faq-article-image" :src="mediaUrl('/images/home/virtual/camera-reflection-frame.png')" alt="VicastCam桌面端界面">
-
-          <p class="faq-image-caption">图片备注：丰富的预设背景与自定义导入</p>
-        </div>
-      </article>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup>
-const mediaUrl = useMediaUrl()
-const questionTitle = '如何下载与安装VicastCam'
+const props = defineProps({
+  content: {
+    type: Object,
+    required: true,
+  },
+  groups: {
+    type: Array,
+    required: true,
+  },
+})
 
-const faqGroups = [
-  {
-    key: 'common',
-    title: '常见问题',
-    count: '12件',
-    icon: 'lucide:help-circle',
-    questions: [
-      { id: 'common-1', title: questionTitle },
-      { id: 'common-2', title: questionTitle },
-      { id: 'common-3', title: questionTitle },
-      { id: 'common-4', title: questionTitle },
-      { id: 'common-5', title: questionTitle },
-      { id: 'common-6', title: questionTitle },
-      { id: 'common-7', title: questionTitle },
-      { id: 'common-8', title: questionTitle },
-    ],
-  },
-  {
-    key: 'software',
-    title: '软件相关',
-    count: '12件',
-    icon: 'lucide:folder',
-    questions: [
-      { id: 'software-1', title: '如何设置直播画面' },
-      { id: 'software-2', title: '如何导入自定义背景' },
-    ],
-  },
-  {
-    key: 'live',
-    title: '直播相关',
-    count: '12件',
-    icon: 'lucide:folder',
-    questions: [
-      { id: 'live-1', title: '如何连接直播平台' },
-    ],
-  },
-  {
-    key: 'account',
-    title: '账号相关',
-    count: '12件',
-    icon: 'lucide:folder',
-    questions: [
-      { id: 'account-1', title: '如何注册和登录账号' },
-    ],
-  },
-  {
-    key: 'order',
-    title: '订单与账单',
-    count: '12件',
-    icon: 'lucide:folder',
-    questions: [
-      { id: 'order-1', title: '如何查看订单记录' },
-    ],
-  },
-  {
-    key: 'safe',
-    title: '设备安全',
-    count: '12件',
-    icon: 'lucide:folder',
-    questions: [
-      { id: 'safe-1', title: '如何保护账号安全' },
-    ],
-  },
-  {
-    key: 'download',
-    title: '下载安装',
-    count: '12件',
-    icon: 'lucide:folder',
-    questions: [
-      { id: 'download-1', title: questionTitle },
-    ],
-  },
-  {
-    key: 'advanced',
-    title: '高级功能',
-    count: '12件',
-    icon: 'lucide:folder',
-    questions: [
-      { id: 'advanced-1', title: '如何调节专业参数' },
-    ],
-  },
-]
+const route = useRoute()
+const faqGroups = computed(() => props.groups)
+const activeGroupKey = ref('')
+const activeQuestionId = ref('')
+const faqContent = ref(null)
 
-const activeGroupKey = ref('common')
-const activeQuestionId = ref('common-1')
+const allQuestions = computed(() => faqGroups.value.flatMap(group => group.questions || []))
 
-const toggleFaqGroup = (group) => {
-  activeGroupKey.value = activeGroupKey.value === group.key ? '' : group.key
+const activeQuestion = computed(() => {
+  return allQuestions.value.find(question => question.id === activeQuestionId.value) || allQuestions.value[0]
+})
 
-  if (group.key && group.questions?.[0]) {
-    activeQuestionId.value = group.questions[0].id
+const activeQuestionGroup = computed(() => {
+  return faqGroups.value.find(group => (group.questions || []).some(question => question.id === activeQuestion.value?.id)) || faqGroups.value[0]
+})
+
+const activeGroupQuestionIndex = computed(() => {
+  return activeQuestionGroup.value?.questions?.findIndex(question => question.id === activeQuestion.value?.id) ?? -1
+})
+
+const questionProgress = computed(() => {
+  return String(props.content.questionProgressTemplate || '')
+    .replaceAll('{group}', activeQuestionGroup.value?.title || '')
+    .replaceAll('{current}', String(activeGroupQuestionIndex.value + 1))
+    .replaceAll('{total}', String(activeQuestionGroup.value?.questions?.length || 0))
+})
+
+const isMobileFaqLayout = () => {
+  return import.meta.client && window.matchMedia('(max-width: 900px)').matches
+}
+
+const scrollToFaqContent = async () => {
+  if (!isMobileFaqLayout()) return
+
+  await nextTick()
+  faqContent.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+const selectQuestion = (question, scrollOnMobile = false) => {
+  if (!question) return
+
+  activeQuestionId.value = question.id
+  activeGroupKey.value = faqGroups.value.find(group => (group.questions || []).some(item => item.id === question.id))?.key || activeGroupKey.value
+
+  if (scrollOnMobile) {
+    void scrollToFaqContent()
   }
 }
 
-const activeQuestion = computed(() => {
-  const questions = faqGroups.flatMap(group => group.questions)
-  return questions.find(question => question.id === activeQuestionId.value) || questions[0]
-})
+const toggleFaqGroup = (group) => {
+  if (activeGroupKey.value === group.key) {
+    activeGroupKey.value = ''
+    return
+  }
+
+  activeGroupKey.value = group.key
+
+  if (!(group.questions || []).some(question => question.id === activeQuestionId.value)) {
+    selectQuestion(group.questions?.[0])
+  }
+}
+
+const getQueryValue = (value) => {
+  return Array.isArray(value) ? value[0] : value
+}
+
+const syncRouteQuestion = () => {
+  const questionId = getQueryValue(route.query.question)
+  const routeQuestion = allQuestions.value.find(question => question.id === questionId)
+
+  if (routeQuestion) {
+    selectQuestion(routeQuestion, route.hash === '#faq-content')
+    return
+  }
+
+  const tab = String(getQueryValue(route.query.tab) || '').toLowerCase()
+  const routeGroup = faqGroups.value.find(group => group.key === tab)
+
+  if (routeGroup?.questions?.[0]) {
+    selectQuestion(routeGroup.questions[0], route.hash === '#faq-content')
+  }
+}
+
+watch(
+  faqGroups,
+  (groups) => {
+    const questions = groups.flatMap(group => group.questions || [])
+
+    if (!questions.some(question => question.id === activeQuestionId.value)) {
+      activeQuestionId.value = questions[0]?.id || ''
+    }
+
+    if (!groups.some(group => group.key === activeGroupKey.value)) {
+      activeGroupKey.value = groups[0]?.key || ''
+    }
+
+    syncRouteQuestion()
+  },
+  { immediate: true },
+)
+
+watch(
+  () => [route.query.tab, route.query.question],
+  syncRouteQuestion,
+  { immediate: true },
+)
 </script>
 
 <style scoped>
@@ -193,22 +193,23 @@ const activeQuestion = computed(() => {
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 32px 0 78px;
+  padding: 80px 0;
   background: var(--page-route-background);
 }
 
 .faq-content-layout {
   width: min(100%, var(--page-max-width));
   display: grid;
-  grid-template-columns: 305px 830px;
+  grid-template-columns: 242px minmax(0, 1fr);
+  align-items: start;
   gap: 20px;
   padding: 0 var(--page-padding-x);
 }
 
 .faq-sidebar {
   overflow: hidden;
-  width: 305px;
-  height: fit-content;
+  overflow-anchor: none;
+  align-self: start;
   border: 1px solid var(--theme-route-card-border, var(--theme-border-soft));
   border-radius: var(--theme-route-card-radius, 15px);
   background: var(--theme-route-card-background, var(--theme-surface));
@@ -244,7 +245,7 @@ const activeQuestion = computed(() => {
   flex: 0 0 28px;
   border-radius: 7px;
   color: var(--theme-white);
-  background: linear-gradient(135deg, var(--theme-extra-99-102-241-1), var(--theme-primary));
+  background: linear-gradient(135deg, var(--theme-extra-14-165-233-1), var(--theme-primary));
 }
 
 .faq-group-icon svg {
@@ -267,8 +268,8 @@ const activeQuestion = computed(() => {
 }
 
 .faq-group-text strong {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .faq-group-text small {
@@ -291,6 +292,7 @@ const activeQuestion = computed(() => {
 
 .faq-questions-wrap {
   display: grid;
+  overflow-anchor: none;
   grid-template-rows: 0fr;
   overflow: hidden;
   opacity: 0;
@@ -312,170 +314,143 @@ const activeQuestion = computed(() => {
   background: var(--theme-sdk-card-background, var(--theme-route-card-background, var(--theme-surface-soft-58)));
 }
 
-.faq-question-item {
+.faq-question {
   width: 100%;
-  height: 40px;
+  min-height: 44px;
+  height: auto;
   display: grid;
-  grid-template-columns: 14px minmax(0, 1fr) 14px;
+  grid-template-columns: 20px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
-  padding: 0 12px 0 20px;
+  padding: 10px 12px 10px 20px;
   color: var(--theme-route-card-text, var(--theme-text-secondary));
   text-align: left;
   cursor: pointer;
 }
 
-.faq-question-item-active {
+.faq-question-active {
   color: var(--theme-profile-field-action, var(--theme-white));
   background: var(--theme-sdk-sidebar-active-background, var(--theme-extra-14-116-144-055));
 }
 
-.faq-question-item svg {
-  width: 14px;
-  height: 14px;
-  color: var(--theme-text-muted);
-}
-
-.faq-question-item > span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 11px;
-}
-
-.faq-article {
-  width: 830px;
-  height: 1138px;
-  padding: 20px 28px 24px;
-  border: 1px solid var(--theme-route-card-border, var(--theme-primary));
-  border-radius: var(--theme-route-card-radius, 15px);
-  color: var(--theme-route-card-title, var(--theme-text-light));
-  background: var(--theme-route-card-background, var(--theme-surface-soft));
-  box-shadow: var(--theme-route-card-shadow, none);
-}
-
-.faq-article-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.faq-breadcrumb {
-  min-width: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--theme-route-card-text, var(--theme-text-muted));
-  font-size: 12px;
-}
-
-.faq-breadcrumb span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.faq-breadcrumb svg,
-.faq-share-button svg {
-  width: 14px;
-  height: 14px;
-}
-
-.faq-share-button {
-  width: 28px;
-  height: 28px;
+.faq-question-index {
+  width: 20px;
+  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  color: var(--theme-route-card-text, var(--theme-text-muted));
-  cursor: pointer;
-  border-radius: 6px;
-  background: var(--theme-sdk-table-head-background, transparent);
+  border-radius: 4px;
+  background: var(--theme-sdk-table-head-background, var(--theme-route-card-background, var(--theme-page-72)));
+  font-size: 10px;
 }
 
-.faq-article h2 {
-  margin-top: 34px;
-  color: var(--theme-route-card-title, var(--theme-white));
-  font-size: 26px;
+.faq-question > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.faq-content {
+  min-width: 0;
+  width: 774px;
+  scroll-margin-top: calc(var(--page-header-height) + 12px);
+}
+
+.faq-content-header {
+  margin-bottom: 10px;
+}
+
+.faq-content-header h2 {
+  color: var(--theme-sdk-title, var(--theme-white));
+  font-size: 22px;
   font-weight: 900;
-  line-height: 34px;
+  line-height: 30px;
   overflow-wrap: anywhere;
 }
 
-.faq-meta {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-top: 12px;
+.faq-content-header p {
+  margin-top: 2px;
   color: var(--theme-route-card-text, var(--theme-text-muted));
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 20px;
 }
 
-.faq-meta span {
+.faq-answer-shell {
+  width: 774px;
+  min-height: 391px;
+  padding: 24px 28px 30px;
+  border: 1px solid var(--theme-route-card-border, transparent);
+  border-radius: 10px;
+  color: var(--theme-route-card-title, var(--theme-text-light));
+  background: var(--theme-route-card-background, var(--theme-surface));
+  box-shadow: var(--theme-route-card-shadow, none);
+}
+
+.faq-answer-label {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
+  color: var(--theme-primary-light);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
 }
 
-.faq-meta svg {
-  width: 13px;
-  height: 13px;
+.faq-answer-label svg {
+  width: 16px;
+  height: 16px;
 }
 
-.faq-summary {
-  height: 48px;
-  display: flex;
-  align-items: center;
-  margin-top: 24px;
-  padding: 0 18px;
-  border: 1px solid var(--theme-sdk-table-border, transparent);
-  border-radius: 6px;
-  color: var(--theme-sdk-title, var(--theme-route-card-title, var(--theme-text-light)));
-  background: var(--theme-sdk-table-head-background, var(--theme-extra-14-116-144-05));
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.faq-rich-content {
-  margin-top: 18px;
+.faq-answer-content {
+  margin-top: 20px;
   color: var(--theme-route-card-text, var(--theme-text-secondary));
-  font-size: 13px;
-  line-height: 24px;
+  font-size: 14px;
+  line-height: 26px;
 }
 
-.faq-rich-content h3 {
-  margin-top: 22px;
-  color: var(--theme-route-card-title, var(--theme-white));
-  font-size: 16px;
+.faq-answer-content p + p,
+.faq-answer-content p + h3,
+.faq-answer-content ul + p,
+.faq-answer-content ul + h3,
+.faq-answer-content h3 + p,
+.faq-answer-content h3 + ul {
+  margin-top: 16px;
+}
+
+.faq-answer-content h3 {
+  color: var(--theme-route-card-title, var(--theme-text-light));
+  font-size: 15px;
   font-weight: 800;
   line-height: 24px;
 }
 
-.faq-rich-content p {
-  margin-top: 10px;
+.faq-answer-content ul {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.faq-answer-content li {
+  position: relative;
+  padding-left: 18px;
   overflow-wrap: anywhere;
 }
 
-.faq-article-image {
-  width: 100%;
-  max-height: 230px;
-  margin-top: 16px;
-  border-radius: 4px;
-  object-fit: cover;
+.faq-answer-content li::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--theme-primary);
 }
 
-.faq-article-image-small {
-  width: 118px;
-  height: 150px;
-}
-
-.faq-image-caption {
-  color: var(--theme-route-card-text, var(--theme-text-muted));
-  text-align: center;
+.faq-answer-content p {
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 900px) {
@@ -485,31 +460,20 @@ const activeQuestion = computed(() => {
 
   .faq-content-layout {
     grid-template-columns: 1fr;
+    gap: 18px;
   }
 
-  .faq-sidebar,
-  .faq-article {
+  .faq-content,
+  .faq-answer-shell {
     width: 100%;
-  }
-
-  .faq-sidebar {
-    height: auto;
-  }
-
-  .faq-article {
-    min-height: 0;
   }
 }
 
 @media (max-width: 560px) {
-  .faq-article {
-    padding: 18px 16px 22px;
+  .faq-answer-shell {
+    min-height: 320px;
+    padding: 20px 18px 24px;
   }
 
-  .faq-meta {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
 }
 </style>

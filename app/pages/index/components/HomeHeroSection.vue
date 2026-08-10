@@ -54,13 +54,13 @@
               <span>{{ googlePlayUrl }}</span>
             </NuxtLink>
 
-            <a href="#" class="home-hero-download home-hero-download-primary">
+            <NuxtLink :to="downloadPagePath" class="home-hero-download home-hero-download-primary">
               <span class="home-hero-download-icon-wrap" aria-hidden="true">
                 <img class="home-hero-download-icon-default" :src="mediaUrl('/images/home/download-buttons/windows-default.svg')" alt="" role="presentation">
                 <img class="home-hero-download-icon-active" :src="mediaUrl('/images/home/download-buttons/windows-active.svg')" alt="" role="presentation">
               </span>
               <span>{{ desktopClientUrl }}</span>
-            </a>
+            </NuxtLink>
           </div>
         </div>
 

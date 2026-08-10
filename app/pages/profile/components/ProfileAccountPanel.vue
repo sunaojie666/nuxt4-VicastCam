@@ -143,15 +143,7 @@ const currentMembershipBadgeImage = computed(() => {
 })
 
 const inviteLink = computed(() => {
-  if (authUser.value?.invite_link) {
-    return authUser.value.invite_link
-  }
-
-  if (!process.client || !authUser.value?.invite_code) {
-    return ''
-  }
-
-  return `${window.location.origin}/?inviteCode=${encodeURIComponent(authUser.value.invite_code)}`
+  return authUser.value?.invite_link || ''
 })
 
 const copyInviteLink = () => {

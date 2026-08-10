@@ -9,9 +9,7 @@
             <div class="profile-avatar-wrap">
               <div class="profile-avatar-frame">
                 <img v-if="profileAvatar" class="profile-avatar" :src="profileAvatar" :alt="profileName">
-                <span v-else class="profile-avatar-placeholder" aria-hidden="true">
-                  <Icon name="lucide:user-round" />
-                </span>
+                <span v-else class="profile-avatar-placeholder" aria-hidden="true">{{ profileInitial }}</span>
               </div>
             </div>
             <h1>{{ profileName }}</h1>
@@ -121,11 +119,14 @@ const activePanelProps = computed(() => {
 const profileName = computed(() => {
   return authUser.value?.nickname || authUser.value?.email || profileCommon.value.defaultProfileName
 })
+const profileInitial = computed(() => {
+  return profileName.value.trim().slice(0, 1).toUpperCase() || 'U'
+})
 const profileEmail = computed(() => {
   return authUser.value?.email || ''
 })
 const profileAvatar = computed(() => {
-  return authUser.value?.avatar || ''
+  return String(authUser.value?.avatar || '').trim()
 })
 const profileVipText = computed(() => {
   return authUser.value?.vip_type || ''
@@ -282,12 +283,12 @@ watch(locale, () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--profile-muted);
-}
-
-.profile-avatar-placeholder :deep(svg) {
-  width: 30px;
-  height: 30px;
+  border-radius: 12px;
+  color: var(--theme-white);
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 700;
 }
 
 .profile-user-card h1 {

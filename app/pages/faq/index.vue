@@ -3,8 +3,10 @@
     <SiteHeader />
 
     <main class="faq-page-main">
-      <FaqHeroSection />
-      <FaqContentSection />
+      <template v-if="localizedFaqPageContent">
+        <FaqHeroSection :content="localizedFaqPageContent.hero" />
+        <FaqContentSection :content="localizedFaqPageContent.content" :groups="localizedFaqPageContent.groups" />
+      </template>
     </main>
 
     <SiteFooter />
@@ -16,9 +18,8 @@ import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import FaqContentSection from './components/FaqContentSection.vue'
 import FaqHeroSection from './components/FaqHeroSection.vue'
+import { getGraphics } from '../../api/request/strapi'
 import { createLocalizedUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
-
-setupPageSeo('faq')
 
 const config = useRuntimeConfig()
 const { locale } = useI18n()
@@ -26,21 +27,62 @@ const siteUrl = computed(() => String(config.public.siteUrl || 'https://www.vica
 const defaultLocale = computed(() => config.public.i18n?.defaultLocale || 'en')
 const faqPageUrl = computed(() => createLocalizedUrl('/faq', locale.value, siteUrl.value, defaultLocale.value))
 
-setupStructuredData(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
+const faqPageContent = useState('faq-page-content', () => null)
+const loadedFaqPageLocale = useState('faq-page-locale', () => '')
+const localizedFaqPageContent = computed(() => {
+  return loadedFaqPageLocale.value === locale.value ? faqPageContent.value : null
+})
+
+const getFaqPageContentData = (response) => {
+  const entry = Array.isArray(response?.data)
+    ? response.data[0]
+    : response?.data || response
+  const attributes = entry?.attributes || entry
+
+  return attributes?.data || null
+}
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: loadedFaqPageLocale,
+  load: currentLocale => getGraphics(currentLocale),
+  sync: response => {
+    faqPageContent.value = getFaqPageContentData(response)
+  },
+  reset: () => {
+    faqPageContent.value = null
+  },
+})
+
+setupPageSeo('faq', () => ({
+  inheritCopy: false,
+  ...(localizedFaqPageContent.value?.seo || {}),
+}))
+
+const getAnswerText = (question) => {
+  return (question.answer || [])
+    .flatMap(block => block.type === 'list' ? block.items : [block.text])
+    .filter(Boolean)
+    .join(' ')
+}
+
+setupStructuredData(() => {
+  if (!localizedFaqPageContent.value) return null
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: (localizedFaqPageContent.value.groups || []).flatMap(group => (group.questions || []).map(question => ({
       '@type': 'Question',
-      name: '如何下载与安装VicastCam',
+      name: question.title,
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '打开 VicastCam 后进入直播预览界面，确认摄像头和麦克风权限已开启，然后选择合适的背景效果和画面比例即可快速完成基础设置。',
+        text: getAnswerText(question),
       },
-    },
-  ],
-  url: faqPageUrl.value,
-}), { id: 'faq-jsonld' })
+    }))),
+    url: faqPageUrl.value,
+  }
+}, { id: 'faq-jsonld' })
 </script>
 
 <style scoped>

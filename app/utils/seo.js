@@ -98,14 +98,15 @@ export const setupPageSeo = (pageKey, options = {}) => {
   const pageSeo = computed(() => {
     const normalizedPageKey = unref(pageKey)
     const optionValues = typeof options === 'function' ? options() : unref(options)
+    const inheritCopy = optionValues?.inheritCopy !== false
     const normalizedOptions = Object.fromEntries(
-      Object.entries(optionValues || {}).filter(([, value]) => value !== undefined && value !== null && value !== '')
+      Object.entries(optionValues || {}).filter(([key, value]) => key !== 'inheritCopy' && value !== undefined && value !== null && value !== '')
     )
-    const seoCopy = getPageSeoCopy(normalizedPageKey, locale.value)
+    const seoCopy = inheritCopy ? getPageSeoCopy(normalizedPageKey, locale.value) : {}
 
     return {
       siteName,
-      description: defaultDescription,
+      description: inheritCopy ? defaultDescription : '',
       robots: defaultRobots,
       imageAlt: siteName,
       ...seoCopy,

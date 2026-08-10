@@ -701,11 +701,6 @@ onMounted(() => {
   color: var(--theme-extra-255-95-58-1);
 }
 
-.membership-compare-table tbody td:nth-child(2) .compare-text,
-.membership-compare-table tbody td:nth-child(2) .compare-icon {
-  color: var(--theme-text-muted-alt);
-}
-
 .membership-compare-table tbody td:nth-child(3) .compare-icon {
   color: var(--theme-accent);
 }

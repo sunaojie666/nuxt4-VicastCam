@@ -1,25 +1,28 @@
 <template>
   <section class="faq-hero-section" aria-labelledby="faq-hero-title">
     <div class="faq-hero-inner">
-      <span class="faq-hero-eyebrow">常见问题</span>
+      <span class="faq-hero-eyebrow">{{ content.eyebrow }}</span>
 
       <h1 id="faq-hero-title" class="faq-hero-title">
-        <span>有疑问吗?</span>
-        <span class="theme-gradient-text">我们有解答。</span>
+        <span>{{ content.titleMain }}</span>
+        <span class="theme-gradient-text">{{ content.titleHighlight }}</span>
       </h1>
 
       <p class="faq-hero-subtitle">
-        <span>关于VicastCam的常见问题都在下方</span>
-        <span>没有找到你想要的答案? <a href="#" class="faq-hero-contact">请联系我们的团队</a></span>
+        <span>{{ content.description }}</span>
       </p>
-
-      <label class="faq-search">
-        <Icon class="faq-search-icon" name="lucide:search" aria-hidden="true" />
-        <input type="search" placeholder="搜索问题..." aria-label="搜索问题">
-      </label>
     </div>
   </section>
 </template>
+
+<script setup>
+defineProps({
+  content: {
+    type: Object,
+    required: true,
+  },
+})
+</script>
 
 <style scoped>
 .faq-hero-section {
@@ -39,7 +42,7 @@
 
 .faq-hero-inner {
   width: min(100%, var(--page-max-width));
-  min-height: 360px;
+  min-height: 294px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -80,46 +83,10 @@
   flex-direction: column;
   align-items: center;
   margin-top: 14px;
-  color: var(--theme-route-card-text, var(--theme-text-muted));
-  font-size: 14px;
-  line-height: 22px;
-  overflow-wrap: anywhere;
-}
-
-.faq-hero-contact {
-  color: var(--theme-accent);
-}
-
-.faq-search {
-  width: min(100%, 420px);
-  height: 48px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  padding: 0 18px;
-  border: 1px solid var(--theme-route-card-border, var(--theme-text-subtle));
-  border-radius: 10px;
-  background: var(--theme-route-card-background, var(--theme-surface-72));
-}
-
-.faq-search-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
   color: var(--theme-text-muted);
-}
-
-.faq-search input {
-  width: 100%;
-  min-width: 0;
-  color: var(--theme-route-card-title, var(--theme-text-light));
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.faq-search input::placeholder {
-  color: var(--theme-route-card-text, var(--theme-text-muted));
+  font-size: 16px;
+  line-height: 24px;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 900px) {
@@ -128,13 +95,18 @@
   }
 
   .faq-hero-inner {
-    min-height: 360px;
+    min-height: 294px;
     padding-top: 28px;
   }
 
   .faq-hero-title {
     font-size: 32px;
     line-height: 40px;
+  }
+
+  .faq-hero-subtitle {
+    font-size: 14px;
+    line-height: 22px;
   }
 }
 </style>

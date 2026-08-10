@@ -11,9 +11,9 @@
       <article class="team-referrer-card">
         <div class="team-referrer-main">
           <img
-            v-if="referrerDefaultAvatar"
+            v-if="referrerAvatar"
             class="team-referrer-avatar"
-            :src="referrerDefaultAvatar"
+            :src="referrerAvatar"
             :alt="referrerName"
           >
           <div>
@@ -158,6 +158,7 @@ const { authUser } = useAuth()
 const { profileBox } = useProfileText()
 const selectedLevel = ref('1')
 const selectedMonth = ref('')
+const hasSelectedMonth = ref(false)
 const isMonthPickerOpen = ref(false)
 const pickerYear = ref(new Date().getFullYear())
 const monthFilter = ref(null)
@@ -194,8 +195,6 @@ const monthOptions = computed(() => Array.from({ length: 12 }, (_, index) => {
     label: `${value}${commonText.value.monthSuffix || ''}`,
   }
 }))
-
-selectedMonth.value = currentMonth.value
 
 const pickTeamValue = (...values) => {
   return values.find(value => value !== undefined && value !== null && value !== '')
@@ -272,8 +271,32 @@ const teamDisplayTotals = computed(() => ({
   2: teamInfoTotals[2] ?? levelTotals[2],
 }))
 const pagedRows = computed(() => teamRows.value)
+const referrerAvatar = computed(() => {
+  const superior = referrer.value || {}
+
+  return String(pickTeamValue(
+    superior.avatar,
+    superior.avatar_larger,
+    superior.avatar_url,
+    superior.avatarUrl,
+    referrerDefaultAvatar.value,
+    ''
+  ))
+})
 const referrerName = computed(() => {
-  return referrer.value?.user_name || teamText.value.emptyReferrer || ''
+  const superior = referrer.value || {}
+
+  return String(pickTeamValue(
+    superior.nickname,
+    superior.nick_name,
+    superior.nickName,
+    superior.user_name,
+    superior.userName,
+    superior.username,
+    superior.name,
+    teamText.value.emptyReferrer,
+    ''
+  ))
 })
 const teamTableMessage = computed(() => {
   if (isLoadingTeam.value) {
@@ -329,7 +352,7 @@ const loadTeamList = () => {
   getTeamList({
     user_id: userId,
     level: selectedLevel.value,
-    month: selectedMonth.value,
+    month: hasSelectedMonth.value ? selectedMonth.value : '',
     page_index: currentPage.value,
     page_size: pageSize,
   }).then(
@@ -367,6 +390,7 @@ const selectMonth = (year, month) => {
   }
 
   selectedMonth.value = createMonthValue(year, month)
+  hasSelectedMonth.value = true
   isMonthPickerOpen.value = false
 }
 
@@ -413,6 +437,8 @@ watch(totalPages, () => {
 })
 
 onMounted(() => {
+  hasSelectedMonth.value = false
+  selectedMonth.value = ''
   loadTeamInfo()
   loadTeamList()
   document.addEventListener('click', closeMonthPickerOnOutsideClick)

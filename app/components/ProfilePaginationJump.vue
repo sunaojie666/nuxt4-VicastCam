@@ -100,7 +100,7 @@ watch(
 
 .profile-pagination-jump-label,
 .profile-pagination-jump-unit {
-  color: var(--theme-extra-123-142-170-1);
+  color: var(--theme-profile-field-muted, var(--theme-text-muted-alt));
   font-size: 12px;
   line-height: 16px;
   white-space: nowrap;
@@ -110,13 +110,20 @@ watch(
   width: 66px;
   height: 30px;
   padding: 0 10px;
-  border: 1px solid var(--theme-extra-31-59-107-1);
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-control-soft));
   border-radius: 8px;
-  color: var(--theme-extra-241-247-255-1);
-  background: var(--theme-extra-13-37-76-085);
+  color: var(--theme-profile-field-text, var(--theme-text-strong));
+  background: var(--theme-profile-field-background, var(--theme-panel-soft));
   font-size: 14px;
   line-height: 20px;
   text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-pagination-jump-input:focus {
+  border-color: var(--theme-profile-field-action, var(--theme-accent));
+  box-shadow: 0 0 0 3px var(--theme-accent-softer);
 }
 
 .profile-pagination-jump-input:disabled {
@@ -130,11 +137,18 @@ watch(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--theme-extra-31-59-107-1);
+  border: 1px solid transparent;
   border-radius: 8px;
-  color: var(--theme-extra-123-142-170-1);
-  background: var(--theme-extra-13-37-76-085);
+  color: var(--theme-white);
+  background: var(--theme-profile-field-action, var(--theme-accent));
   cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.profile-pagination-jump-button:hover:not(:disabled),
+.profile-pagination-jump-button:focus-visible:not(:disabled) {
+  background: var(--theme-primary, var(--theme-profile-field-action, var(--theme-accent)));
+  transform: translateY(-1px);
 }
 
 .profile-pagination-jump-button svg {

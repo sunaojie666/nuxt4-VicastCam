@@ -147,9 +147,9 @@
             @click="handleProfileButtonClick"
           >
             <img
-              v-if="authUser.avatar"
+              v-if="profileAvatar"
               class="site-profile-avatar"
-              :src="authUser.avatar"
+              :src="profileAvatar"
               :alt="profileLinkLabel"
             >
             <span v-else>{{ profileInitial }}</span>
@@ -267,6 +267,9 @@ const isLoggedIn = computed(() => {
 })
 const profileName = computed(() => {
   return authUser.value?.nickname || authUser.value?.email || profileBox.value?.common?.defaultProfileName || ''
+})
+const profileAvatar = computed(() => {
+  return String(authUser.value?.avatar || '').trim()
 })
 const profileInitial = computed(() => {
   return profileName.value.trim().slice(0, 1).toUpperCase() || 'U'
