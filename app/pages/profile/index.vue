@@ -69,7 +69,7 @@
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import ProfileAccountPanel from './components/ProfileAccountPanel.vue'
-import ProfileEarningsPanel from './components/ProfileEarningsPanel.vue'
+// import ProfileEarningsPanel from './components/ProfileEarningsPanel.vue'
 import ProfileMembershipPanel from './components/ProfileMembershipPanel.vue'
 import ProfilePurchaseHistoryPanel from './components/ProfilePurchaseHistoryPanel.vue'
 import ProfileRedeemPanel from './components/ProfileRedeemPanel.vue'
@@ -87,7 +87,7 @@ const profileMenuMeta = [
   { key: 'redeem', field: 'redeem', icon: 'lucide:ticket' },
   { key: 'purchaseHistory', field: 'purchaseHistory', icon: 'lucide:clipboard-list' },
   { key: 'team', field: 'team', icon: 'lucide:users-round' },
-  { key: 'earnings', field: 'earnings', icon: 'lucide:coins' },
+  // { key: 'earnings', field: 'earnings', icon: 'lucide:coins' },
 ]
 
 const profileTabComponents = {
@@ -96,7 +96,7 @@ const profileTabComponents = {
   redeem: ProfileRedeemPanel,
   purchaseHistory: ProfilePurchaseHistoryPanel,
   team: ProfileTeamPanel,
-  earnings: ProfileEarningsPanel,
+  // earnings: ProfileEarningsPanel,
 }
 
 const validProfileTabs = new Set(Object.keys(profileTabComponents))
