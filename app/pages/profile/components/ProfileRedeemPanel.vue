@@ -31,7 +31,7 @@
 
       <p class="membership-activation-agreement">
         {{ redeemText.agreementPrefix }}
-        <a :href="redeemText.userProtocolHref || 'javascript:void(0)'">{{ redeemText.userProtocolText }}</a>
+        <NuxtLink :to="userProtocolHref">{{ redeemText.userProtocolText }}</NuxtLink>
       </p>
     </section>
   </section>
@@ -46,8 +46,21 @@ const isActivating = ref(false)
 const { authUser, refreshVipInfo } = useAuth()
 const { showErrorToast, showSuccessToast } = useSiteToast()
 const { profileBox } = useProfileText()
+const localePath = useLocalePath()
 const redeemText = computed(() => profileBox.value?.redeem || {})
 const activeCardMessages = computed(() => profileBox.value?.cardErrors || {})
+
+const userProtocolHref = computed(() => {
+  const href = String(redeemText.value.userProtocolHref || '/terms').trim()
+
+  // Strapi stores this as a site-relative path. Resolve internal paths through
+  // i18n so the current locale is preserved (for example, /zh-CN/terms).
+  if (href.startsWith('/') && !href.startsWith('//')) {
+    return localePath(href)
+  }
+
+  return href
+})
 
 const getCardResponseMessage = (payload) => {
   return getApiResponseMessage(payload, {

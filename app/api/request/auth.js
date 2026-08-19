@@ -12,15 +12,25 @@ const authResponseOptions = {
 }
 
 // 发送邮箱验证码。后端真实接口是 https://api.vicastcam.com/v1/SendEmail。
-export const sendEmailCode = (email) => {
+export const sendEmailCode = (email, type = 'register') => {
   return authRequest.post('/send-email', {
     email: String(email || '').trim(),
+    type: String(type || 'register').trim(),
   }, authResponseOptions)
 }
 
 // 邮箱验证码登录。服务端会转发到 https://api.vicastcam.com/v1/LoginByEmail。
 export const loginByEmailCode = ({ email, captcha } = {}) => {
   return authRequest.post('/login-by-email', {
+    email: String(email || '').trim(),
+    captcha: String(captcha || '').trim(),
+  }, authResponseOptions)
+}
+
+// 绑定邮箱。服务端会转发到 https://api.vicastcam.com/v1/BindEmail。
+export const bindEmail = ({ user_id, email, captcha } = {}) => {
+  return authRequest.post('/bind-email', {
+    user_id: String(user_id || '').trim(),
     email: String(email || '').trim(),
     captcha: String(captcha || '').trim(),
   }, authResponseOptions)

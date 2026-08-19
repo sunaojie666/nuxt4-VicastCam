@@ -345,6 +345,16 @@ const handleDownload = (platform) => {
     return
   }
 
+  if (window.matchMedia('(max-width: 900px)').matches) {
+    closeDownloadQr()
+
+    if (platform.downloadUrl) {
+      window.location.assign(platform.downloadUrl)
+    }
+
+    return
+  }
+
   if ((platform.key === 'android' || platform.key === 'ios') && platform.qrImage) {
     activeQrPlatform.value = activeQrPlatform.value === platform.key ? '' : platform.key
     return
@@ -993,7 +1003,7 @@ setupStructuredData(() => {
     align-items: center;
     column-gap: min(3.3333vw, 36px);
     padding: min(3.3333vw, 36px) min(3.7037vw, 40px);
-    border: none;
+    border: 0;
     border-radius: min(1.3889vw, 15px);
     background-image: var(--download-mobile-bg);
     background-position: center;
@@ -1216,13 +1226,138 @@ setupStructuredData(() => {
 }
 
 @media (max-width: 520px) {
-  .download-reasons h2 {
-    font-size: 28px;
-    line-height: 38px;
+  .download-hero {
+    padding-top: 20px;
   }
 
-  .download-reason-grid {
-    grid-template-columns: 1fr;
+  .download-eyebrow {
+    min-width: 64px;
+    height: 22px;
+    padding: 0 10px;
+    font-size: 9px;
+    line-height: 22px;
+  }
+
+  .download-hero h1 {
+    margin-top: 18px;
+    font-size: 26px;
+  }
+
+  .download-platform-section {
+    padding-top: 44px;
+  }
+
+  .download-card-grid {
+    width: calc(100vw - 32px);
+    gap: 12px;
+  }
+
+  .download-card {
+    min-height: 104px;
+    aspect-ratio: auto;
+    grid-template-columns: 48px minmax(0, 1fr) 104px;
+    grid-template-rows: auto 6px auto;
+    column-gap: 10px;
+    padding: 14px 12px;
+    border-radius: 8px;
+  }
+
+  .download-platform-icon {
+    width: 48px;
+    height: 48px;
+    grid-row: 1 / -1;
+    border-radius: 8px;
+  }
+
+  .download-card-title {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    transform: none;
+  }
+
+  .download-card-title h3 {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .download-card-title p {
+    margin-top: 2px;
+    font-size: 10px;
+    line-height: 14px;
+  }
+
+  .download-card-info {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: start;
+    flex-wrap: wrap;
+    column-gap: 7px;
+    row-gap: 2px;
+    transform: none;
+  }
+
+  .download-card-info div {
+    gap: 2px;
+  }
+
+  .download-card-info dt,
+  .download-card-info dd {
+    font-size: 7px;
+    line-height: 10px;
+  }
+
+  .download-primary-button {
+    width: 104px;
+    height: 34px;
+    aspect-ratio: auto;
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    gap: 6px;
+    border-radius: 7px;
+    font-size: 9px;
+    line-height: 12px;
+  }
+
+  .download-primary-button img {
+    width: 12px;
+    height: 12px;
+  }
+
+  .download-card-footnote {
+    width: 104px;
+    grid-column: 3;
+    grid-row: 3;
+    align-self: start;
+    font-size: 7px;
+    line-height: 10px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+}
+
+@media (max-width: 350px) {
+  .download-card {
+    grid-template-columns: 44px minmax(0, 1fr) 96px;
+    column-gap: 8px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .download-platform-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .download-primary-button,
+  .download-card-footnote {
+    width: 96px;
+  }
+
+  .download-card-title h3 {
+    font-size: 14px;
   }
 }
 </style>

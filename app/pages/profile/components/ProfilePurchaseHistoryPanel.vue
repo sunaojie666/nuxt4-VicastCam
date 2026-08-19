@@ -484,6 +484,7 @@ watch(activeRecordTab, () => {
 
 onMounted(() => {
   loadPurchaseRecords()
+  loadExchangeRecords()
 })
 </script>
 

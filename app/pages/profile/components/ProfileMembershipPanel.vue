@@ -50,7 +50,7 @@
               </li>
             </ul>
 
-            <button type="button" class="membership-action" :class="plan.theme">
+            <button type="button" class="membership-action" :class="plan.theme" @click="handlePlanCheckout(plan)">
               {{ plan.cta }}
             </button>
           </div>
@@ -126,7 +126,12 @@
 </template>
 
 <script setup>
+import { isLoggedInUser } from '../../../utils/auth-session'
+import { saveCheckoutSelection } from '../../../utils/checkout-selection'
+
 const mediaUrl = useMediaUrl()
+const localePath = useLocalePath()
+const router = useRouter()
 const { authUser } = useAuth()
 const { vipPlans, loadVipTypes } = useVipTypes()
 const { profileBox } = useProfileText()
@@ -269,6 +274,29 @@ const membershipPlans = computed(() => {
       id: plan.productId || findSourcePlan(plan.type)?.id || plan.id,
     }))
 })
+
+const createCheckoutSelection = (plan = {}) => ({
+  id: normalizePlanText(plan.id),
+  type: normalizePlanText(plan.type),
+  name: normalizePlanText(plan.name),
+  description: normalizePlanText(plan.subtitle),
+  price: normalizePlanText(plan.price),
+  unit: normalizePlanText(plan.unit),
+})
+
+const handlePlanCheckout = (plan = {}) => {
+  if (!isLoggedInUser(authUser.value)) {
+    router.push(localePath('/login'))
+    return
+  }
+
+  if (!process.client) {
+    return
+  }
+
+  saveCheckoutSelection(createCheckoutSelection(plan))
+  router.push(localePath('/checkout'))
+}
 
 const currentVipName = computed(() => {
   return authUser.value?.vip_type

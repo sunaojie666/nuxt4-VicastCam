@@ -28,6 +28,27 @@ const createUserText = (...values) => {
   return String(value)
 }
 
+const createAvatarText = (...values) => {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim()
+    }
+
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      continue
+    }
+
+    const source = value.attributes || value.data || value
+    const url = source?.url || source?.href || source?.src || source?.path
+
+    if (typeof url === 'string' && url.trim()) {
+      return url.trim()
+    }
+  }
+
+  return ''
+}
+
 const createUserBoolean = (...values) => {
   const value = pickUserValue(...values)
 
@@ -57,7 +78,7 @@ export const createPublicAuthUser = (response) => {
   return {
     user_id: createUserText(user.user_id, user.uid, user.id),
     nickname: createUserText(user.nickname, user.nick_name, user.nickName, user.username, user.user_name, user.name),
-    avatar: createUserText(user.avatar_larger, user.avatar, user.avatar_url, user.avatarUrl, user.head_img, user.headImg, user.headimgurl),
+    avatar: createAvatarText(user.avatar_larger, user.avatar, user.avatar_url, user.avatarUrl, user.head_img, user.headImg, user.headimgurl),
     email: createUserText(user.email),
     mobile: createUserText(user.mobile, user.phone, user.phone_number, user.phoneNumber, user.cellphone),
     industry: createUserText(user.industry, user.occupation, user.profession, user.job),

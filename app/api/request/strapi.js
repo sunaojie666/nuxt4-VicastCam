@@ -232,6 +232,17 @@ export const getFaq = (locale) => {
   })
 }
 
+// 独立社交链接数据，对应 Strapi 的 api::socials.socials。
+export const getSocials = (locale) => {
+  return createStrapiRequest().get('/socials', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 // 图文教程页接口，对应独立的 api::graphic.graphic，REST 路由为 /api/graphics。
 export const getGraphics = (locale) => {
   return createStrapiRequest().get('/graphics', {

@@ -1,5 +1,5 @@
 <template>
-  <section class="home-virtual-section" aria-labelledby="home-virtual-title">
+  <section ref="sectionElement" class="home-virtual-section" aria-labelledby="home-virtual-title">
     <div class="home-virtual-inner">
       <span class="home-virtual-eyebrow home-section-eyebrow" data-reveal>{{ virtualSection.tag }}</span>
 
@@ -15,29 +15,25 @@
       <div v-if="virtualVideoSrc" class="home-virtual-media" data-reveal="scale" style="--reveal-delay: 240ms">
         <div class="home-virtual-frame">
           <video
+            ref="videoElement"
             class="home-virtual-video"
-            :src="virtualVideoSrc"
+            :src="activeVideoSrc || undefined"
             :poster="mediaUrl('/images/login/background.png')"
             autoplay
             muted
             loop
             playsinline
-            preload="metadata"
+            preload="none"
+            @loadeddata="drawReflectionFrame"
+            @play="startReflectionLoop"
+            @pause="stopReflectionLoop"
+            @emptied="clearReflection"
             aria-label="手机连接电脑作为虚拟相机演示"
           />
         </div>
 
         <div class="home-virtual-reflection" aria-hidden="true">
-          <video
-            class="home-virtual-reflection-video"
-            :src="virtualVideoSrc"
-            :poster="mediaUrl('/images/login/background.png')"
-            autoplay
-            muted
-            loop
-            playsinline
-            preload="metadata"
-          />
+          <canvas ref="reflectionCanvas" class="home-virtual-reflection-canvas"></canvas>
         </div>
       </div>
     </div>
@@ -50,6 +46,10 @@ const mediaUrl = useMediaUrl()
 
 const { locale } = useI18n()
 const config = useRuntimeConfig()
+const sectionElement = ref(null)
+const videoElement = ref(null)
+const reflectionCanvas = ref(null)
+const shouldLoadVideo = ref(false)
 const virtualVideoSrc = useState('home-virtual-video-src', () => '')
 const virtualSection = useState('home-virtual-section', () => ({
   tag: '',
@@ -58,6 +58,120 @@ const virtualSection = useState('home-virtual-section', () => ({
   description: '',
 }))
 const homeVirtualLocale = useState('home-virtual-locale', () => '')
+const activeVideoSrc = computed(() => shouldLoadVideo.value ? virtualVideoSrc.value : '')
+
+let visibilityObserver = null
+let reflectionResizeObserver = null
+let videoFrameRequestId = null
+let animationFrameRequestId = null
+
+const clearReflection = () => {
+  const canvas = reflectionCanvas.value
+  const context = canvas?.getContext('2d')
+
+  if (canvas && context) {
+    context.clearRect(0, 0, canvas.width, canvas.height)
+  }
+}
+
+const drawReflectionFrame = () => {
+  const video = videoElement.value
+  const canvas = reflectionCanvas.value
+
+  if (!video || !canvas || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    return
+  }
+
+  const displayWidth = canvas.clientWidth
+  const displayHeight = canvas.clientHeight
+  const videoWidth = video.videoWidth
+  const videoHeight = video.videoHeight
+
+  if (!displayWidth || !displayHeight || !videoWidth || !videoHeight) {
+    return
+  }
+
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
+  const canvasWidth = Math.round(displayWidth * pixelRatio)
+  const canvasHeight = Math.round(displayHeight * pixelRatio)
+
+  if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
+    canvas.width = canvasWidth
+    canvas.height = canvasHeight
+  }
+
+  const targetRatio = canvasWidth / canvasHeight
+  const videoRatio = videoWidth / videoHeight
+  let sourceX = 0
+  let sourceY = 0
+  let sourceWidth = videoWidth
+  let sourceHeight = videoHeight
+
+  if (videoRatio > targetRatio) {
+    sourceWidth = videoHeight * targetRatio
+    sourceX = (videoWidth - sourceWidth) / 2
+  } else {
+    sourceHeight = videoWidth / targetRatio
+    sourceY = (videoHeight - sourceHeight) / 2
+  }
+
+  const context = canvas.getContext('2d', { alpha: true })
+  context?.drawImage(
+    video,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    canvasWidth,
+    canvasHeight,
+  )
+}
+
+const stopReflectionLoop = () => {
+  const video = videoElement.value
+
+  if (videoFrameRequestId !== null && typeof video?.cancelVideoFrameCallback === 'function') {
+    video.cancelVideoFrameCallback(videoFrameRequestId)
+  }
+
+  if (animationFrameRequestId !== null) {
+    window.cancelAnimationFrame(animationFrameRequestId)
+  }
+
+  videoFrameRequestId = null
+  animationFrameRequestId = null
+}
+
+const queueReflectionFrame = () => {
+  const video = videoElement.value
+
+  if (!video || video.paused || video.ended) {
+    return
+  }
+
+  if (typeof video.requestVideoFrameCallback === 'function') {
+    videoFrameRequestId = video.requestVideoFrameCallback(() => {
+      videoFrameRequestId = null
+      drawReflectionFrame()
+      queueReflectionFrame()
+    })
+    return
+  }
+
+  animationFrameRequestId = window.requestAnimationFrame(() => {
+    animationFrameRequestId = null
+    drawReflectionFrame()
+    queueReflectionFrame()
+  })
+}
+
+const startReflectionLoop = () => {
+  stopReflectionLoop()
+  drawReflectionFrame()
+  queueReflectionFrame()
+}
 
 const getVirtualContentData = (response) => {
   if (Array.isArray(response?.data)) {
@@ -104,6 +218,37 @@ const { loadContent: loadVirtualContent } = useLocalizedAsyncState({
   reset: () => {
     syncVirtualContent()
   },
+})
+
+onMounted(() => {
+  if ('IntersectionObserver' in window && sectionElement.value) {
+    visibilityObserver = new IntersectionObserver((entries) => {
+      if (!entries.some(entry => entry.isIntersecting)) {
+        return
+      }
+
+      shouldLoadVideo.value = true
+      visibilityObserver?.disconnect()
+      visibilityObserver = null
+    }, {
+      rootMargin: '400px 0px',
+      threshold: 0.01,
+    })
+    visibilityObserver.observe(sectionElement.value)
+  } else {
+    shouldLoadVideo.value = true
+  }
+
+  if ('ResizeObserver' in window && reflectionCanvas.value) {
+    reflectionResizeObserver = new ResizeObserver(drawReflectionFrame)
+    reflectionResizeObserver.observe(reflectionCanvas.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  visibilityObserver?.disconnect()
+  reflectionResizeObserver?.disconnect()
+  stopReflectionLoop()
 })
 </script>
 
@@ -224,7 +369,7 @@ const { loadContent: loadVirtualContent } = useLocalizedAsyncState({
   content: "";
 }
 
-.home-virtual-reflection-video {
+.home-virtual-reflection-canvas {
   position: absolute;
   z-index: 1;
   left: 3.15%;

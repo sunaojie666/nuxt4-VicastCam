@@ -133,11 +133,11 @@
               rel="noopener noreferrer"
             >
               <span class="about-social-icon" aria-hidden="true">
-                <img :src="item.icon" alt="" role="presentation">
+                <img v-if="item.image" :src="item.icon" alt="" role="presentation">
+                <Icon v-else :name="item.icon" />
               </span>
               <span class="about-social-copy">
                 <strong>{{ item.title }}</strong>
-                <small v-if="item.description">{{ item.description }}</small>
               </span>
             </a>
           </div>
@@ -152,8 +152,9 @@
 <script setup>
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
-import { getAbouts, getHomes } from '../../api/request/strapi'
+import { getAbouts, getHomes, getSocials } from '../../api/request/strapi'
 import { setupPageSeo } from '../../utils/seo'
+import { createSocialLinks, getSocialContentData } from '../../utils/socials'
 const mediaUrl = useMediaUrl()
 
 const config = useRuntimeConfig()
@@ -268,38 +269,53 @@ const syncAboutHeroVideo = (homeContent = {}) => {
   aboutHeroVideoSrc.value = createStrapiAssetUrl(videoUrl)
 }
 
-const socialItems = [
-  {
-    key: 'tiktok',
-    title: 'TikTok',
-    href: 'https://www.tiktok.com/',
-    icon: mediaUrl('/images/about/social/tiktok.png'),
+const siteSocialLinks = useState('site-social-links', () => createSocialLinks())
+const siteSocialLinksLocale = useState('site-social-links-locale', () => '')
+
+const socialPlatformKeys = ['tiktok', 'youtube', 'facebook', 'instagram', 'twitch']
+
+const getAboutSocialItemKey = (item = {}) => {
+  const values = [item.key, item.title]
+    .map(value => String(value || '').trim().toLowerCase())
+
+  return socialPlatformKeys.find(key => values.some(value => value === key || value.startsWith(`${key}-`) || value.includes(key))) || ''
+}
+
+const socialItems = computed(() => {
+  const aboutItemsByKey = new Map()
+
+  normalizeList(aboutBox.value.social.items).forEach(item => {
+    const key = getAboutSocialItemKey(item)
+
+    if (key && !aboutItemsByKey.has(key)) {
+      aboutItemsByKey.set(key, item)
+    }
+  })
+
+  return siteSocialLinks.value.map(item => {
+    const aboutItem = aboutItemsByKey.get(item.key) || {}
+
+    return {
+      ...item,
+      title: aboutItem.title || item.label,
+      description: aboutItem.description || '',
+      href: item.href,
+      icon: item.localImage ? item.image : mediaUrl(item.image),
+    }
+  })
+})
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: siteSocialLinksLocale,
+  load: currentLocale => getSocials(currentLocale),
+  sync: response => {
+    siteSocialLinks.value = createSocialLinks(getSocialContentData(response))
   },
-  {
-    key: 'youtube',
-    title: 'YouTube',
-    href: 'https://www.youtube.com/',
-    icon: mediaUrl('/images/about/social/youtube.png'),
+  reset: () => {
+    siteSocialLinks.value = createSocialLinks()
   },
-  {
-    key: 'facebook',
-    title: 'Facebook',
-    href: 'https://www.facebook.com/',
-    icon: mediaUrl('/images/about/social/facebook.png'),
-  },
-  {
-    key: 'instagram',
-    title: 'Instagram',
-    href: 'https://www.instagram.com/',
-    icon: mediaUrl('/images/about/social/instagram.png'),
-  },
-  {
-    key: 'twitch',
-    title: 'Twitch',
-    href: 'https://www.twitch.tv/',
-    icon: mediaUrl('/images/about/social/twitch.png'),
-  },
-]
+})
 
 const roadmapItems = computed(() => aboutBox.value.roadmap.items)
 const aboutStats = computed(() => aboutBox.value.innovation.stats)

@@ -126,8 +126,9 @@
 </template>
 
 <script setup>
-import { getFooter } from '../api/request/strapi'
+import { getFooter, getSocials } from '../api/request/strapi'
 import { createThemeContext } from '../utils/theme'
+import { createSocialLinks, getSocialContentData } from '../utils/socials'
 const mediaUrl = useMediaUrl()
 
 const localePath = useLocalePath()
@@ -139,26 +140,12 @@ const footerLocaleMenuOpen = ref(false)
 let closeFooterLocaleMenuOnOutsideClick = null
 const businessEmail = 'business@vicastcam.com'
 const businessEmailHref = `mailto:${businessEmail}`
-const footerSocials = [
-  {
-    key: 'facebook',
-    label: 'Facebook',
-    href: 'https://www.facebook.com/',
-    icon: 'lucide:facebook',
-  },
-  {
-    key: 'x',
-    label: 'X',
-    href: 'https://x.com/',
-    icon: 'lucide:x',
-  },
-  {
-    key: 'github',
-    label: 'GitHub',
-    href: 'https://github.com/',
-    icon: 'lucide:github',
-  },
-]
+const siteSocialLinks = useState('site-social-links', () => createSocialLinks())
+const siteSocialLinksLocale = useState('site-social-links-locale', () => '')
+const footerSocialKeys = ['facebook', 'instagram', 'youtube']
+const footerSocials = computed(() => footerSocialKeys
+  .map(key => siteSocialLinks.value.find(item => item.key === key))
+  .filter(Boolean))
 const copyrightText = 'Copyright © 2026 VicastCam'
 
 const footerLinkActionsByKey = {
@@ -529,6 +516,8 @@ const syncFooterContent = (footerData = {}) => {
   const footerObject = footerData.footerobj || footerData
   const content = footerObject.footer || {}
 
+  siteSocialLinks.value = createSocialLinks(footerData)
+
   footerContent.value = {
     brand: {
       name: content.brand?.name || '',
@@ -562,6 +551,18 @@ useLocalizedAsyncState({
   },
   reset: () => {
     syncFooterContent()
+  },
+})
+
+useLocalizedAsyncState({
+  locale,
+  loadedLocale: siteSocialLinksLocale,
+  load: currentLocale => getSocials(currentLocale),
+  sync: response => {
+    siteSocialLinks.value = createSocialLinks(getSocialContentData(response))
+  },
+  reset: () => {
+    siteSocialLinks.value = createSocialLinks()
   },
 })
 

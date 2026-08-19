@@ -147,10 +147,11 @@
             @click="handleProfileButtonClick"
           >
             <img
-              v-if="profileAvatar"
+              v-if="profileAvatar && !profileAvatarLoadFailed"
               class="site-profile-avatar"
               :src="profileAvatar"
               :alt="profileLinkLabel"
+              @error="profileAvatarLoadFailed = true"
             >
             <span v-else>{{ profileInitial }}</span>
           </button>
@@ -271,6 +272,7 @@ const profileName = computed(() => {
 const profileAvatar = computed(() => {
   return String(authUser.value?.avatar || '').trim()
 })
+const profileAvatarLoadFailed = ref(false)
 const profileInitial = computed(() => {
   return profileName.value.trim().slice(0, 1).toUpperCase() || 'U'
 })
@@ -278,6 +280,10 @@ const profileLinkLabel = computed(() => {
   return `${profileName.value}${profileBox.value?.headerUserMenu?.profileAriaSuffix || ''}`
 })
 const profileMenuText = computed(() => profileBox.value?.headerUserMenu || {})
+
+watch(profileAvatar, () => {
+  profileAvatarLoadFailed.value = false
+})
 
 const createSiteHeaderText = () => {
   return {
@@ -793,7 +799,10 @@ const handleProfileButtonClick = () => {
 const goToProfile = () => {
   closeProfileMenu()
   closeMobileMenu()
-  openPageInNewTab(localePath('/profile'))
+  openPageInNewTab(localePath({
+    path: '/profile',
+    query: { tab: 'account' },
+  }))
 }
 
 const handleLogout = async () => {

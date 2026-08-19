@@ -101,7 +101,13 @@
             >
               <h2 v-if="sdkBox.help.title">{{ sdkBox.help.title }}</h2>
               <p v-if="sdkBox.help.description">{{ sdkBox.help.description }}</p>
-              <button v-if="sdkBox.help.buttonText" type="button">{{ sdkBox.help.buttonText }}</button>
+              <NuxtLink
+                v-if="sdkBox.help.buttonText"
+                class="sdk-help-button"
+                :to="teamApplicationPath"
+              >
+                {{ sdkBox.help.buttonText }}
+              </NuxtLink>
             </div>
           </aside>
 
@@ -325,7 +331,12 @@ const mediaUrl = useMediaUrl()
 
 const { showRequestSuccessToast, showRequestFailToast } = useSiteToast()
 const route = useRoute()
+const localePath = useLocalePath()
 const { locale } = useI18n()
+const teamApplicationPath = computed(() => ({
+  path: localePath('/team'),
+  query: { section: 'application' },
+}))
 
 const sdkFeatureAssets = [
   { key: 'compatible', icon: mediaUrl('/images/sdk/feature-compatible.png') },
@@ -523,82 +534,21 @@ const heroFeatures = computed(() => {
   })
 })
 
-const staticSdkGroups = [
-  {
-    key: 'audio',
-    title: '虚拟声卡SDK',
-    count: '12个',
-    icon: 'lucide:volume-2',
-    items: [
-      { key: 'audio-overview', title: '功能概览' },
-      { key: 'audio-demo', title: 'Demo下载' },
-    ],
-  },
-  {
-    key: 'camera',
-    title: '虚拟相机SDK',
-    count: '14个',
-    icon: 'lucide:camera',
-    items: [
-      { key: 'camera-notice', title: 'SDK使用须知' },
-      { key: 'camera-load-dll', title: '加载相机dll组件', functionName: 'loadvicastcamdll' },
-      { key: 'camera-init', title: '初始化相机', functionName: 'g_vicastcam_InitVcam' },
-      { key: 'camera-output-format', title: '设置相机输出格式', functionName: 'g_vicastcam_SetOutputFormat' },
-      { key: 'camera-yuy2-frame', title: '输出一帧YUY2画面', functionName: 'g_vicastcam_SendFrameYUY2' },
-      { key: 'camera-nv12-frame', title: '输出一帧NV12画面', functionName: 'g_vicastcam_SendFrameNV12' },
-      { key: 'camera-media-file-output', title: '多媒体文件输出给相机', functionName: 'g_vicastcam_getMultiMediaToCamera' },
-      { key: 'camera-image-file-output', title: '图片文件输出给相机', functionName: 'g_vicastcam_getImageToCamera' },
-      { key: 'camera-name', title: '设置相机名称', functionName: 'g_vicastcam_SetFriendlyName' },
-      { key: 'camera-license-code', title: '检验授权码', functionName: 'g_vicastcam_SetLicenseCode' },
-      { key: 'camera-switch', title: '相机开关', functionName: 'g_vicastcam_setVcamOn' },
-      { key: 'camera-mirror-horizontal', title: '设置相机是否左右镜像', functionName: 'g_vicastcam_SetMirrorEnabled' },
-      { key: 'camera-flip-vertical', title: '设置相机是否上下翻转', functionName: 'g_vicastcam_SetFlipEnabled' },
-      { key: 'camera-rotate-clockwise', title: '设置相机旋转幅度（顺时针）', functionName: 'g_vicastcam_SetRotateRightDegree' },
-      { key: 'camera-placeholder', title: '设置相机占位图', functionName: 'g_vicastcam_SetVacantImg' },
-    ],
-  },
-  {
-    key: 'demo',
-    title: 'Demo下载',
-    count: '12个',
-    icon: 'lucide:download',
-    items: [
-      { key: 'demo-download', title: 'Demo下载' },
-    ],
-  },
-]
-
-const defaultDemoContent = {
-  title: 'Demo下载',
-  description: '选择对应业务场景的示例工程，快速验证 VicastCam SDK 的虚拟相机和虚拟声卡能力。',
-  listAriaLabel: 'VicastCam SDK Demo下载列表',
-  downloadButtonText: '立即下载',
-  downloads: [
-    {
-      key: 'camera',
-      title: '虚拟相机SDK-Demo下载',
-      description: '虚拟相机 SDK 可将图片、视频素材封装成系统原生摄像头源，兼容所有直播、推流、会议软件，可无缝集成至自有 Windows 项目，自定义画面输出。',
-      image: mediaUrl('/images/sdk/demo-camera.png'),
-      theme: 'purple',
-    },
-    {
-      key: 'audio',
-      title: '虚拟声卡SDK-Demo下载',
-      description: '虚拟声卡 SDK 可将外部音频、视频里的音频流转为系统麦克风输入源；支持自定义声卡与麦克风名称，能够无缝集成进 Windows 项目，适配直播推流、语音房间、线上会议等软件。',
-      image: mediaUrl('/images/sdk/demo-basic.png'),
-      theme: 'cyan',
-    },
-  ],
+const demoImageAssets = {
+  camera: mediaUrl('/images/sdk/demo-camera.png'),
+  audio: mediaUrl('/images/sdk/demo-basic.png'),
 }
 
 const demoContent = computed(() => {
   const content = exampleModule.value?.content || {}
-  const downloads = normalizeList(content.downloads)
+  const downloads = normalizeList(content.downloads).map(item => ({
+    ...item,
+    image: demoImageAssets[item.key] || item.image,
+  }))
 
   return {
-    ...defaultDemoContent,
     ...content,
-    downloads: downloads.length ? downloads : defaultDemoContent.downloads,
+    downloads,
   }
 })
 const demoDownloads = computed(() => demoContent.value.downloads.filter(item => item.key !== 'cast'))
@@ -656,295 +606,10 @@ const getAllSdkDownloadsSafely = () => {
     )
   })).then(downloadEntries => Object.fromEntries(downloadEntries))
 }
-const sdkNoticeComponentImages = {
-  C: {
-    src: mediaUrl('/images/sdk/notice-c.png'),
-    alt: 'VicastCam SDK C component folder',
-  },
-  'C++': {
-    src: mediaUrl('/images/sdk/notice-cpp.png'),
-    alt: 'VicastCam SDK C++ component folder',
-  },
-  'C#': {
-    src: mediaUrl('/images/sdk/notice-csharp.png'),
-    alt: 'VicastCam SDK C# component folder',
-  },
-}
-
-const sdkNoticeDocs = {
-  C: {
-    title: 'SDK 使用须知',
-    description: '本页用于指导 C 语言客户快速接入 VicastCam 虚拟相机 SDK。客户侧只需包含 pre_vicastcam_c.h，并将 dll 文件夹中的运行时 DLL 放到程序执行目录。通过 loadvicastcamdll() 加载 vicastcam.dll 后，即可调用 g_vicastcam_* 函数指针。',
-    sections: [
-      {
-        key: 'components',
-        title: '1. SDK 组件文件夹内容',
-        description: '下载并解压 VicastCam SDK 组件后，C 组件目录通常包含以下内容。',
-        rows: [
-          { name: 'pre_vicastcam_c.h', description: 'C 语言预加载头文件，客户程序通过 #include 引入。' },
-          { name: 'dll 文件夹', description: '包含 vicastcam.dll 及其运行依赖，运行时需要放到客户程序 exe 同级目录。' },
-        ],
-      },
-      {
-        key: 'paths',
-        title: '2. 确认客户程序路径',
-        description: '接入前先确认客户程序的代码目录和 exe 输出目录，下面以 myprogram 为例。',
-        pathItems: [
-          { label: '程序代码路径示例', path: String.raw`C:\myprogram\main.c` },
-          { label: '程序执行路径示例', path: String.raw`C:\myprogram\x64\Release\myprogram.exe` },
-        ],
-      },
-      {
-        key: 'import',
-        title: '3. 导入 VicastCam SDK 组件',
-        table: {
-          headers: ['文件 / 文件夹', '放置位置', '说明'],
-          rows: [
-            ['pre_vicastcam_c.h', 'C:\\myprogram\\', '与 main.c 平级，供 C 源码直接 #include。'],
-            ['dll 文件夹下所有 DLL', 'C:\\myprogram\\x64\\Release\\', '与 myprogram.exe 平级，确保运行时可以加载 vicastcam.dll 及其依赖。'],
-          ],
-        },
-      },
-      {
-        key: 'main',
-        title: '4. 在 main.c 中使用',
-        description: '在 main.c 顶部导入头文件，然后加载 DLL、初始化虚拟相机并调用函数指针。',
-        codeBlocks: [
-          {
-            title: '头文件导入',
-            code: '#include "pre_vicastcam_c.h"',
-          },
-          {
-            title: '基础初始化和调用示例',
-            code: String.raw`#include <windows.h>
-#include <stdio.h>
-#include "pre_vicastcam_c.h"
-
-int main(void)
-{
-    int ret = loadvicastcamdll(L"vicastcam.dll");
-    if (ret != ERROR_SUCCESS) {
-        printf("loadvicastcamdll failed, ret=%d, GetLastError=%lu\n",
-               ret,
-               GetLastError());
-        return ret;
-    }
-
-    ret = g_vicastcam_InitVcam();
-    if (ret != ERROR_SUCCESS) {
-        printf("InitVcam failed, ret=%d, GetLastError=%lu\n",
-               ret,
-               GetLastError());
-        return ret;
-    }
-
-    g_vicastcam_SetOutputFormat(1280, 720, 1);  /* 0 = YUY2, non-zero = NV12 */
-    g_vicastcam_SetFriendlyName(L"VicastCam");
-    g_vicastcam_SetMirrorEnabled(0);
-    g_vicastcam_SetFlipEnabled(0);
-    g_vicastcam_setVcamOn(1);
-
-    /* Optional: output image or media file to virtual camera */
-    /* g_vicastcam_getImageToCamera(L"test.png"); */
-    /* g_vicastcam_getMultiMediaToCamera(L"test.mp4"); */
-
-    return 0;
-}`,
-          },
-        ],
-      },
-    ],
-  },
-  'C++': {
-    title: 'SDK 使用须知',
-    description: '本页用于指导 C++ 客户快速接入 VicastCam 虚拟相机 SDK。客户侧只需放置 pre_vicastcam_cplusplus.h 与 dll 文件夹中的运行时 DLL，通过 loadvicastcamdll() 加载 vicastcam.dll，再调用 g_vicastcam_* 函数指针即可。',
-    sections: [
-      {
-        key: 'components',
-        title: '1. SDK 组件文件夹内容',
-        description: '下载并解压 VicastCam SDK 组件后，C++ 组件目录通常包含以下内容。',
-        rows: [
-          { name: 'pre_vicastcam_cplusplus.h', description: 'C++ 预加载头文件，客户程序通过 include 引入。' },
-          { name: 'dll 文件夹', description: '包含 vicastcam.dll 及其运行依赖，运行时需要放到客户程序 exe 同级目录。' },
-        ],
-      },
-      {
-        key: 'paths',
-        title: '2. 确认客户程序路径',
-        description: '接入前先确认客户程序的代码目录和 exe 执行目录，下面以 myprogram 为例。',
-        pathItems: [
-          { label: '程序代码路径示例', path: String.raw`F:\myprogram\myprogram\main.cpp` },
-          { label: '程序执行路径示例', path: String.raw`F:\myprogram\x64\Release\myprogram.exe` },
-        ],
-      },
-      {
-        key: 'import',
-        title: '3. 导入 VicastCam SDK 组件',
-        table: {
-          headers: ['文件 / 文件夹', '放置位置', '说明'],
-          rows: [
-            ['pre_vicastcam_cplusplus.h', 'F:\\myprogram\\myprogram\\', '与 main.cpp 平级，供 C++ 源码直接 include。'],
-            ['dll 文件夹下所有 DLL', 'F:\\myprogram\\x64\\Release\\', '与 myprogram.exe 平级，确保运行时可以加载 vicastcam.dll 及其依赖。'],
-          ],
-        },
-      },
-      {
-        key: 'main',
-        title: '4. 在 main.cpp 中使用',
-        description: '在 main.cpp 顶部导入预加载头文件，然后加载 DLL、初始化虚拟相机并调用函数指针。',
-        codeBlocks: [
-          {
-            title: '头文件导入',
-            code: '#include "pre_vicastcam_cplusplus.h"',
-          },
-          {
-            title: '基础初始化和调用示例',
-            code: String.raw`#include <windows.h>
-#include <iostream>
-#include "pre_vicastcam_cplusplus.h"
-
-int main()
-{
-    int ret = loadvicastcamdll(L"vicastcam.dll");
-    if (ret != ERROR_SUCCESS) {
-        std::cout << "loadvicastcamdll failed, ret=" << ret
-                  << ", GetLastError=" << GetLastError() << std::endl;
-        return ret;
-    }
-
-    ret = g_vicastcam_InitVcam();
-    if (ret != ERROR_SUCCESS) {
-        std::cout << "InitVcam failed, ret=" << ret
-                  << ", GetLastError=" << GetLastError() << std::endl;
-        return ret;
-    }
-
-    g_vicastcam_SetOutputFormat(1280, 720, 1);  // 0 = YUY2，非 0 = NV12
-    g_vicastcam_SetFriendlyName(L"VicastCam");
-    g_vicastcam_SetMirrorEnabled(0);
-    g_vicastcam_SetFlipEnabled(0);
-    g_vicastcam_setVcamOn(1);
-
-    // 可选：输出图片或视频到虚拟相机
-    // g_vicastcam_getImageToCamera(L"test.png");
-    // g_vicastcam_getMultiMediaToCamera(L"test.mp4");
-
-    return 0;
-}`,
-          },
-        ],
-      },
-    ],
-  },
-  'C#': {
-    title: 'SDK 使用须知',
-    description: '本页用于指导 C# 客户快速接入 VicastCam 虚拟相机 SDK。客户侧只需将 pre_vicastcam_csharp.cs 添加到 C# 项目，并将 dll 文件夹中的运行时 DLL 放到程序输出目录。通过 PreVicastCam.LoadVicastCamDll() 加载 vicastcam.dll 后，即可调用 PreVicastCam.g_vicastcam_* 委托。',
-    sections: [
-      {
-        key: 'components',
-        title: '1. SDK 组件文件夹内容',
-        description: '下载并解压 VicastCam SDK 组件后，C# 组件目录通常包含以下内容。',
-        rows: [
-          { name: 'pre_vicastcam_csharp.cs', description: 'C# 预加载桥接文件，需要加入项目参与编译。' },
-          { name: 'dll 文件夹', description: '包含 vicastcam.dll 及其运行依赖，运行时需要放到客户程序 exe 同级目录。' },
-        ],
-      },
-      {
-        key: 'paths',
-        title: '2. 确认客户程序路径',
-        description: '接入前先确认客户程序的代码目录和 exe 输出目录，下面以 myprogram 为例。',
-        pathItems: [
-          { label: '程序代码路径示例', path: String.raw`C:\myprogram\main.cs` },
-          { label: '程序执行路径示例', path: String.raw`C:\myprogram\bin\Release\net8.0-windows\myprogram.exe` },
-        ],
-      },
-      {
-        key: 'import',
-        title: '3. 导入 VicastCam SDK 组件',
-        table: {
-          headers: ['文件 / 文件夹', '放置位置', '说明'],
-          rows: [
-            ['pre_vicastcam_csharp.cs', 'C:\\myprogram\\', '与 main.cs 平级，并在 Visual Studio 中添加到 C# 项目，或放入 SDK-style 项目目录自动编译。'],
-            ['dll 文件夹下所有 DLL', 'C:\\myprogram\\bin\\Release\\net8.0-windows\\', '与 myprogram.exe 平级，确保运行时可以加载 vicastcam.dll 及其依赖。'],
-          ],
-        },
-      },
-      {
-        key: 'main',
-        title: '4. 在 main.cs 中使用',
-        description: '将 pre_vicastcam_csharp.cs 加入项目后，C# 代码可直接调用 PreVicastCam。',
-        codeBlocks: [
-          {
-            title: '项目导入说明',
-            code: '// pre_vicastcam_csharp.cs 与 main.cs 一起参与编译，无需 include，也不需要 vcamplugin.lib。',
-          },
-          {
-            title: '基础初始化和调用示例',
-            code: String.raw`using System;
-using System.Runtime.InteropServices;
-
-class Program
-{
-    private const int ERROR_SUCCESS = 0;
-
-    static void Main()
-    {
-        int ret = PreVicastCam.LoadVicastCamDll("vicastcam.dll");
-        if (ret != ERROR_SUCCESS)
-        {
-            Console.WriteLine($"LoadVicastCamDll failed, ret={ret}, GetLastWin32Error={Marshal.GetLastWin32Error()}");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
-            return;
-        }
-
-        Console.WriteLine("LoadVicastCamDll success.");
-
-        ret = PreVicastCam.g_vicastcam_InitVcam();
-        if (ret != ERROR_SUCCESS)
-        {
-            Console.WriteLine($"InitVcam failed, ret={ret}, GetLastWin32Error={Marshal.GetLastWin32Error()}");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
-            return;
-        }
-
-        Console.WriteLine("InitVcam success.");
-
-        ret = PreVicastCam.g_vicastcam_SetOutputFormat(1280, 720, 1);
-        if (ret != ERROR_SUCCESS)
-        {
-            Console.WriteLine($"SetOutputFormat failed, ret={ret}, GetLastWin32Error={Marshal.GetLastWin32Error()}");
-            Console.ReadKey();
-            return;
-        }
-
-        PreVicastCam.g_vicastcam_SetFriendlyName("VicastCam777");
-        PreVicastCam.g_vicastcam_SetMirrorEnabled(0);
-        PreVicastCam.g_vicastcam_SetFlipEnabled(0);
-        PreVicastCam.g_vicastcam_setVcamOn(1);
-
-        Console.WriteLine("VicastCam SDK initialized successfully.");
-        Console.WriteLine("Press any key to exit...");
-        Console.ReadKey();
-
-        // PreVicastCam.g_vicastcam_getMultiMediaToCamera("test.mp4");
-    }
-}`,
-          },
-        ],
-      },
-    ],
-  },
-}
-
 const leadingStandaloneGroups = computed(() => [])
 const sdkGroups = computed(() => [
   ...(soundcardModule.value ? [soundcardModule.value] : []),
   ...(cameraModule.value ? [cameraModule.value] : []),
-  ...staticSdkGroups.filter(group => group.key !== 'camera' &&
-    (group.key !== 'audio' || !soundcardModule.value) &&
-    (group.key !== 'demo' || !exampleModule.value)),
   ...(exampleModule.value ? [exampleModule.value] : []),
 ])
 const accordionGroups = computed(() => sdkGroups.value.filter(group => group.key !== 'demo'))
@@ -962,7 +627,7 @@ const activeSdkModule = computed(() => {
 const sdkLanguageTabs = computed(() => normalizeList(activeSdkModule.value?.languageTabs))
 
 const activeGroupTitle = computed(() => {
-  return activeSdkGroup.value?.title || '资源下载'
+  return activeSdkGroup.value?.title || ''
 })
 
 const activeItemTitle = computed(() => {
@@ -970,27 +635,7 @@ const activeItemTitle = computed(() => {
 })
 
 const isNoticeView = computed(() => activeItemKey.value === activeSdkModule.value?.defaultItemKey)
-const defaultCameraLabels = {
-  sidebarAriaLabel: 'SDK目录',
-  breadcrumbAriaLabel: '当前位置',
-  breadcrumbRoot: 'SDK文档',
-  developmentLanguage: '开发语言',
-  callFunction: '调用函数',
-  functionParameters: '函数参数',
-  exampleCode: '调用示例代码',
-  returnValues: '返回值及其含义',
-  copyCode: '复制代码',
-  codeCopied: '代码已复制',
-  downloadComponent: '下载SDK组件',
-}
-const cameraLabels = computed(() => {
-  const labels = activeSdkModule.value?.labels || {}
-
-  return Object.fromEntries(Object.entries(defaultCameraLabels).map(([key, fallback]) => {
-    const value = String(labels[key] || '').trim()
-    return [key, value && !value.includes('?') ? value : fallback]
-  }))
-})
+const cameraLabels = computed(() => activeSdkModule.value?.labels || {})
 const cameraNoticeDocs = computed(() => activeSdkModule.value?.documents?.notice || {})
 const cameraNoticeComponentImages = computed(() => activeSdkModule.value?.assets?.noticeComponentImages || {})
 const activeNoticeDoc = computed(() => cameraNoticeDocs.value[activeCodeTab.value] || {})
@@ -1117,7 +762,7 @@ const apiDoc = computed(() => {
 
     return {
       codeTabs: sdkLanguageTabs.value,
-      title: activeSdkItem.value?.title || 'SDK函数说明',
+      title: activeSdkItem.value?.title || '',
       path: normalizeSdkDocText(sdkDoc.path),
       pathSamples: parseSdkFunctionPathSamples(sdkDoc.path),
       params: parseSdkDocRows(sdkDoc.params),
@@ -1747,9 +1392,12 @@ setupPageSeo('sdk', () => sdkBox.value.seo)
   line-height: 20px;
 }
 
-.sdk-help-panel button {
+.sdk-help-button {
   width: 100%;
   height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-top: 22px;
   border-radius: 6px;
   color: var(--theme-white);

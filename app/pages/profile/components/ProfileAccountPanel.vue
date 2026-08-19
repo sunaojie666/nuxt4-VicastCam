@@ -39,6 +39,66 @@
               <strong>{{ accountText.passwordMask }}</strong>
             </span>
           </div>
+
+          <div
+            id="profile-account-email"
+            class="account-info-row account-email-row"
+            :class="{ 'account-email-row--bound': hasBoundEmail }"
+          >
+            <Icon class="account-info-icon" name="lucide:mail" aria-hidden="true" />
+            <span class="account-info-main">
+              <span>{{ accountText.emailLabel }}</span>
+              <strong v-if="hasBoundEmail">{{ boundEmail }}</strong>
+              <span v-else class="account-email-bind-box">
+                <span class="account-email-input-row">
+                  <input
+                    v-model.trim="emailAddress"
+                    type="email"
+                    autocomplete="email"
+                    :placeholder="accountText.emailPlaceholder"
+                    :disabled="isEmailLocked || isSendingCode || codeCountdown > 0"
+                    @keyup.enter="handleBindEmail"
+                  >
+                  <button
+                    type="button"
+                    class="account-email-code-button"
+                    :disabled="isEmailLocked || isSendingCode || codeCountdown > 0"
+                    @click="handleSendEmailCode"
+                  >
+                    {{ codeButtonText }}
+                  </button>
+                </span>
+                <span class="account-email-input-row">
+                  <input
+                    v-model.trim="verificationCode"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    :placeholder="accountText.codePlaceholder"
+                    :disabled="isEmailLocked || isBindingEmail || !hasRequestedEmailCode"
+                    @keyup.enter="handleBindEmail"
+                  >
+                  <button
+                    type="button"
+                    class="account-email-bind-button"
+                    :disabled="isEmailLocked || isBindingEmail || !hasRequestedEmailCode"
+                    @click="handleBindEmail"
+                  >
+                    {{ accountText.bindButton }}
+                  </button>
+                </span>
+                <small>{{ accountText.emailBindTip }}</small>
+              </span>
+            </span>
+            <button
+              v-if="hasBoundEmail"
+              type="button"
+              class="account-email-bound-button"
+              disabled
+            >
+              {{ accountText.alreadyBound }}
+            </button>
+          </div>
         </div>
 
       </div>
@@ -71,9 +131,16 @@
 </template>
 
 <script setup>
+import { sendEmailCode } from '../../../api/request/auth'
+
 const mediaUrl = useMediaUrl()
-const { authUser } = useAuth()
-const { showRequestSuccessToast } = useSiteToast()
+const { authUser, bindUserEmail } = useAuth()
+const {
+  showRequestSuccessToast,
+  showApiResponseSuccessToast,
+  showApiResponseErrorToast,
+  showErrorToast,
+} = useSiteToast()
 const { profileBox } = useProfileText()
 
 const commonText = computed(() => profileBox.value?.common || {})
@@ -81,6 +148,160 @@ const accountText = computed(() => profileBox.value?.account || {})
 const membershipText = computed(() => profileBox.value?.membership || {})
 const profileName = computed(() => {
   return authUser.value?.nickname || accountText.value.defaultUsername || ''
+})
+
+const emailAddress = ref('')
+const verificationCode = ref('')
+const isSendingCode = ref(false)
+const isBindingEmail = ref(false)
+const hasRequestedEmailCode = ref(false)
+const requestedEmailAddress = ref('')
+const codeCountdown = ref(0)
+let codeCountdownTimer = null
+
+const boundEmail = computed(() => String(authUser.value?.email || '').trim())
+const hasBoundEmail = computed(() => Boolean(boundEmail.value))
+const isEmailLocked = computed(() => hasBoundEmail.value)
+const codeButtonText = computed(() => {
+  if (codeCountdown.value > 0) {
+    return `${codeCountdown.value}s`
+  }
+
+  return accountText.value.sendCodeButton || ''
+})
+
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+
+const startCodeCountdown = () => {
+  if (!process.client) {
+    return
+  }
+
+  if (codeCountdownTimer) {
+    window.clearInterval(codeCountdownTimer)
+  }
+
+  codeCountdown.value = 120
+  codeCountdownTimer = window.setInterval(() => {
+    codeCountdown.value -= 1
+
+    if (codeCountdown.value <= 0) {
+      window.clearInterval(codeCountdownTimer)
+      codeCountdownTimer = null
+      codeCountdown.value = 0
+    }
+  }, 1000)
+}
+
+const handleSendEmailCode = () => {
+  if (isEmailLocked.value || isSendingCode.value || codeCountdown.value > 0) {
+    return
+  }
+
+  const email = emailAddress.value.trim()
+
+  if (!isValidEmail(email)) {
+    showErrorToast(accountText.value.emailRequired)
+    return
+  }
+
+  isSendingCode.value = true
+
+  sendEmailCode(email, 'bindEmail').then(
+    (response) => {
+      showApiResponseSuccessToast(response, {
+        scope: 'auth',
+        fallback: accountText.value.codeSent,
+      })
+      requestedEmailAddress.value = email
+      hasRequestedEmailCode.value = true
+      startCodeCountdown()
+    },
+    (error) => {
+      showApiResponseErrorToast(error, {
+        scope: 'auth',
+        fallback: accountText.value.requestFailed,
+      })
+    }
+  ).finally(() => {
+    isSendingCode.value = false
+  })
+}
+
+const handleBindEmail = () => {
+  if (isEmailLocked.value || isBindingEmail.value) {
+    return
+  }
+
+  const email = emailAddress.value.trim()
+  const captcha = verificationCode.value.trim()
+
+  if (!hasRequestedEmailCode.value) {
+    showErrorToast(accountText.value.codeRequired)
+    return
+  }
+
+  if (email !== requestedEmailAddress.value) {
+    showErrorToast(accountText.value.emailChanged || accountText.value.codeRequired)
+    return
+  }
+
+  if (!isValidEmail(email)) {
+    showErrorToast(accountText.value.emailRequired)
+    return
+  }
+
+  if (!captcha) {
+    showErrorToast(accountText.value.codeRequired)
+    return
+  }
+
+  if (!authUser.value?.user_id) {
+    showErrorToast(accountText.value.userMissing || commonText.value.userMissing)
+    return
+  }
+
+  isBindingEmail.value = true
+
+  bindUserEmail({
+    user_id: authUser.value.user_id,
+    email,
+    captcha,
+  }).then(
+    (response) => {
+      emailAddress.value = ''
+      verificationCode.value = ''
+      showApiResponseSuccessToast(response, {
+        scope: 'auth',
+        fallback: accountText.value.bindSuccess,
+      })
+    },
+    (error) => {
+      showApiResponseErrorToast(error, {
+        scope: 'auth',
+        fallback: accountText.value.bindFailed,
+      })
+    }
+  ).finally(() => {
+    isBindingEmail.value = false
+  })
+}
+
+onBeforeUnmount(() => {
+  if (codeCountdownTimer) {
+    window.clearInterval(codeCountdownTimer)
+  }
+})
+
+watch(emailAddress, (value) => {
+  if (
+    hasRequestedEmailCode.value &&
+    String(value || '').trim() !== requestedEmailAddress.value
+  ) {
+    hasRequestedEmailCode.value = false
+    requestedEmailAddress.value = ''
+    verificationCode.value = ''
+  }
 })
 
 const resolveVipBadgeImage = (value) => {
@@ -305,6 +526,98 @@ const copyInviteLink = () => {
   white-space: nowrap;
 }
 
+.account-email-row {
+  align-items: start;
+}
+
+.account-email-row--bound {
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.account-email-row .account-info-main {
+  width: 100%;
+}
+
+.account-email-bind-box {
+  display: grid !important;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.account-email-bound-button {
+  min-width: 68px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--theme-profile-field-muted, var(--theme-text-muted-alt));
+  background: var(--theme-panel-soft);
+  font-size: 12px;
+  cursor: not-allowed;
+}
+
+.account-email-input-row {
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.account-email-input-row input {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--theme-profile-field-border, var(--theme-border-strong-86));
+  border-radius: 6px;
+  color: var(--theme-profile-field-text, var(--theme-text-strong));
+  background: var(--theme-profile-field-background, var(--theme-panel-soft));
+  font-size: 13px;
+  outline: none;
+}
+
+.account-email-input-row input:focus {
+  border-color: var(--theme-profile-field-action, var(--theme-accent));
+}
+
+.account-email-input-row input:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
+.account-email-input-row input::placeholder {
+  color: var(--theme-profile-field-placeholder, var(--theme-text-muted-alt));
+}
+
+.account-email-code-button,
+.account-email-bind-button {
+  min-width: 96px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--theme-profile-field-action, var(--theme-accent));
+  background: var(--theme-accent-action);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.account-email-bind-button {
+  color: var(--theme-white);
+  background: var(--theme-profile-field-action, var(--theme-accent));
+}
+
+.account-email-code-button:disabled,
+.account-email-bind-button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.account-email-bind-box small {
+  color: var(--theme-profile-field-muted, var(--theme-text-muted-alt));
+  font-size: 12px;
+  line-height: 18px;
+}
+
 @media (max-width: 900px) {
   .account-profile-panel {
     min-height: 0 !important;
@@ -322,6 +635,25 @@ const copyInviteLink = () => {
 @media (max-width: 640px) {
   .account-info-row {
     grid-template-columns: 20px minmax(0, 1fr);
+  }
+
+  .account-email-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .account-email-code-button,
+  .account-email-bind-button,
+  .account-email-bound-button {
+    width: 100%;
+  }
+
+  .account-email-row--bound {
+    grid-template-columns: 20px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .account-email-row--bound .account-email-bound-button {
+    grid-column: 2;
   }
 }
 </style>

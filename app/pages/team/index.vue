@@ -317,12 +317,14 @@ import { createAbsoluteUrl, createLocalizedUrl, setupPageSeo, setupStructuredDat
 const mediaUrl = useMediaUrl()
 
 const config = useRuntimeConfig()
+const route = useRoute()
 const { locale, locales } = useI18n()
 const { requestLoadingText, showApiResponseErrorToast, showApiResponseSuccessToast, showErrorToast } = useSiteToast()
 const isSubmittingApplication = ref(false)
 const contactQrcodeSource = ref('')
 const applicationSelectValues = ref({})
 const openApplicationSelectName = ref('')
+let requestedSectionScrollTimer = null
 
 const activeLocaleConfig = computed(() => {
   return locales.value.find(item => typeof item !== 'string' && item.code === locale.value) || {}
@@ -1034,6 +1036,34 @@ const scrollToAdvantages = () => {
   scrollToTeamSection('team-cooperation-advantages')
 }
 
+const scrollToRequestedSection = () => {
+  if (String(route.query.section || '').toLowerCase() !== 'application') {
+    return
+  }
+
+  if (requestedSectionScrollTimer) {
+    window.clearTimeout(requestedSectionScrollTimer)
+    requestedSectionScrollTimer = null
+  }
+
+  nextTick(() => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        requestedSectionScrollTimer = window.setTimeout(() => {
+          requestedSectionScrollTimer = null
+          scrollToApplication()
+        }, 120)
+      })
+    })
+  })
+}
+
+watch([() => route.query.section, teamBoxLocale], () => {
+  if (process.client) {
+    scrollToRequestedSection()
+  }
+}, { flush: 'post' })
+
 const handleApplicationDocumentClick = () => {
   closeApplicationSelect()
 }
@@ -1044,9 +1074,15 @@ onMounted(() => {
   }
 
   loadContactQrcode()
+  scrollToRequestedSection()
 })
 
 onBeforeUnmount(() => {
+  if (requestedSectionScrollTimer) {
+    window.clearTimeout(requestedSectionScrollTimer)
+    requestedSectionScrollTimer = null
+  }
+
   if (process.client) {
     document.removeEventListener('click', handleApplicationDocumentClick)
   }
@@ -1763,6 +1799,7 @@ setupStructuredData(() => {
 
 .team-application-section {
   width: 100%;
+  scroll-margin-top: calc(var(--page-header-height) + 24px);
   padding: 40px 20px 88px;
   color: var(--theme-white);
   background: var(--team-page-background);

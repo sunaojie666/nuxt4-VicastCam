@@ -378,7 +378,7 @@ const handleSendEmailCode = () => {
 const sendEmailCodeAfterPuzzle = (email) => {
   isSendingCode.value = true
 
-  sendEmailCode(email).then(
+  sendEmailCode(email, 'login').then(
     (response) => {
       isSendingCode.value = false
       showApiResponseSuccessToast(response, { scope: 'auth' })

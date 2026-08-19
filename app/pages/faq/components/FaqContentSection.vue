@@ -58,6 +58,10 @@
               <ul v-else-if="block.type === 'list'">
                 <li v-for="item in block.items" :key="item">{{ item }}</li>
               </ul>
+              <figure v-else-if="block.type === 'image'" class="faq-answer-image">
+                <img :src="block.src" :alt="block.alt || activeQuestion.title" loading="lazy" />
+                <figcaption v-if="block.caption">{{ block.caption }}</figcaption>
+              </figure>
               <p v-else>{{ block.text }}</p>
             </template>
           </div>
@@ -451,6 +455,27 @@ watch(
 
 .faq-answer-content p {
   overflow-wrap: anywhere;
+}
+
+.faq-answer-image {
+  margin: 20px 0 0;
+}
+
+.faq-answer-image img {
+  display: block;
+  width: min(100%, 320px);
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid var(--theme-border, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+}
+
+.faq-answer-image figcaption {
+  margin-top: 8px;
+  color: var(--theme-text-muted, var(--theme-text-secondary));
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
 }
 
 @media (max-width: 900px) {

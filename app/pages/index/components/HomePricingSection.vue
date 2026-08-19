@@ -59,11 +59,14 @@
 
 <script setup>
 import { getPricings } from '../../../api/request/strapi'
+import { isLoggedInUser } from '../../../utils/auth-session'
+import { saveCheckoutSelection } from '../../../utils/checkout-selection'
 
 const localePath = useLocalePath()
 const router = useRouter()
 const { locale } = useI18n()
 const { vipPlans, loadVipTypes } = useVipTypes()
+const { authUser } = useAuth()
 const { showErrorToast } = useSiteToast()
 
 const pricingContent = useState('home-pricing-content', () => ({
@@ -231,27 +234,14 @@ const pricingPlans = computed(() => {
   }))
 })
 
-const createCheckoutQuery = (plan = {}) => {
-  const query = {}
-  const queryFields = [
-    ['productId', plan.id],
-    ['productType', plan.type],
-    ['productName', plan.name],
-    ['productDescription', plan.description],
-    ['productPrice', plan.price],
-    ['productUnit', plan.unit],
-  ]
-
-  queryFields.forEach(([key, value]) => {
-    const text = normalizePlanText(value)
-
-    if (text) {
-      query[key] = text
-    }
-  })
-
-  return query
-}
+const createCheckoutSelection = (plan = {}) => ({
+  id: normalizePlanText(plan.id),
+  type: normalizePlanText(plan.type),
+  name: normalizePlanText(plan.name),
+  description: normalizePlanText(plan.description),
+  price: normalizePlanText(plan.price),
+  unit: normalizePlanText(plan.unit),
+})
 
 const handlePlanCheckout = (plan = {}) => {
   if (isFreePlan(plan)) {
@@ -259,20 +249,17 @@ const handlePlanCheckout = (plan = {}) => {
     return
   }
 
-  const checkoutQuery = createCheckoutQuery(plan)
-  const target = {
-    path: localePath('/checkout'),
-  }
-
-  if (Object.keys(checkoutQuery).length) {
-    target.query = checkoutQuery
+  if (!isLoggedInUser(authUser.value)) {
+    router.push(localePath('/login'))
+    return
   }
 
   if (!process.client) {
     return
   }
 
-  window.open(router.resolve(target).href, '_blank', 'noopener,noreferrer')
+  saveCheckoutSelection(createCheckoutSelection(plan))
+  router.push(localePath('/checkout'))
 }
 
 onMounted(() => {

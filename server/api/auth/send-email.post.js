@@ -7,12 +7,15 @@ const SEND_EMAIL_PATH = '/v1/SendEmail'
 export default defineEventHandler((event) => {
   return readVicastBody(event).then((requestBody) => {
     const email = requireVicastParam(requestBody, 'email')
+    const type = String(requestBody.type || 'register').trim()
 
     return requestVicastApi(event, {
       path: SEND_EMAIL_PATH,
+      formData: true,
       params: {
         ...requestBody,
         email,
+        type,
       },
       errorMessage: '',
     })

@@ -115,6 +115,9 @@ const mediaUrl = useMediaUrl()
 const config = useRuntimeConfig()
 const localePath = useLocalePath()
 const { locale } = useI18n()
+// Local preview override for the fourth candidate video. Remove or empty this
+// value to return the hero to the Strapi-managed background video.
+const previewVideoOverride = '/videos/home/virtual/phone-tripod-preview.mp4'
 const heroVideoSrc = useState('home-hero-video-src', () => '')
 const topBadge = useState('home-hero-top-badge', () => '')
 const heroTitle = useState('home-hero-title', () => '')
@@ -156,7 +159,7 @@ const syncHomeHero = (homeData = {}) => {
   appStoreUrl.value = homeData.appStoreUrl || ''
   googlePlayUrl.value = homeData.googlePlayUrl || ''
   desktopClientUrl.value = homeData.desktopClientUrl || ''
-  heroVideoSrc.value = createStrapiAssetUrl(videoUrl)
+  heroVideoSrc.value = previewVideoOverride || createStrapiAssetUrl(videoUrl)
   setToastText({
     requestLoading: homeData.requestLoading || '',
     requestSuccess: homeData.requestSuccess || '',

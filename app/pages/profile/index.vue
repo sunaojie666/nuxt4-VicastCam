@@ -8,12 +8,26 @@
           <section class="profile-user-card">
             <div class="profile-avatar-wrap">
               <div class="profile-avatar-frame">
-                <img v-if="profileAvatar" class="profile-avatar" :src="profileAvatar" :alt="profileName">
+                <img
+                  v-if="profileAvatar && !profileAvatarLoadFailed"
+                  class="profile-avatar"
+                  :src="profileAvatar"
+                  :alt="profileName"
+                  @error="profileAvatarLoadFailed = true"
+                >
                 <span v-else class="profile-avatar-placeholder" aria-hidden="true">{{ profileInitial }}</span>
               </div>
             </div>
             <h1>{{ profileName }}</h1>
-            <p>{{ profileEmail }}</p>
+            <p v-if="profileEmail">{{ profileEmail }}</p>
+            <button
+              v-else
+              type="button"
+              class="profile-email-unbound"
+              @click="goToAccountEmail"
+            >
+              {{ profileBox?.account?.unboundEmail }}
+            </button>
             <span v-if="profileVipText" class="profile-vip-badge">
               <img class="profile-vip-badge-icon" :src="profileVipBadgeIcon" alt="" role="presentation">
               <span>{{ profileVipBadgeLabel }}</span>
@@ -87,7 +101,12 @@ const profileTabComponents = {
 
 const validProfileTabs = new Set(Object.keys(profileTabComponents))
 const profileTabCookie = useCookie('profile-active-tab', { sameSite: 'lax' })
-const activeTab = ref(validProfileTabs.has(profileTabCookie.value) ? profileTabCookie.value : 'account')
+const route = useRoute()
+const routeTab = String(route.query.tab || '')
+const initialProfileTab = validProfileTabs.has(routeTab)
+  ? routeTab
+  : (validProfileTabs.has(profileTabCookie.value) ? profileTabCookie.value : 'account')
+const activeTab = ref(initialProfileTab)
 const { authUser, refreshVipInfo } = useAuth()
 const { profileBox, loadProfileText } = useProfileText()
 const { locale } = useI18n()
@@ -125,9 +144,18 @@ const profileInitial = computed(() => {
 const profileEmail = computed(() => {
   return authUser.value?.email || ''
 })
+const goToAccountEmail = async () => {
+  activeTab.value = 'account'
+  await nextTick()
+  document.getElementById('profile-account-email')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center',
+  })
+}
 const profileAvatar = computed(() => {
   return String(authUser.value?.avatar || '').trim()
 })
+const profileAvatarLoadFailed = ref(false)
 const profileVipText = computed(() => {
   return authUser.value?.vip_type || ''
 })
@@ -169,6 +197,10 @@ const profileVipBadgeIcon = computed(() => {
   }
 
   return mediaUrl('/images/profile/year.png')
+})
+
+watch(profileAvatar, () => {
+  profileAvatarLoadFailed.value = false
 })
 
 watch(activeTab, (tab) => {
@@ -312,6 +344,22 @@ watch(locale, () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.profile-email-unbound {
+  max-width: 100%;
+  margin-top: 2px;
+  color: var(--profile-cyan);
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.profile-email-unbound:hover,
+.profile-email-unbound:focus-visible {
+  color: var(--theme-profile-menu-active-color, var(--theme-accent));
+  text-decoration: underline;
 }
 
 .profile-vip-badge {

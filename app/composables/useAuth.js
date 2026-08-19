@@ -1,4 +1,4 @@
-import { checkScanLoginStatus, getVipInfo, loginByEmailCode, loginByPassword, logout } from '../api/request/auth'
+import { bindEmail, checkScanLoginStatus, getVipInfo, loginByEmailCode, loginByPassword, logout } from '../api/request/auth'
 import { authUserCookieName, clearAuthStorage } from '../utils/auth-session'
 
 const getLoginUser = (response) => {
@@ -29,6 +29,27 @@ const createUserText = (...values) => {
   return String(value)
 }
 
+const createAvatarText = (...values) => {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim()
+    }
+
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      continue
+    }
+
+    const source = value.attributes || value.data || value
+    const url = source?.url || source?.href || source?.src || source?.path
+
+    if (typeof url === 'string' && url.trim()) {
+      return url.trim()
+    }
+  }
+
+  return ''
+}
+
 const createUserBoolean = (...values) => {
   const value = pickUserValue(...values)
 
@@ -37,6 +58,20 @@ const createUserBoolean = (...values) => {
   }
 
   return ['1', 'true', 'yes'].includes(String(value || '').toLowerCase())
+}
+
+const getResponseUser = (response) => {
+  return response?.user ||
+    response?.userinfo ||
+    response?.user_info ||
+    response?.userInfo ||
+    response?.data?.user ||
+    response?.data?.userinfo ||
+    response?.data?.user_info ||
+    response?.data?.userInfo ||
+    response?.data ||
+    response ||
+    null
 }
 
 const createMissingLoginUserError = (response) => {
@@ -56,7 +91,7 @@ const createPublicAuthUser = (user) => {
   return {
     user_id: createUserText(user.user_id, user.uid, user.id),
     nickname: createUserText(user.nickname, user.nick_name, user.nickName, user.username, user.user_name, user.name),
-    avatar: createUserText(user.avatar_larger, user.avatar, user.avatar_url, user.avatarUrl, user.head_img, user.headImg, user.headimgurl),
+    avatar: createAvatarText(user.avatar_larger, user.avatar, user.avatar_url, user.avatarUrl, user.head_img, user.headImg, user.headimgurl),
     email: createUserText(user.email),
     mobile: createUserText(user.mobile, user.phone, user.phone_number, user.phoneNumber, user.cellphone),
     industry: createUserText(user.industry, user.occupation, user.profession, user.job),
@@ -111,6 +146,20 @@ export const useAuth = () => {
     authUserCookie.value = nextUser
 
     return nextUser
+  }
+
+  const bindUserEmail = (payload) => {
+    return bindEmail(payload).then((response) => {
+      const responseUser = getResponseUser(response)
+      const responseEmail = responseUser?.email || payload?.email || ''
+
+      mergeAuthUser({
+        ...responseUser,
+        email: responseEmail,
+      })
+
+      return response
+    })
   }
 
   const loginWithEmailCode = (payload) => {
@@ -193,6 +242,7 @@ export const useAuth = () => {
     loginWithPassword,
     loginWithScanQrcode,
     refreshVipInfo,
+    bindUserEmail,
     mergeAuthUser,
     logoutUser,
     clearAuth,
