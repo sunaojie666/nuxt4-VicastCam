@@ -27,6 +27,18 @@ export const loginByEmailCode = ({ email, captcha } = {}) => {
   }, authResponseOptions)
 }
 
+// 校验邮箱验证码。服务端会转发到 https://api.vicastcam.com/v1/ValidCaptcha。
+export const validCaptcha = ({ user_id, captcha, type = 'cancel' } = {}) => {
+  return authRequest.post('/valid-captcha', {
+    user_id: String(user_id || '').trim(),
+    captcha: String(captcha || '').trim(),
+    type: String(type || 'cancel').trim(),
+  }, {
+    ...authResponseOptions,
+    skipBusinessCodeValidation: true,
+  })
+}
+
 // 绑定邮箱。服务端会转发到 https://api.vicastcam.com/v1/BindEmail。
 export const bindEmail = ({ user_id, email, captcha } = {}) => {
   return authRequest.post('/bind-email', {
@@ -139,4 +151,25 @@ export const logout = (payload = {}) => {
   return authRequest.post('/logout', {
     user_id: String(payload.user_id || '').trim(),
   }, authResponseOptions)
+}
+
+// 账号注销。服务端会携带登录 token 转发到 https://api.vicastcam.com/v1/AccountCancel。
+export const cancelAccount = (payload = {}) => {
+  return authRequest.post('/account-cancel', {
+    user_id: String(payload.user_id || '').trim(),
+  }, {
+    ...authResponseOptions,
+    responseScope: 'account',
+    skipBusinessCodeValidation: true,
+  })
+}
+
+// 撤销账号注销。服务端会携带登录 token 转发到 https://api.vicastcam.com/v1/RevokeCancel。
+export const revokeCancel = (payload = {}) => {
+  return authRequest.post('/revoke-cancel', {
+    user_id: String(payload.user_id || '').trim(),
+  }, {
+    ...authResponseOptions,
+    responseScope: 'account',
+  })
 }

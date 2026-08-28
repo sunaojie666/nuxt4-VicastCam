@@ -48,6 +48,7 @@
 
 <script setup>
 import { getLoginQrcode } from '../../../api/request/auth'
+import { getLoginRedirectPath } from '../../../utils/auth-redirect'
 const mediaUrl = useMediaUrl()
 
 const props = defineProps({
@@ -185,7 +186,7 @@ const expireQrcode = () => {
 const handleScanLoginSuccess = (response) => {
   stopScanStatusPolling()
   showApiResponseSuccessToast(response, { scope: 'qr' })
-  navigateTo(localePath('/'))
+  navigateTo(getLoginRedirectPath())
 }
 
 const checkScanLoginStatus = () => {

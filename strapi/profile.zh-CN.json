@@ -237,7 +237,10 @@
       },
       "memberStatus": {
         "free": "普通用户",
-        "vip": "VIP用户"
+        "vip": "VIP用户",
+        "month": "月卡会员",
+        "year": "年卡会员",
+        "life": "永久会员"
       },
       "emptyMemberName": "未命名用户",
       "emptyReferrer": "暂无上级",
@@ -249,6 +252,8 @@
     "earnings": {
       "ariaLabel": "收益中心",
       "title": "收益概览",
+      "comingSoonTitle": "该功能开发中，即将上线，敬请期待！",
+      "comingSoonDescription": "感谢您的耐心等待！",
       "commissionTitle": "佣金明细",
       "moneyPrefix": "$",
       "moneySuffix": "",
@@ -297,10 +302,11 @@
     "cardErrors": {
       "operationSuccess": "兑换成功",
       "operationFailed": "兑换失败",
-      "invalidCard": "兑换码无效",
+      "invalidCard": "兑换码不存在或已激活",
       "cardNotFound": "兑换码不存在",
       "cardDisabled": "兑换码已停用",
-      "cardExpired": "兑换码已过期"
+      "cardExpired": "兑换码已过期",
+      "alreadyLifetimeMember": "您已是终身会员，无需再次激活"
     },
     "successMessage": "操作成功"
   }

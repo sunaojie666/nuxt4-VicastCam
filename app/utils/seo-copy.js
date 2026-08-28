@@ -100,7 +100,7 @@ const pageSeoCopy = {
   'zh-TW': {
     home: {
       title: '虛擬背景與直播增強工具',
-      description: 'VicastCam 為創作者提供虛擬背景、直播增強、多平台推流與跨平台直播工具。',
+      description: 'VicastCam 為創作者提供虛擬背景、直播增強、多平台串流與跨平台直播工具。',
     },
     download: {
       title: '下載中心',
@@ -115,12 +115,12 @@ const pageSeoCopy = {
       description: '查看 VicastCam 隱私政策，了解我們如何收集、使用與保護您的個人資訊。',
     },
     tutorial: {
-      title: '教程中心',
-      description: '查看 VicastCam 教程中心，學習下載、安裝與使用方法。',
+      title: '教學中心',
+      description: '查看 VicastCam 教學中心，學習下載、安裝與使用方法。',
     },
     sdk: {
       title: 'VicastCam SDK',
-      description: '查看 VicastCam SDK 文件與 Demo 下載，快速整合虛擬相機、虛擬聲卡與投屏能力。',
+      description: '查看 VicastCam SDK 文件與 Demo 下載，快速整合虛擬相機、虛擬音效卡與螢幕投放能力。',
     },
     login: {
       title: '登入',
@@ -356,7 +356,7 @@ const pageSeoCopy = {
     },
     download: {
       title: 'Central de Downloads',
-      description: 'Baixe o VicastCam para Windows, iOS e Android.',
+      description: 'Descarregue o VicastCam para Windows, iOS e Android.',
     },
     faq: {
       title: 'Perguntas Frequentes',
@@ -367,12 +367,12 @@ const pageSeoCopy = {
       description: 'Leia a Política de Privacidade do VicastCam para saber como coletamos, usamos e protegemos informações pessoais.',
     },
     tutorial: {
-      title: 'Central de Tutoriais',
+      title: 'Centro de Tutoriais',
       description: 'Aprenda a baixar, instalar e usar o VicastCam.',
     },
     sdk: {
       title: 'VicastCam SDK',
-      description: 'Explore a documentação do VicastCam SDK e downloads de demo para câmera virtual, áudio virtual e espelhamento de tela.',
+      description: 'Explore a documentação do VicastCam SDK e downloads de demonstração para câmara virtual, áudio virtual e partilha de ecrã.',
     },
     login: {
       title: 'Entrar',
@@ -381,7 +381,7 @@ const pageSeoCopy = {
     },
     profile: {
       title: 'Perfil',
-      description: 'Seu centro de perfil do VicastCam.',
+      description: 'O seu centro de perfil do VicastCam.',
       robots: privateRobots,
     },
   },
@@ -516,7 +516,7 @@ const pageSeoCopy = {
     },
     sdk: {
       title: 'VicastCam SDK',
-      description: 'Esplora la documentazione VicastCam SDK e i download demo per camera virtuale, audio virtuale e trasmissione dello schermo.',
+      description: 'Esplora la documentazione VicastCam SDK e i download demo per camera virtuale, audio virtuale e condivisione dello schermo.',
     },
     login: {
       title: 'Accedi',
@@ -561,7 +561,7 @@ const pageSeoCopy = {
     },
     profile: {
       title: 'Profil',
-      description: 'Ihr VicastCam Profilcenter.',
+      description: 'Ihr VicastCam-Profilzentrum.',
       robots: privateRobots,
     },
   },
@@ -647,7 +647,7 @@ const pageSeoCopy = {
       description: 'Скачайте VicastCam для Windows, iOS и Android.',
     },
     faq: {
-      title: 'Вопросы и Ответы',
+      title: 'Часто задаваемые вопросы',
       description: 'Найдите ответы о загрузке, установке, аккаунтах и прямых трансляциях VicastCam.',
     },
     privacy: {
@@ -784,7 +784,7 @@ const pageSeoCopy = {
   ur: {
     home: {
       title: 'ورچوئل بیک گراؤنڈز اور لائیو اسٹریمنگ ٹولز',
-      description: 'VicastCam کری ایٹرز کو ورچوئل بیک گراؤنڈز، لائیو بہتریوں اور ملٹی پلیٹ فارم ٹولز کے ساتھ اسٹریمنگ میں مدد دیتا ہے۔',
+      description: 'VicastCam کریٹرز کو ورچوئل بیک گراؤنڈز، لائیو بہتریوں اور ملٹی پلیٹ فارم ٹولز کے ساتھ اسٹریمنگ میں مدد دیتا ہے۔',
     },
     download: {
       title: 'ڈاؤن لوڈ سینٹر',
@@ -891,6 +891,6 @@ const pageSeoCopy = {
   },
 }
 
-export const getPageSeoCopy = (pageKey, locale = 'zh-CN') => {
-  return pageSeoCopy[locale]?.[pageKey] || fallbackPageSeoCopy[pageKey] || pageSeoCopy['zh-CN']?.[pageKey] || {}
+export const getPageSeoCopy = (pageKey, locale = 'en') => {
+  return pageSeoCopy[locale]?.[pageKey] || fallbackPageSeoCopy[pageKey] || pageSeoCopy['en']?.[pageKey] || {}
 }

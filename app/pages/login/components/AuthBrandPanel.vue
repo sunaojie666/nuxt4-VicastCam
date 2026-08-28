@@ -1,7 +1,7 @@
 <template>
   <section class="auth-brand-panel" aria-labelledby="auth-brand-title">
     <NuxtLink :to="localePath('/')" class="auth-logo">
-      <img :src="mediaUrl('/images/common/logo.png')" alt="" aria-hidden="true" role="presentation">
+      <img :src="mediaUrl('/images/common/logo.jpg')" alt="" aria-hidden="true" role="presentation">
       <span>Vicast<span>Cam</span></span>
     </NuxtLink>
 
@@ -102,11 +102,9 @@ watch(() => props.loginData, (loginData) => {
 .auth-logo img {
   width: 44px;
   height: 44px;
-  border-radius: 4px;
-}
-
-:global(:root[data-theme="dark"]) .auth-logo img {
-  border-radius: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
+  border-radius: 7px;
 }
 
 .auth-logo span span {

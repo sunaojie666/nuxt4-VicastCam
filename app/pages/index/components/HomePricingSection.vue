@@ -93,11 +93,11 @@ const normalizePlanType = value => {
     return 'month'
   }
 
-  if (['year', 'yearly', 'annual', 'y', 'yearly-plan'].includes(type)) {
+  if (['year', 'yearly', 'annual', 'n', 'yearly-plan'].includes(type)) {
     return 'year'
   }
 
-  if (['life', 'lifetime', 'permanent', 'l', 'lifetime-plan'].includes(type)) {
+  if (['life', 'lifetime', 'permanent', 'y', 'lifetime-plan'].includes(type)) {
     return 'life'
   }
 
@@ -130,11 +130,11 @@ const getSourcePlanType = (source = {}) => {
   const code = normalizePlanText(source.name || source.id).toUpperCase()
   const price = normalizePriceValue(source.price)
 
-  if (code === 'L' || normalizedText.includes('life') || normalizedText.includes('lifetime') || text.includes('\u7ec8\u8eab') || text.includes('\u6c38\u4e45') || /89\.99|99\.99/.test(price)) {
+  if (code === 'Y' || normalizedText.includes('life') || normalizedText.includes('lifetime') || text.includes('\u7ec8\u8eab') || text.includes('\u6c38\u4e45') || /89\.99|99\.99/.test(price)) {
     return 'life'
   }
 
-  if (code === 'Y' || normalizedText.includes('year') || normalizedText.includes('annual') || text.includes('\u5e74') || price.includes('69.99')) {
+  if (code === 'N' || normalizedText.includes('year') || normalizedText.includes('annual') || text.includes('\u5e74') || price.includes('69.99')) {
     return 'year'
   }
 

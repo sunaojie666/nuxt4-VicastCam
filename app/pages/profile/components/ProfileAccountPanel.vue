@@ -12,7 +12,10 @@
         <div class="account-membership-current-main">
           <img class="account-membership-current-badge" :src="currentMembershipBadgeImage" :alt="membershipText.badgeAlt">
           <div class="account-membership-current-copy">
-            <strong>{{ currentVipName }}</strong>
+            <div class="account-membership-current-title">
+              <strong>{{ currentVipName }}</strong>
+              <MembershipTypeTag v-if="authUser?.vip_type" :vip-type="authUser.vip_type" />
+            </div>
             <p>
               <Icon name="lucide:calendar" aria-hidden="true" />
               {{ currentVipExpireText }}
@@ -117,14 +120,6 @@
       <div class="profile-invite-link">
         <Icon name="lucide:external-link" aria-hidden="true" />
         <span>{{ inviteLink || accountText.emptyInviteLink }}</span>
-        <button
-          type="button"
-          :aria-label="commonText.copyButtonLabel"
-          :disabled="!inviteLink"
-          @click="copyInviteLink"
-        >
-          <Icon name="lucide:copy" aria-hidden="true" />
-        </button>
       </div>
     </section>
   </section>
@@ -136,7 +131,6 @@ import { sendEmailCode } from '../../../api/request/auth'
 const mediaUrl = useMediaUrl()
 const { authUser, bindUserEmail } = useAuth()
 const {
-  showRequestSuccessToast,
   showApiResponseSuccessToast,
   showApiResponseErrorToast,
   showErrorToast,
@@ -310,7 +304,7 @@ const resolveVipBadgeImage = (value) => {
   const vipTypeCode = vipType.toUpperCase()
 
   if (
-    vipTypeCode === 'L' ||
+    vipTypeCode === 'Y' ||
     normalizedVipType.includes('life') ||
     normalizedVipType.includes('lifetime') ||
     normalizedVipType.includes('permanent') ||
@@ -321,7 +315,7 @@ const resolveVipBadgeImage = (value) => {
   }
 
   if (
-    vipTypeCode === 'Y' ||
+    vipTypeCode === 'N' ||
     normalizedVipType.includes('year') ||
     normalizedVipType.includes('annual') ||
     normalizedVipType.includes('\u5e74')
@@ -366,17 +360,6 @@ const currentMembershipBadgeImage = computed(() => {
 const inviteLink = computed(() => {
   return authUser.value?.invite_link || ''
 })
-
-const copyInviteLink = () => {
-  if (!process.client || !inviteLink.value || !window.navigator?.clipboard) {
-    return
-  }
-
-  window.navigator.clipboard.writeText(inviteLink.value).then(
-    () => showRequestSuccessToast(),
-    () => null
-  )
-}
 </script>
 
 <style scoped>
@@ -385,11 +368,6 @@ const copyInviteLink = () => {
   height: auto !important;
   padding-top: 0 !important;
   padding-bottom: 20px !important;
-}
-
-.profile-invite-link button:disabled {
-  opacity: 0.48;
-  cursor: not-allowed;
 }
 
 .profile-invite-panel {
@@ -437,6 +415,13 @@ const copyInviteLink = () => {
 
 .account-membership-current-copy {
   min-width: 0;
+}
+
+.account-membership-current-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .account-membership-current strong {

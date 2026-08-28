@@ -6,7 +6,7 @@
         <NuxtLink :to="localePath('/')" class="site-brand" target="_blank" rel="noopener noreferrer">
           <img
             class="site-brand-image"
-            :src="mediaUrl('/images/common/logo.png')"
+            :src="mediaUrl('/images/common/logo.jpg')"
             alt=""
             aria-hidden="true"
             role="presentation"
@@ -846,12 +846,41 @@ const switchLanguage = (code) => {
   navigateTo(targetPath || '/')
 }
 
+// 前端本地按语言维护的静态导航文案（不依赖 Strapi）。
+const navigationStaticLabels = {
+  en: { news: 'News' },
+  'zh-CN': { news: '新闻资讯' },
+  'zh-TW': { news: '新聞資訊' },
+  id: { news: 'Berita' },
+  ms: { news: 'Berita' },
+  th: { news: 'ข่าว' },
+  vi: { news: 'Tin tức' },
+  fil: { news: 'Balita' },
+  es: { news: 'Noticias' },
+  pt: { news: 'Notícias' },
+  ar: { news: 'أخبار' },
+  ja: { news: 'ニュース' },
+  tr: { news: 'Haberler' },
+  it: { news: 'Notizie' },
+  de: { news: 'Neuigkeiten' },
+  fr: { news: 'Actualités' },
+  ko: { news: '뉴스' },
+  ru: { news: 'Новости' },
+  pl: { news: 'Aktualności' },
+  nl: { news: 'Nieuws' },
+  hi: { news: 'समाचार' },
+  ur: { news: 'خبریں' },
+  bn: { news: 'সংবাদ' },
+  fa: { news: 'اخبار' },
+}
+
 // Strapi 导航字段和页面锚点 key 的对应关系。
 const navigationFieldMap = [
   { key: 'clientDownload', field: 'navClientDownload' },
   { key: 'features', field: 'navFeatures' },
   { key: 'pricing', field: 'navPricing' },
   { key: 'team', field: 'navTeam' },
+  { key: 'news', labelKey: 'news' },
   { key: 'faq', field: 'navFaq' },
   { key: 'sdk', label: 'SDK' },
 ]
@@ -925,6 +954,11 @@ const handleNavigationClick = (key) => {
     return
   }
 
+  if (key === 'news') {
+    openPageInNewTab(createLocalizedPath({ path: '/news' }))
+    return
+  }
+
   const sectionId = navigationSectionMap[key]?.targetId
   if (!sectionId) {
     return
@@ -945,7 +979,9 @@ const refreshNavigationItems = (navigationData) => {
   navigationItems.value = navigationFieldMap.map(item => {
     return {
       key: item.key,
-      label: item.label || navigationData[item.field] || '',
+      label: item.labelKey
+        ? (navigationStaticLabels[locale.value]?.[item.labelKey] || navigationStaticLabels.en?.[item.labelKey] || '')
+        : (item.label || navigationData[item.field] || ''),
     }
   })
 
@@ -1227,10 +1263,9 @@ onBeforeUnmount(() => {
   height: 40px;
   flex: 0 0 auto;
   object-fit: contain;
-}
-
-:root[data-theme="dark"] .site-brand-image {
-  border-radius: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
+  border-radius: 7px;
 }
 
 .site-brand-name {

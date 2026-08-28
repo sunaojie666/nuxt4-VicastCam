@@ -4,7 +4,7 @@
       <AuthBrandPanel :login-data="loginContent" />
 
       <NuxtLink :to="localePath('/')" class="auth-mobile-logo">
-        <img :src="mediaUrl('/images/common/logo.png')" alt="" aria-hidden="true" role="presentation">
+        <img :src="mediaUrl('/images/common/logo.jpg')" alt="" aria-hidden="true" role="presentation">
         <span>Vicast<span>Cam</span></span>
       </NuxtLink>
 
@@ -399,11 +399,9 @@ useLocalizedAsyncState({
   width: 44px;
   height: 44px;
   flex: 0 0 auto;
-  border-radius: 4px;
-}
-
-:root[data-theme="dark"] .auth-mobile-logo img {
-  border-radius: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
+  border-radius: 7px;
 }
 
 .auth-mobile-logo > span {

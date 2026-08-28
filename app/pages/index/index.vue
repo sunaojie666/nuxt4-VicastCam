@@ -55,6 +55,7 @@ import HomeFaqSection from './components/HomeFaqSection.vue'
 import HomeLearningSection from './components/HomeLearningSection.vue'
 import HomeFooterHeroSection from './components/HomeFooterHeroSection.vue'
 import { createAbsoluteUrl, setupPageSeo, setupStructuredData } from '../../utils/seo'
+import { defaultDescription, getPageSeoCopy } from '../../utils/seo-copy'
 const mediaUrl = useMediaUrl()
 
 setupPageSeo('home')
@@ -73,8 +74,8 @@ setupStructuredData(() => [
     '@type': 'Organization',
     name: 'VicastCam',
     url: siteUrl.value,
-    logo: createAbsoluteUrl(mediaUrl('/images/common/logo.png'), siteUrl.value),
-    description: 'VicastCam provides virtual camera, virtual background, screen casting, and live streaming tools for creators, meetings, and multi-platform production.',
+    logo: createAbsoluteUrl(mediaUrl('/images/common/logo.jpg'), siteUrl.value),
+    description: getPageSeoCopy('home', locale.value).description || defaultDescription,
   },
   {
     '@context': 'https://schema.org',

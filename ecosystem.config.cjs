@@ -12,6 +12,7 @@ module.exports = {
         HOST: '0.0.0.0',
         NUXT_PUBLIC_SITE_URL: 'https://www.vicastcam.com',
         NUXT_SITE_URL: 'https://www.vicastcam.com',
+        NUXT_PUBLIC_STRAPI_URL: 'https://cms.vicastcam.com',
       },
     },
   ],

@@ -7,7 +7,9 @@ const normalizeStrapiApiBaseURL = (url) => {
     return '/api/strapi'
   }
 
-  const baseURL = url || 'http://192.168.18.100:1337'
+  const baseURL = url || (process.env.NODE_ENV === 'development'
+    ? 'http://192.168.18.100:1337'
+    : 'https://cms.vicastcam.com')
   return `${baseURL.replace(/\/+$/, '')}/api`
 }
 
@@ -199,6 +201,17 @@ export const getMembers = (locale) => {
   })
 }
 
+// 账号注销页文案接口，对应 Strapi 里的 deletions 内容类型。
+export const getAccountDeletions = (locale) => {
+  return createStrapiRequest().get('/deletions', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
 // 首页功能特色接口，对应 Strapi 里的 api::feature.feature。
 export const getFeature = (locale) => {
   return createStrapiRequest().get('/features', {
@@ -355,6 +368,41 @@ export const getCheckouts = (locale) => {
 // 个人中心文案接口，对应 Strapi 里的 api::profile.profile。
 export const getProfiles = (locale) => {
   return createStrapiRequest().get('/profiles', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 新闻资讯列表接口，对应 Strapi 里的 api::article.article。
+// 未开启 Public 权限时接口会 403，页面在 catch 中回退到本地兜底数据。
+export const getNews = (locale) => {
+  return createStrapiRequest().get('/articles', {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+      sort: 'date:desc',
+    },
+  })
+}
+
+// 新闻资讯单篇接口，documentId 为 Strapi 的公开标识。
+export const getNewsArticle = (documentId, locale) => {
+  return createStrapiRequest().get(`/articles/${documentId}`, {
+    ...homeRequestOptions,
+    params: {
+      locale,
+      populate: '*',
+    },
+  })
+}
+
+// 新闻页顶部文案接口，对应 Strapi 里的 api::newspage.newspage（单条，含 hero 文案等）。
+export const getNewsPage = (locale) => {
+  return createStrapiRequest().get('/newspages', {
     ...homeRequestOptions,
     params: {
       locale,

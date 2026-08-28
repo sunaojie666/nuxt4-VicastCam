@@ -1,6 +1,7 @@
 <template>
   <section class="profile-content" :aria-label="earningsText.ariaLabel">
-    <section class="profile-panel earnings-overview-panel">
+    <template v-if="isEarningsReady">
+      <section class="profile-panel earnings-overview-panel">
       <header class="profile-panel-heading">
         <span>
           <Icon name="lucide:coins" aria-hidden="true" />
@@ -233,13 +234,31 @@
           </footer>
         </section>
       </div>
-    </Teleport>
+      </Teleport>
+    </template>
+
+    <section v-else class="profile-panel earnings-under-development-panel">
+      <header class="profile-panel-heading">
+        <span>
+          <Icon name="lucide:coins" aria-hidden="true" />
+        </span>
+        <h2>{{ earningsText.title }}</h2>
+      </header>
+
+      <div class="earnings-under-development-state">
+        <p>{{ earningsText.comingSoonTitle }}</p>
+        <p>{{ earningsText.comingSoonDescription }}</p>
+      </div>
+    </section>
   </section>
 </template>
 
 <script setup>
 import { getCommissionList } from '../../../api/request/auth'
 import { createThemeContext } from '../../../utils/theme'
+
+// 功能开发中开关：true 时展示完整收益中心，false 时显示开发中占位提示。
+const isEarningsReady = false
 
 const createMoneyText = (value) => {
   const prefix = String(profileBox.value?.earnings?.moneyPrefix || '')
@@ -434,7 +453,7 @@ const resolveCommissionGoodsType = (value) => {
   const normalizedText = text.toLowerCase().replace(/[\s_-]+/g, '')
 
   if (
-    code === 'L' ||
+    code === 'Y' ||
     normalizedText.includes('life') ||
     normalizedText.includes('lifetime') ||
     normalizedText.includes('permanent') ||
@@ -445,7 +464,6 @@ const resolveCommissionGoodsType = (value) => {
   }
 
   if (
-    code === 'Y' ||
     code === 'N' ||
     normalizedText.includes('year') ||
     normalizedText.includes('annual') ||
@@ -620,6 +638,10 @@ const submitWithdraw = () => {
 }
 
 onMounted(() => {
+  if (!isEarningsReady) {
+    return
+  }
+
   hasSelectedMonth.value = false
   selectedMonth.value = ''
   syncWithdrawDefaults()
@@ -1431,5 +1453,24 @@ onBeforeUnmount(() => {
     border-radius: 0;
     overflow-y: auto;
   }
+}
+
+.earnings-under-development-panel {
+  min-height: 0 !important;
+  height: auto !important;
+  padding-bottom: 28px;
+}
+
+.earnings-under-development-state {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--profile-muted);
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
 }
 </style>

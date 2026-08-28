@@ -153,9 +153,11 @@
 
 <script setup>
 import { getTeamInfo, getTeamList } from '../../../api/request/auth'
+import { memberStatusCopy } from '../../../utils/member-status'
 
 const { authUser } = useAuth()
 const { profileBox } = useProfileText()
+const { locale } = useI18n()
 const selectedLevel = ref('1')
 const selectedMonth = ref('')
 const hasSelectedMonth = ref(false)
@@ -234,15 +236,40 @@ const applyTeamInfoTotals = (response) => {
 }
 
 const getTeamMemberStatusText = (key) => {
-  return teamText.value.memberStatus?.[key] || ''
+  if (!key) {
+    return ''
+  }
+
+  return teamText.value.memberStatus?.[key] || memberStatusCopy[locale.value]?.[key] || ''
+}
+
+const normalizeVipType = (value) => {
+  const vipTypeCode = String(value || '').trim().toUpperCase()
+
+  if (vipTypeCode === 'M') {
+    return 'month'
+  }
+
+  if (vipTypeCode === 'N') {
+    return 'year'
+  }
+
+  // Y 为终身会员。
+  if (vipTypeCode === 'Y') {
+    return 'life'
+  }
+
+  return ''
 }
 
 const createMemberStatus = (member = {}) => {
   const isVip = Number(pickTeamValue(member.is_vip, member.isVip, 0))
+  const vipTypeKey = isVip === 1 ? normalizeVipType(pickTeamValue(member.vip_type, member.vipType)) : ''
+  const statusKey = isVip === 1 ? vipTypeKey : 'free'
 
   return {
-    status: getTeamMemberStatusText(isVip === 1 ? 'vip' : 'free'),
-    statusClass: isVip === 1 ? 'status-vip' : 'status-free',
+    status: getTeamMemberStatusText(statusKey),
+    statusClass: isVip === 1 ? `status-${vipTypeKey || 'vip'}` : 'status-free',
   }
 }
 
@@ -788,15 +815,21 @@ onBeforeUnmount(() => {
 }
 
 .status-life {
-  color: var(--theme-accent);
+  color: var(--theme-extra-234-221-70-1);
+  background: rgba(234, 221, 70, 0.16);
+  border: 1px solid rgba(234, 221, 70, 0.45);
 }
 
 .status-month {
-  color: var(--theme-extra-72-156-255-1);
+  color: var(--theme-extra-38-196-245-1);
+  background: rgba(38, 196, 245, 0.14);
+  border: 1px solid rgba(38, 196, 245, 0.4);
 }
 
 .status-year {
-  color: var(--theme-extra-234-221-70-1);
+  color: var(--theme-extra-72-156-255-1);
+  background: rgba(72, 156, 255, 0.16);
+  border: 1px solid rgba(72, 156, 255, 0.4);
 }
 
 .team-pagination {

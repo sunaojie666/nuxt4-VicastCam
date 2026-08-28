@@ -42,6 +42,7 @@ useHead(() => ({
       '--media-images-login-captcha-bg-1-png': `url(${mediaUrl('/images/login/captcha-bg-1.png')})`,
       '--media-images-login-qr-panel-bg-png': `url(${mediaUrl('/images/login/qr-panel-bg.png')})`,
       '--media-images-team-partner-plan-hero-bg-png': `url(${mediaUrl('/images/team/partner-plan-hero-bg.png')})`,
+      '--media-images-news-news-hero-bg-png': `url(${mediaUrl('/images/news/news-hero-bg.png')})`,
     },
   },
   titleTemplate: (titleChunk) => {

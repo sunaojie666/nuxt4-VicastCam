@@ -43,6 +43,7 @@ import { getApiResponseMessage } from '../../../utils/api-response'
 
 const cardPwd = ref('')
 const isActivating = ref(false)
+const { locale } = useI18n()
 const { authUser, refreshVipInfo } = useAuth()
 const { showErrorToast, showSuccessToast } = useSiteToast()
 const { profileBox } = useProfileText()
@@ -64,9 +65,10 @@ const userProtocolHref = computed(() => {
 
 const getCardResponseMessage = (payload) => {
   return getApiResponseMessage(payload, {
+    locale: locale.value,
     scope: 'card',
     messages: activeCardMessages.value,
-    useLocalMessages: false,
+    useLocalMessages: true,
   })
 }
 

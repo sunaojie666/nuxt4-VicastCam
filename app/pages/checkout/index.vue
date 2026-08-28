@@ -3,6 +3,17 @@
     <SiteHeader />
 
     <main class="checkout-page" aria-labelledby="checkout-title">
+      <div class="checkout-back-row">
+        <button
+          type="button"
+          class="checkout-back-button"
+          @click="goBack"
+        >
+          <Icon name="lucide:arrow-left" aria-hidden="true" />
+          <span>{{ checkoutBackLabel }}</span>
+        </button>
+      </div>
+
       <div v-if="isCheckoutSelectionReady" class="checkout-shell">
         <section class="checkout-panel checkout-payment-panel" aria-labelledby="checkout-title">
           <header class="checkout-panel-header">
@@ -221,6 +232,7 @@ import SiteHeader from '../../components/SiteHeader.vue'
 import SiteFooter from '../../components/SiteFooter.vue'
 import { getCheckouts } from '../../api/request/strapi'
 import { createPaypalOrder, getPaypalOrderStatus, resolvePaypalProductId } from '../../api/request/paypal'
+import { getApiResponseMessage, isApiResponseError } from '../../utils/api-response'
 import { isLoggedInUser } from '../../utils/auth-session'
 import { loadCheckoutSelection } from '../../utils/checkout-selection'
 
@@ -234,6 +246,7 @@ const { showErrorToast } = useSiteToast()
 const checkoutContentLocale = useState('checkout-page-content-locale', () => '')
 
 const createEmptyCheckoutContent = () => ({
+  backLabel: '',
   title: '',
   payment: {
     providerName: '',
@@ -336,12 +349,12 @@ const normalizePlanType = (value) => {
     return 'month'
   }
 
-  if (['year', 'yearly', 'annual', 'y', 'yearly-plan'].includes(text) || text.includes('年')) {
+  if (['year', 'yearly', 'annual', 'n', 'yearly-plan'].includes(text) || text.includes('年')) {
     return 'year'
   }
 
   if (
-    ['life', 'lifetime', 'permanent', 'l', 'lifetime-plan'].includes(text) ||
+    ['life', 'lifetime', 'permanent', 'y', 'lifetime-plan'].includes(text) ||
     text.includes('终身') ||
     text.includes('永久')
   ) {
@@ -430,6 +443,7 @@ const createCheckoutContent = (content = {}) => {
   const plans = source.plans || source.planTranslations || source.plan_translations || source.products || []
 
   return {
+    backLabel: normalizeCheckoutValue(source.backLabel || source.back_label || payment.backLabel || payment.back_label),
     title: normalizeCheckoutValue(source.title),
     payment: {
       providerName: normalizeCheckoutValue(payment.providerName || payment.provider_name || payment.title),
@@ -510,6 +524,49 @@ const syncCheckoutContent = (content = {}) => {
 }
 
 syncCheckoutContent(checkoutContent.value)
+
+const checkoutBackLabelFallback = {
+  'zh-CN': '返回',
+  en: 'Back',
+  'zh-TW': '返回',
+  id: 'Kembali',
+  ms: 'Kembali',
+  th: 'ย้อนกลับ',
+  vi: 'Quay lại',
+  fil: 'Bumalik',
+  es: 'Volver',
+  pt: 'Voltar',
+  ar: 'رجوع',
+  ja: '戻る',
+  tr: 'Geri',
+  it: 'Indietro',
+  de: 'Zurück',
+  fr: 'Retour',
+  ko: '뒤로',
+  ru: 'Назад',
+  pl: 'Wstecz',
+  nl: 'Terug',
+  hi: 'वापस',
+  ur: 'واپس',
+  bn: 'ফিরে যান',
+  fa: 'بازگشت',
+}
+
+const checkoutBackLabel = computed(() => {
+  return checkoutContent.value.backLabel ||
+    checkoutBackLabelFallback[locale.value] ||
+    checkoutBackLabelFallback.en ||
+    'Back'
+})
+
+const goBack = () => {
+  if (process.client && window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  router.push(localePath('/'))
+}
 
 useLocalizedAsyncState({
   locale,
@@ -1074,11 +1131,10 @@ const redirectToPaypal = async () => {
       user_id: authUser.value?.user_id,
       product_id: paypalProductId.value,
     })
-    const responseCode = Number(response?.code || response?.data?.code)
     const approvalUrl = extractPaypalApprovalUrl(response)
     const outTradeNo = extractOutTradeNo(response)
 
-    if (responseCode && responseCode !== 200001) {
+    if (isApiResponseError(response, 'order')) {
       throw new Error(response?.message || 'paypalOrderCreateFailed')
     }
 
@@ -1111,15 +1167,20 @@ const redirectToPaypal = async () => {
         schedulePaypalCheck(() => checkPaypalOrderAfterPopupClosed(), 250)
       }
     }, 500)
-  } catch {
+  } catch (error) {
     if (paypalPopup && !paypalPopup.closed) {
       paypalPopup.close()
     }
 
     paypalPopup = null
     isPaypalRedirecting.value = false
-    setPaymentFeedback(paymentText.value.orderCreateFailed, 'error')
-    showErrorToast(paymentText.value.orderCreateFailed)
+    const message = getApiResponseMessage(error?.data || error, {
+      locale: locale.value,
+      scope: error?.responseScope || 'order',
+      fallback: paymentText.value.orderCreateFailed,
+    })
+    setPaymentFeedback(message, 'error')
+    showErrorToast(message)
   }
 }
 
@@ -1188,7 +1249,8 @@ useSeoMeta({
   width: 100%;
   min-height: 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 72px 20px;
   color: var(--checkout-text);
   background:
@@ -1225,6 +1287,51 @@ useSeoMeta({
 .checkout-page,
 .checkout-page * {
   box-sizing: border-box;
+}
+
+.checkout-back-row {
+  width: min(100%, 960px);
+  max-width: calc(100vw - 40px);
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.checkout-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--checkout-muted-strong);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.checkout-back-button :deep(svg) {
+  width: 17px;
+  height: 17px;
+}
+
+.checkout-back-button:hover,
+.checkout-back-button:focus-visible {
+  color: var(--checkout-text);
+  background: var(--checkout-panel-soft);
+  border-color: var(--checkout-border-soft);
+}
+
+.checkout-back-button:focus-visible {
+  outline: 2px solid var(--checkout-focus);
+  outline-offset: 2px;
+}
+
+[dir="rtl"] .checkout-back-button :deep(svg) {
+  transform: scaleX(-1);
 }
 
 .checkout-shell {
@@ -2026,6 +2133,10 @@ useSeoMeta({
   }
 
   .checkout-shell {
+    max-width: calc(100vw - 28px);
+  }
+
+  .checkout-back-row {
     max-width: calc(100vw - 28px);
   }
 

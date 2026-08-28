@@ -6,7 +6,7 @@
         <div class="site-footer-logo-row">
           <img
             class="site-footer-logo"
-            :src="mediaUrl('/images/common/logo.png')"
+            :src="mediaUrl('/images/common/logo.jpg')"
             alt=""
             aria-hidden="true"
             role="presentation"
@@ -161,6 +161,7 @@ const footerLinkActionsByKey = {
   about: { path: '/about' },
   terms: { path: '/terms' },
   salesPolicy: { path: '/sales-policy' },
+  accountDeletion: { path: '/account-deletion' },
   docs: { path: '/tutorial' },
   contact: { path: '/about' },
   cooperation: { path: '/team' },
@@ -221,6 +222,78 @@ const footerLinkTextActionMap = {
   '会员订阅协议': 'salesPolicy',
   'membershipsubscriptionagreement': 'salesPolicy',
   'membershipagreement': 'salesPolicy',
+  '账号注销': 'accountDeletion',
+  '注销账号': 'accountDeletion',
+  '注销账户': 'accountDeletion',
+  '账号注销申请': 'accountDeletion',
+  '注销': 'accountDeletion',
+  '删除账号': 'accountDeletion',
+  '註銷賬號': 'accountDeletion',
+  '註銷帳號': 'accountDeletion',
+  '刪除賬號': 'accountDeletion',
+  'accountdeletion': 'accountDeletion',
+  'deleteaccount': 'accountDeletion',
+  'deletingaccount': 'accountDeletion',
+  'cancelaccount': 'accountDeletion',
+  'accountcancellation': 'accountDeletion',
+  'closeaccount': 'accountDeletion',
+  '帳號註銷': 'accountDeletion',
+  '刪除帳號': 'accountDeletion',
+  '註銷賬戶': 'accountDeletion',
+  'hapusakun': 'accountDeletion',
+  'penghapusanakun': 'accountDeletion',
+  'batalkanakun': 'accountDeletion',
+  'pembatalanakun': 'accountDeletion',
+  'padamakaun': 'accountDeletion',
+  'pembatalanakaun': 'accountDeletion',
+  'batalkanaun': 'accountDeletion',
+  'ลบบัญชี': 'accountDeletion',
+  'ลบบญช': 'accountDeletion',
+  'ยกเลิกบัญชี': 'accountDeletion',
+  'xoataikhoan': 'accountDeletion',
+  'xóatàikhoản': 'accountDeletion',
+  'huytaikhoan': 'accountDeletion',
+  'tanggalinangaccount': 'accountDeletion',
+  'kanselahinangaccount': 'accountDeletion',
+  'eliminarcuenta': 'accountDeletion',
+  'cancelarcuenta': 'accountDeletion',
+  'eliminarconta': 'accountDeletion',
+  'excluirconta': 'accountDeletion',
+  'cancelarconta': 'accountDeletion',
+  'حذفالحساب': 'accountDeletion',
+  'إلغاءالحساب': 'accountDeletion',
+  'アカウント削除': 'accountDeletion',
+  'アカウント解約': 'accountDeletion',
+  'hesabisil': 'accountDeletion',
+  'hesabısil': 'accountDeletion',
+  'hesapsilme': 'accountDeletion',
+  'hesabiptal': 'accountDeletion',
+  'eliminaaccount': 'accountDeletion',
+  'cancellazioneaccount': 'accountDeletion',
+  'rimuoviaccount': 'accountDeletion',
+  'kontolöschen': 'accountDeletion',
+  'kontolöschung': 'accountDeletion',
+  'supprimerlecompte': 'accountDeletion',
+  'suppressionducompte': 'accountDeletion',
+  '계정삭제': 'accountDeletion',
+  '계정탈퇴': 'accountDeletion',
+  '회원탈퇴': 'accountDeletion',
+  'удалитьаккаунт': 'accountDeletion',
+  'удалениеаккаунта': 'accountDeletion',
+  'usuńkonto': 'accountDeletion',
+  'usunkonto': 'accountDeletion',
+  'usunieciekonta': 'accountDeletion',
+  'accountverwijderen': 'accountDeletion',
+  'verwijderenaccount': 'accountDeletion',
+  'खतहटए': 'accountDeletion',
+  'खाताहटाएं': 'accountDeletion',
+  'खाताविलोपन': 'accountDeletion',
+  'اکاؤنٹحذفکریں': 'accountDeletion',
+  'অযকউনটমছন': 'accountDeletion',
+  'অ্যাকাউন্টমুছুন': 'accountDeletion',
+  'حذفحساب': 'accountDeletion',
+  'حذفحسابکاربری': 'accountDeletion',
+  'لغوحساب': 'accountDeletion',
   '文档': 'docs',
   'documentation': 'docs',
   'docs': 'docs',
@@ -602,6 +675,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   background: var(--theme-footer-background, var(--theme-page));
+  --page-max-width: 1400px;
 }
 
 .site-footer-inner {
@@ -633,11 +707,11 @@ onBeforeUnmount(() => {
   height: 30px;
   flex: 0 0 auto;
   object-fit: contain;
-}
-
-:root[data-theme="dark"] .site-footer-logo {
+  box-sizing: border-box;
+  border: 1px solid var(--theme-header-control-border, var(--theme-border-control));
   border-radius: 7px;
 }
+
 .site-footer-brand-name {
   min-width: 0;
   overflow: hidden;
@@ -954,8 +1028,8 @@ onBeforeUnmount(() => {
 .site-footer-columns {
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: repeat(5, minmax(80px, 1fr));
-  column-gap: clamp(36px, 5vw, 84px);
+  grid-template-columns: repeat(5, minmax(max-content, 1fr));
+  column-gap: clamp(16px, 2.5vw, 48px);
   margin-left: 130px;
   min-width: 0;
 }
@@ -1010,7 +1084,7 @@ onBeforeUnmount(() => {
   opacity: 0.42;
   overflow-wrap: anywhere;
 }
-@media (max-width: 900px) {
+@media (max-width: 1160px) {
   .site-footer {
     min-height: var(--page-footer-height);
   }
@@ -1052,9 +1126,31 @@ onBeforeUnmount(() => {
 
   .site-footer-columns {
     width: 100%;
-    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: clamp(24px, 5vw, 56px);
     row-gap: 28px;
     margin-left: 0;
+  }
+
+  .site-footer-column {
+    flex: 0 1 auto;
+  }
+}
+
+/* 手机端底部菜单：改为两列网格，避免链接列挤在一行 */
+@media (max-width: 520px) {
+  .site-footer-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 28px;
+    row-gap: 30px;
+  }
+
+  .site-footer-column {
+    flex: none;
+    width: 100%;
+    min-width: 0;
   }
 }
 </style>

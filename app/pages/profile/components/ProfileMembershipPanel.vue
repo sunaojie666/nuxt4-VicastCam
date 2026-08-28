@@ -12,7 +12,10 @@
         <div class="membership-current-main">
           <img class="membership-current-badge" :src="currentMembershipBadgeImage" :alt="membershipText.badgeAlt">
           <div class="membership-current-copy">
-            <strong>{{ currentVipName }}</strong>
+            <div class="membership-current-title">
+              <strong>{{ currentVipName }}</strong>
+              <MembershipTypeTag v-if="authUser?.vip_type" :vip-type="authUser.vip_type" />
+            </div>
             <p>
               <Icon name="lucide:calendar" aria-hidden="true" />
               {{ currentVipExpireText }}
@@ -147,11 +150,11 @@ const normalizePlanType = value => {
     return 'month'
   }
 
-  if (['year', 'yearly', 'annual', 'y', 'yearly-plan'].includes(type)) {
+  if (['year', 'yearly', 'annual', 'n', 'yearly-plan'].includes(type)) {
     return 'year'
   }
 
-  if (['life', 'lifetime', 'permanent', 'l', 'lifetime-plan'].includes(type)) {
+  if (['life', 'lifetime', 'permanent', 'y', 'lifetime-plan'].includes(type)) {
     return 'life'
   }
 
@@ -207,11 +210,11 @@ const isMatchingSourcePlan = (source = {}, type = '') => {
   const price = normalizePriceValue(source.price)
 
   if (type === 'life') {
-    return code === 'L' || normalizedText.includes('life') || normalizedText.includes('lifetime') || text.includes('\u7ec8\u8eab') || text.includes('\u6c38\u4e45') || /89\.99|99\.99/.test(price)
+    return code === 'Y' || normalizedText.includes('life') || normalizedText.includes('lifetime') || text.includes('\u7ec8\u8eab') || text.includes('\u6c38\u4e45') || /89\.99|99\.99/.test(price)
   }
 
   if (type === 'year') {
-    return code === 'Y' || normalizedText.includes('year') || normalizedText.includes('annual') || text.includes('\u5e74') || price.includes('69.99')
+    return code === 'N' || normalizedText.includes('year') || normalizedText.includes('annual') || text.includes('\u5e74') || price.includes('69.99')
   }
 
   if (type === 'month') {
@@ -232,7 +235,7 @@ const resolveVipBadgeImage = (value) => {
   const vipTypeCode = vipType.toUpperCase()
 
   if (
-    vipTypeCode === 'L' ||
+    vipTypeCode === 'Y' ||
     normalizedVipType.includes('life') ||
     normalizedVipType.includes('lifetime') ||
     normalizedVipType.includes('permanent') ||
@@ -243,7 +246,7 @@ const resolveVipBadgeImage = (value) => {
   }
 
   if (
-    vipTypeCode === 'Y' ||
+    vipTypeCode === 'N' ||
     normalizedVipType.includes('year') ||
     normalizedVipType.includes('annual') ||
     normalizedVipType.includes('\u5e74')
@@ -390,6 +393,13 @@ onMounted(() => {
   min-width: 0;
 }
 
+.membership-current-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .membership-current strong {
   display: block;
   color: var(--theme-white);
@@ -524,7 +534,7 @@ onMounted(() => {
 
 .membership-price span {
   color: var(--theme-extra-130-161-193-1);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 22px;
 }
 

@@ -16,6 +16,13 @@ export const createMediaUrl = (path = '', baseUrl = defaultMediaUrl) => {
   }
 
   const normalizedPath = url.startsWith('/') ? url : `/${url}`
+  const base = normalizeMediaBaseUrl(baseUrl)
 
-  return `${normalizeMediaBaseUrl(baseUrl)}${normalizedPath}`
+  // 本地开发默认直接使用 public 目录下的资源（避免新资源未同步到 CDN 时本地 404），
+  // 仅当媒体地址仍为默认 CDN 时生效；通过 NUXT_PUBLIC_MEDIA_URL 显式指定地址则仍使用该地址。
+  if (base === normalizeMediaBaseUrl(defaultMediaUrl) && process.env.NODE_ENV === 'development') {
+    return normalizedPath
+  }
+
+  return `${base}${normalizedPath}`
 }

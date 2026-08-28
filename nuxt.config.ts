@@ -4,6 +4,12 @@ import { createMediaUrl, defaultMediaUrl } from './media.config'
 // 站点正式域名统一从环境变量读取，SEO、sitemap、robots、i18n 都使用同一个值。
 const defaultSiteUrl = 'https://www.vicastcam.com'
 const siteUrl = (process.env.NUXT_PUBLIC_SITE_URL || process.env.NUXT_SITE_URL || defaultSiteUrl).replace(/\/+$/, '')
+// 开发环境默认请求本地 Strapi，构建/线上环境默认请求线上 CMS；
+// 也可以通过 NUXT_PUBLIC_STRAPI_URL 手动覆盖。
+const defaultStrapiUrl = process.env.NODE_ENV === 'development'
+  ? 'http://192.168.18.100:1337'
+  : 'https://cms.vicastcam.com'
+const strapiUrl = process.env.NUXT_PUBLIC_STRAPI_URL || defaultStrapiUrl
 
 // 站点名称用于 sitemap 展示、默认标题模板和生产环境识别。
 const siteName = process.env.NUXT_SITE_NAME || 'VicastCam'
@@ -79,7 +85,7 @@ export default defineNuxtConfig({
     vicastApiUrl: process.env.NUXT_VICAST_API_URL || 'https://api.vicastcam.com',
     public: {
       siteUrl,
-      strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || 'http://192.168.18.100:1337',
+      strapiUrl,
       mediaUrl,
       paypalClientId: process.env.NUXT_PUBLIC_PAYPAL_CLIENT_ID || (process.env.NODE_ENV === 'development' ? 'test' : ''),
       paypalCurrency: process.env.NUXT_PUBLIC_PAYPAL_CURRENCY || 'USD',
@@ -122,9 +128,9 @@ export default defineNuxtConfig({
         { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: createMediaUrl('/images/common/logo.png', mediaUrl) },
-        { rel: 'shortcut icon', type: 'image/png', href: createMediaUrl('/images/common/logo.png', mediaUrl) },
-        { rel: 'apple-touch-icon', href: createMediaUrl('/images/common/logo.png', mediaUrl) },
+        { rel: 'icon', type: 'image/jpeg', href: createMediaUrl('/images/common/logo.jpg', mediaUrl) },
+        { rel: 'shortcut icon', type: 'image/jpeg', href: createMediaUrl('/images/common/logo.jpg', mediaUrl) },
+        { rel: 'apple-touch-icon', href: createMediaUrl('/images/common/logo.jpg', mediaUrl) },
       ],
     },
   },
@@ -185,9 +191,8 @@ export default defineNuxtConfig({
   },
 
   robots: {
-    // 生成 /robots.txt，并自动附带 sitemap 地址。
+    // 生成 /robots.txt，sitemap 地址由 @nuxtjs/sitemap 自动附带，避免重复声明。
     robotsTxt: true,
-    sitemap: [`${siteUrl}/sitemap.xml`],
     allow: ['/'],
     // 默认不屏蔽 Nuxt 静态资源，避免影响搜索引擎正确渲染页面。
     disallow: [],

@@ -1,7 +1,11 @@
 import { createError } from 'h3'
 
 export const normalizeStrapiApiBaseURL = (url) => {
-  return `${String(url || 'http://192.168.18.100:1337').replace(/\/+$/, '')}/api`
+  const defaultURL = process.env.NODE_ENV === 'development'
+    ? 'http://192.168.18.100:1337'
+    : 'https://cms.vicastcam.com'
+
+  return `${String(url || defaultURL).replace(/\/+$/, '')}/api`
 }
 
 export const createStrapiApiURL = (baseURL, path = '') => {

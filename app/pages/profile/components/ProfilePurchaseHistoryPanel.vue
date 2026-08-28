@@ -264,20 +264,17 @@ const createRecordStatus = (record = {}) => {
 const createCardTypeTitle = (value) => {
   const cardType = createRecordText(value).toUpperCase()
 
-  if (cardType === 'M') {
-    return cardTypeText.value.month || ''
-  }
-
-  if (cardType === 'N') {
-    return cardTypeText.value.year || ''
-  }
-
   if (cardType === 'Y') {
     return cardTypeText.value.life || ''
   }
 
-  if (cardType === 'L') {
-    return cardTypeText.value.life || ''
+  if (cardType === 'M') {
+    return cardTypeText.value.month || ''
+  }
+
+  // 兼容历史数据中的旧类型码
+  if (cardType === 'N') {
+    return cardTypeText.value.year || ''
   }
 
   return ''
@@ -656,7 +653,7 @@ onMounted(() => {
 }
 
 .purchase-record-price {
-  color: var(--theme-extra-241-247-255-1) !important;
+  color: var(--theme-profile-table-text, var(--theme-text-table)) !important;
   font-weight: 400;
 }
 
@@ -669,7 +666,7 @@ onMounted(() => {
 }
 
 .purchase-record-price-amount {
-  color: var(--theme-extra-241-247-255-1);
+  color: var(--theme-profile-table-text, var(--theme-text-table));
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;

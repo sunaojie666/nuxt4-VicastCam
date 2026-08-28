@@ -107,12 +107,61 @@
       @close="closePuzzle"
     />
   </ClientOnly>
+
+  <Teleport to="body">
+    <div
+      v-if="showCoolingPeriodModal"
+      class="cooling-period-backdrop"
+    >
+      <section
+        class="cooling-period-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cooling-period-title"
+      >
+        <span class="cooling-period-icon">
+          <Icon name="lucide:clock-3" aria-hidden="true" />
+        </span>
+
+        <h2 id="cooling-period-title">{{ copy.cooling.title }}</h2>
+
+        <p class="cooling-period-description">
+          {{ copy.cooling.description }}
+        </p>
+
+        <p v-if="coolingEndTimeText" class="cooling-period-endtime">
+          {{ copy.cooling.endTimeLabel }}：<strong>{{ coolingEndTimeText }}</strong>
+        </p>
+
+        <div class="cooling-period-actions">
+          <button
+            type="button"
+            class="cooling-period-primary"
+            :disabled="isRevoking"
+            @click="handleRevokeCancel"
+          >
+            {{ isRevoking ? copy.cooling.revoking : copy.cooling.revoke }}
+          </button>
+          <button
+            type="button"
+            class="cooling-period-secondary"
+            @click="handleContinueCancellation"
+          >
+            {{ copy.cooling.continue }}
+          </button>
+        </div>
+      </section>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import { sendEmailCode } from '../../../api/request/auth'
+import { revokeCancel, sendEmailCode } from '../../../api/request/auth'
 import Vcode from 'vue-sliding-puzzle'
 import 'vue-sliding-puzzle/css'
+import { useAccountDeletionCopy } from '../../../composables/useAccountDeletionCopy'
+import { getLoginRedirectPath } from '../../../utils/auth-redirect'
+import { clearAuthStorage } from '../../../utils/auth-session'
 const mediaUrl = useMediaUrl()
 
 const props = defineProps({
@@ -137,6 +186,7 @@ const agreementModel = defineModel('agreementAccepted', {
 })
 const { requestLoadingText, showApiResponseErrorToast, showApiResponseSuccessToast, showErrorToast } = useSiteToast()
 const { loginWithEmailCode, loginWithPassword } = useAuth()
+const { copy } = useAccountDeletionCopy()
 const localePath = useLocalePath()
 const { locale } = useI18n()
 
@@ -144,6 +194,12 @@ const emailAddress = ref('')
 const loginCredential = ref('')
 const isSendingCode = ref(false)
 const isLoggingIn = ref(false)
+const showCoolingPeriodModal = ref(false)
+const coolingUserId = ref('')
+const coolingEndTime = ref('')
+const coolingLoginAccount = ref('')
+const coolingLoginPassword = ref('')
+const isRevoking = ref(false)
 const showPassword = ref(false)
 const puzzleVisible = ref(false)
 const puzzleCanvasWidth = ref(310)
@@ -450,11 +506,23 @@ const loginAfterPuzzle = ({ account, credential, isPassword }) => {
   loginRequest.then(
     (response) => {
       isLoggingIn.value = false
+
+      if (handleCoolingPeriodLogin(response, { account, credential, isPassword })) {
+        return
+      }
+
       showApiResponseSuccessToast(response, { scope: 'auth' })
-      navigateTo(localePath('/'))
+      navigateTo(getLoginRedirectPath())
     },
     (error) => {
       isLoggingIn.value = false
+
+      // 冷静期账号的登录响应可能不带 user 对象，导致上面的成功分支取不到用户；
+      // 这里再从失败响应里检查 status=2，拦截并弹出冷静期提示。
+      if (handleCoolingPeriodLogin(error?.data, { account, credential, isPassword })) {
+        return
+      }
+
       showApiResponseErrorToast(error, {
         scope: 'auth',
         fallback: getToastMessage('requestFail', 'Request failed. Please try again'),
@@ -462,6 +530,169 @@ const loginAfterPuzzle = ({ account, credential, isPassword }) => {
     }
   )
 }
+
+// 注销冷静期：密码登录返回 status=2 表示账号正处于注销冷静期。
+const getLoginAccountStatus = (response) => {
+  // 顶层 status 可能是 "success"/"error" 之类的通用状态字符串，
+  // 真实的账号状态是数字（1 正常 / 2 冷静期），按数字优先提取。
+  const candidates = [
+    response?.data?.status,
+    response?.user?.status,
+    response?.data?.user?.status,
+    response?.status,
+  ]
+
+  for (const value of candidates) {
+    const numericStatus = Number(value)
+
+    if (Number.isFinite(numericStatus)) {
+      return numericStatus
+    }
+  }
+
+  return 0
+}
+
+const handleCoolingPeriodLogin = (response, loginInfo = {}) => {
+  if (getLoginAccountStatus(response) !== 2) {
+    return false
+  }
+
+  coolingEndTime.value = String(
+    response?.cancel_end_time ??
+    response?.data?.cancel_end_time ??
+    response?.user?.cancel_end_time ??
+    response?.data?.user?.cancel_end_time ??
+    response?.cancelEndTime ??
+    response?.data?.cancelEndTime ??
+    ''
+  ).trim()
+
+  coolingUserId.value = String(
+    response?.user?.user_id ||
+    response?.data?.user?.user_id ||
+    response?.user?.id ||
+    response?.data?.user?.id ||
+    response?.user_id ||
+    response?.data?.user_id ||
+    response?.uid ||
+    response?.data?.uid ||
+    ''
+  ).trim()
+
+  if (loginInfo.isPassword) {
+    coolingLoginAccount.value = String(loginInfo.account || '').trim()
+    coolingLoginPassword.value = String(loginInfo.credential || '')
+  }
+
+  showCoolingPeriodModal.value = true
+
+  return true
+}
+
+const formatCoolingEndTime = (value) => {
+  if (!value) {
+    return ''
+  }
+
+  let date
+  const numericValue = Number(value)
+
+  if (Number.isFinite(numericValue) && String(value).trim() !== '') {
+    date = new Date(numericValue < 1e12 ? numericValue * 1000 : numericValue)
+  } else {
+    date = new Date(String(value))
+  }
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value)
+  }
+
+  const pad = part => String(part).padStart(2, '0')
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+const coolingEndTimeText = computed(() => formatCoolingEndTime(coolingEndTime.value))
+
+const handleRevokeCancel = () => {
+  if (isRevoking.value) {
+    return
+  }
+
+  const userId = coolingUserId.value
+
+  if (!userId) {
+    showErrorToast(copy.value.toasts.userMissing)
+    return
+  }
+
+  isRevoking.value = true
+
+  // 服务端代理到 https://api.vicastcam.com/v1/RevokeCancel，成功后正常完成登录。
+  revokeCancel({ user_id: userId }).then(
+    (response) => {
+      showApiResponseSuccessToast(response, { scope: 'account' })
+      reLoginAfterRevoke()
+    },
+    (error) => {
+      isRevoking.value = false
+      showApiResponseErrorToast(error, {
+        scope: 'account',
+        fallback: copy.value.toasts.revokeFailed,
+      })
+    }
+  )
+}
+
+// 撤销注销成功后，自动重新执行密码登录，正常进入系统。
+const reLoginAfterRevoke = () => {
+  const account = coolingLoginAccount.value
+  const password = coolingLoginPassword.value
+
+  if (!account || !password) {
+    isRevoking.value = false
+    showCoolingPeriodModal.value = false
+    navigateTo(getLoginRedirectPath())
+    return
+  }
+
+  isRevoking.value = true
+
+  loginWithPassword({ account, password }).then(
+    () => {
+      isRevoking.value = false
+      showCoolingPeriodModal.value = false
+      navigateTo(getLoginRedirectPath())
+    },
+    (error) => {
+      isRevoking.value = false
+      showApiResponseErrorToast(error, {
+        scope: 'auth',
+        fallback: copy.value.toasts.loginFailed,
+      })
+    }
+  )
+}
+
+const handleContinueCancellation = () => {
+  showCoolingPeriodModal.value = false
+  clearAuthStorage()
+}
+
+watch(showCoolingPeriodModal, (visible) => {
+  if (!process.client) {
+    return
+  }
+
+  document.body.style.overflow = visible ? 'hidden' : ''
+})
+
+onBeforeUnmount(() => {
+  if (process.client && document.body.style.overflow === 'hidden') {
+    document.body.style.overflow = ''
+  }
+})
 
 watch([emailAddress, () => props.loginMethod], () => {
   if (puzzleVisible.value) {
@@ -641,5 +872,145 @@ onBeforeUnmount(() => {
   .auth-form {
     margin-top: 30px;
   }
+}
+
+/* 注销冷静期提示弹窗，样式与结算结果弹窗保持一致。 */
+.cooling-period-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 8, 18, 0.76);
+  backdrop-filter: blur(4px);
+}
+
+.cooling-period-modal {
+  width: min(420px, calc(100vw - 32px));
+  padding: 30px 26px 26px;
+  border: 1px solid #244363;
+  border-radius: 14px;
+  color: #f7fbff;
+  background: #0b1b32;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.46);
+  text-align: center;
+}
+
+.cooling-period-icon {
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 50%;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.cooling-period-icon :deep(svg) {
+  width: 30px;
+  height: 30px;
+}
+
+.cooling-period-modal h2 {
+  margin: 16px 0 0;
+  color: #f8fbff;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 30px;
+}
+
+.cooling-period-description {
+  margin: 10px 0 0;
+  color: #8290a5;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.cooling-period-endtime {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  border-radius: 9px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.cooling-period-endtime strong {
+  color: #fde68a;
+  font-weight: 700;
+}
+
+.cooling-period-actions {
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  margin-top: 22px;
+}
+
+.cooling-period-primary {
+  width: min(246px, 100%);
+  height: 42px;
+  border-radius: 9px;
+  color: #ffffff;
+  background: linear-gradient(90deg, #11b7d8 0%, #2871ed 100%);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.cooling-period-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.cooling-period-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cooling-period-secondary {
+  height: 26px;
+  padding: 0 10px;
+  color: #8290a5;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.cooling-period-secondary:hover {
+  color: #c6d2e2;
+}
+
+:root[data-theme="light"] .cooling-period-modal {
+  border-color: #cbd9e8;
+  color: #13243a;
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+}
+
+:root[data-theme="light"] .cooling-period-modal h2 {
+  color: #102238;
+}
+
+:root[data-theme="light"] .cooling-period-description,
+:root[data-theme="light"] .cooling-period-secondary {
+  color: #65758a;
+}
+
+:root[data-theme="light"] .cooling-period-endtime {
+  border-color: rgba(217, 119, 6, 0.24);
+  background: rgba(253, 230, 138, 0.28);
+  color: #b45309;
+}
+
+:root[data-theme="light"] .cooling-period-endtime strong {
+  color: #92400e;
 }
 </style>

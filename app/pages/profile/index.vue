@@ -28,10 +28,11 @@
             >
               {{ profileBox?.account?.unboundEmail }}
             </button>
-            <span v-if="profileVipText" class="profile-vip-badge">
-              <img class="profile-vip-badge-icon" :src="profileVipBadgeIcon" alt="" role="presentation">
-              <span>{{ profileVipBadgeLabel }}</span>
-            </span>
+            <MembershipTypeTag
+              v-if="profileVipText"
+              class="profile-vip-tag"
+              :vip-type="profileVipText"
+            />
           </section>
 
           <nav class="profile-menu">
@@ -69,14 +70,12 @@
 import SiteFooter from '../../components/SiteFooter.vue'
 import SiteHeader from '../../components/SiteHeader.vue'
 import ProfileAccountPanel from './components/ProfileAccountPanel.vue'
-// import ProfileEarningsPanel from './components/ProfileEarningsPanel.vue'
+import ProfileEarningsPanel from './components/ProfileEarningsPanel.vue'
 import ProfileMembershipPanel from './components/ProfileMembershipPanel.vue'
 import ProfilePurchaseHistoryPanel from './components/ProfilePurchaseHistoryPanel.vue'
 import ProfileRedeemPanel from './components/ProfileRedeemPanel.vue'
 import ProfileTeamPanel from './components/ProfileTeamPanel.vue'
 import { setupPageSeo } from '../../utils/seo'
-const mediaUrl = useMediaUrl()
-
 definePageMeta({
   middleware: 'auth',
 })
@@ -87,7 +86,7 @@ const profileMenuMeta = [
   { key: 'redeem', field: 'redeem', icon: 'lucide:ticket' },
   { key: 'purchaseHistory', field: 'purchaseHistory', icon: 'lucide:clipboard-list' },
   { key: 'team', field: 'team', icon: 'lucide:users-round' },
-  // { key: 'earnings', field: 'earnings', icon: 'lucide:coins' },
+  { key: 'earnings', field: 'earnings', icon: 'lucide:coins' },
 ]
 
 const profileTabComponents = {
@@ -96,7 +95,7 @@ const profileTabComponents = {
   redeem: ProfileRedeemPanel,
   purchaseHistory: ProfilePurchaseHistoryPanel,
   team: ProfileTeamPanel,
-  // earnings: ProfileEarningsPanel,
+  earnings: ProfileEarningsPanel,
 }
 
 const validProfileTabs = new Set(Object.keys(profileTabComponents))
@@ -159,46 +158,6 @@ const profileAvatarLoadFailed = ref(false)
 const profileVipText = computed(() => {
   return authUser.value?.vip_type || ''
 })
-const profileVipBadgeLabel = computed(() => {
-  return profileBox.value?.common?.vipBadgeText || profileBox.value?.membership?.vipBadgeText || ''
-})
-const profileVipBadgeIcon = computed(() => {
-  const vipType = String(authUser.value?.vip_type || '').trim()
-  const normalizedVipType = vipType.toLowerCase()
-  const vipTypeCode = vipType.toUpperCase()
-
-  if (
-    vipTypeCode === 'L' ||
-    normalizedVipType.includes('life') ||
-    normalizedVipType.includes('lifetime') ||
-    normalizedVipType.includes('permanent') ||
-    normalizedVipType.includes('\u7ec8\u8eab') ||
-    normalizedVipType.includes('\u6c38\u4e45')
-  ) {
-    return mediaUrl('/images/profile/gold.png')
-  }
-
-  if (
-    vipTypeCode === 'Y' ||
-    normalizedVipType.includes('year') ||
-    normalizedVipType.includes('annual') ||
-    normalizedVipType.includes('\u5e74')
-  ) {
-    return mediaUrl('/images/profile/year.png')
-  }
-
-  if (
-    vipTypeCode === 'M' ||
-    normalizedVipType.includes('month') ||
-    normalizedVipType.includes('monthly') ||
-    normalizedVipType.includes('\u6708')
-  ) {
-    return mediaUrl('/images/profile/month.png')
-  }
-
-  return mediaUrl('/images/profile/year.png')
-})
-
 watch(profileAvatar, () => {
   profileAvatarLoadFailed.value = false
 })
@@ -362,32 +321,8 @@ watch(locale, () => {
   text-decoration: underline;
 }
 
-.profile-vip-badge {
-  min-width: 65px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+.profile-vip-tag {
   margin-top: 14px;
-  padding: 0 10px 0 6px;
-  border-radius: 999px;
-  color: var(--theme-white);
-  background: var(--theme-accent);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.profile-vip-badge-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  object-fit: contain;
-}
-
-.profile-vip-badge span {
-  line-height: 1;
 }
 
 .profile-menu {
@@ -566,7 +501,7 @@ watch(locale, () => {
 :deep(.profile-invite-link) {
   min-height: 54px;
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) 28px;
+  grid-template-columns: 20px minmax(0, 1fr);
   align-items: center;
   gap: 16px;
   margin-top: 20px;
@@ -591,23 +526,6 @@ watch(locale, () => {
   line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-:deep(.profile-invite-link button) {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  color: var(--theme-profile-field-action, var(--profile-cyan));
-  background: var(--theme-accent-action);
-  cursor: pointer;
-}
-
-:deep(.profile-invite-link button svg) {
-  width: 16px;
-  height: 16px;
 }
 
 :deep(.profile-empty-panel) {
@@ -691,7 +609,7 @@ watch(locale, () => {
   }
 
   :deep(.profile-invite-link) {
-    grid-template-columns: 20px minmax(0, 1fr) 28px;
+    grid-template-columns: 20px minmax(0, 1fr);
     padding: 0 12px;
   }
 }

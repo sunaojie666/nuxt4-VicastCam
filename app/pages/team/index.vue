@@ -1153,7 +1153,7 @@ setupStructuredData(() => {
       '@type': 'Organization',
       name: 'VicastCam',
       url: siteUrl.value,
-      logo: createAbsoluteUrl(mediaUrl('/images/common/logo.png'), siteUrl.value),
+      logo: createAbsoluteUrl(mediaUrl('/images/common/logo.jpg'), siteUrl.value),
       ...(contactPoint.length ? { contactPoint } : {}),
     },
   ]
